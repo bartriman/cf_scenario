@@ -1,7 +1,7 @@
 # Dokument wymagań produktu (PRD) - CashFlow Scenarios MVP
 
 ## 1. Przegląd produktu
-CashFlow Scenarios MVP to narzędzie webowe przeznaczone do zarządzania i prognozowania przepływów pieniężnych (cash flow) w oparciu o dane importowane z plików CSV. System umożliwia użytkownikom wizualizację przychodów i wydatków w ujęciu tygodniowym, tworzenie alternatywnych scenariuszy poprzez przesuwanie płatności w czasie (drag & drop) oraz analizę wpływu tych zmian na saldo końcowe. Aplikacja obsługuje wiele walut z przeliczaniem w czasie rzeczywistym na walutę bazową. Projekt skupia się na wydajności (obsługa dużych zbiorów danych), interaktywności oraz prostocie obsługi dla pojedynczego użytkownika, z wykorzystaniem nowoczesnego stosu technologicznego (Astro, React, Supabase).
+CashFlow Scenarios MVP to narzędzie webowe przeznaczone do zarządzania i prognozowania przepływów pieniężnych (cash flow) w oparciu o dane importowane z plików CSV. System umożliwia użytkownikom wizualizację przychodów i wydatków w ujęciu tygodniowym, tworzenie alternatywnych scenariuszy poprzez przesuwanie płatności w czasie (drag & drop) oraz analizę wpływu tych zmian na saldo końcowe i saldo narastające. Aplikacja obsługuje wiele walut z przeliczaniem w czasie rzeczywistym na walutę bazową. Projekt skupia się na interaktywności oraz prostocie obsługi dla pojedynczego użytkownika, z wykorzystaniem nowoczesnego stosu technologicznego (Astro, React, Supabase).
 
 ## 2. Problem użytkownika
 Zarządzanie płynnością finansową w firmach często opiera się na statycznych arkuszach kalkulacyjnych (Excel), które są podatne na błędy i trudne w utrzymaniu przy dużej liczbie transakcji.
@@ -19,13 +19,13 @@ Zarządzanie płynnością finansową w firmach często opiera się na statyczny
 ### 3.2. Zarządzanie Danymi (Import)
 - Import transakcji z plików CSV (inflow/outflow).
 - Obsługa dużych plików (do 50k wierszy) poprzez przetwarzanie wsadowe (batch insert) i Edge Functions.
-- Mapowanie kolumn CSV: data płatności, kwota, waluta, kierunek, konto, nr dokumentu, kontrahent, opis.
+- Mapowanie kolumn CSV: firma, data płatności, kwota, waluta, kierunek, projekt, nr dokumentu, kontrahent, opis, żródło płatności.
 - Walidacja danych wejściowych.
 
 ### 3.3. Zarządzanie Scenariuszami
 - Tworzenie scenariusza bazowego z zaimportowanych danych.
 - Tworzenie scenariuszy pochodnych (kopii logicznych).
-- Mechanizm "Override": zapisywanie zmian (nowa data, nowa kwota) w oddzielnej tabeli `scenario_overrides` bez duplikowania transakcji bazowych.
+- Mechanizm "Override": zapisywanie zmian (nowa data, nowa kwota) w oddzielnej tabeli `scenario_overrides` z duplikowaniem transakcji bazowych.
 - Statusy scenariuszy: Draft (edycja możliwa), Locked (tylko odczyt).
 
 ### 3.4. Widok i Edycja (Interfejs)
@@ -33,6 +33,7 @@ Zarządzanie płynnością finansową w firmach często opiera się na statyczny
 - Wyświetlanie 5 największych transakcji (Top-5) oraz sumy pozostałych ("Other") dla wpływów i wypływów.
 - Interakcja Drag & Drop: przesuwanie kafelków transakcji między dniami/tygodniami.
 - Natychmiastowe przeliczanie agregatów po przesunięciu transakcji.
+- Natychmistowe przeliczenie i wyświetlenie wykresu z saldem narastająco.
 
 ### 3.5. Obsługa Walut (Multi-currency)
 - Definiowanie waluty bazowej (np. EUR).
@@ -62,7 +63,7 @@ Poniższe funkcjonalności są świadomie wyłączone z zakresu MVP:
 - Opis: Jako użytkownik chcę bezpiecznie zalogować się do aplikacji, aby mieć dostęp do moich danych finansowych.
 - Kryteria akceptacji:
   1. Użytkownik widzi formularz logowania.
-  2. Poprawne dane uwierzytelniające przekierowują do głównego dashboardu.
+  2. Poprawne dane uwierzytelniające przekierowują do głównego dashboardu dla firmy, do której jest przyporządkowany.
   3. Błędne dane wyświetlają komunikat o błędzie.
   4. Sesja użytkownika jest zachowana po odświeżeniu strony.
 
@@ -103,7 +104,7 @@ Poniższe funkcjonalności są świadomie wyłączone z zakresu MVP:
 ### Widok i Edycja
 - ID: US-006
 - Tytuł: Widok tygodniowy Top-5
-- Opis: Jako użytkownik chcę widzieć podsumowanie tygodniowe z wyróżnieniem 5 największych transakcji, aby skupić się na kluczowych przepływach.
+- Opis: Jako użytkownik chcę widzieć podsumowanie tygodniowe z wyróżnieniem 5 największych transakcji wpływów i 5 największych transakcji wypływów, aby skupić się na kluczowych przepływach.
 - Kryteria akceptacji:
   1. Widok kalendarza/osi czasu podzielony na tygodnie.
   2. Dla każdego tygodnia lista 5 największych wpływów i 5 największych wypływów.
