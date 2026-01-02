@@ -1,0 +1,63 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import ScenarioView from "@/components/scenario/ScenarioView";
+
+export const prerender = false;
+
+const { scenarioId } = Astro.params;
+
+if (!scenarioId) {
+  return Astro.redirect("/404");
+}
+
+// Get user session from supabase
+const supabase = Astro.locals.supabase;
+const {
+  data: { user },
+  error: authError,
+} = await supabase.auth.getUser();
+
+if (authError || !user) {
+  return new Response("Unauthorized", { status: 401 });
+}
+
+// Get user's company from profile
+const { data: profile, error: profileError } = await supabase
+  .from("user_profiles")
+  .select("default_company_id")
+  .eq("user_id", user.id)
+  .single();
+
+if (profileError || !profile?.default_company_id) {
+  return new Response("Company not found", { status: 404 });
+}
+
+const companyId = profile.default_company_id;
+
+// Verify scenario exists and belongs to user's company
+const { data: scenario, error: scenarioError } = await supabase
+  .from("scenarios")
+  .select(
+    `
+    id, 
+    name, 
+    company_id,
+    companies!inner(base_currency)
+  `
+  )
+  .eq("id", parseInt(scenarioId, 10))
+  .eq("company_id", companyId)
+  .single();
+
+if (scenarioError || !scenario) {
+  return new Response("Scenario not found", { status: 404 });
+}
+
+const baseCurrency = (scenario.companies as unknown as { base_currency: string })?.base_currency || "USD";
+---
+
+<Layout title={`${scenario.name} - Scenario View`}>
+  <main class="h-screen w-full overflow-hidden bg-background">
+    <ScenarioView client:load scenarioId={scenarioId} companyId={companyId} baseCurrency={baseCurrency} />
+  </main>
+</Layout>
