@@ -989,3 +989,61 @@ export interface RunningBalancePoint {
   date: string; // as_of_date
   balance: number; // running_balance_book_cents / 100
 }
+
+// =============================================================================
+// DASHBOARD VIEW TYPES
+// =============================================================================
+
+// Enum dla opcji sortowania scenariuszy
+export enum SortOption {
+  CreatedAtDesc = "created_at_desc",
+  CreatedAtAsc = "created_at_asc",
+  NameAsc = "name_asc",
+  NameDesc = "name_desc",
+}
+
+// Stan filtrów i sortowania
+export interface FiltersState {
+  status: ScenarioStatusType | null; // null = "All"
+  sort: SortOption;
+}
+
+// Typ błędu API
+export interface ApiError {
+  message: string;
+  code?: string;
+  details?: Record<string, unknown>;
+}
+
+// ViewModel dla karty scenariusza (rozszerzenie DTO o pola formatowane)
+export interface ScenarioCardViewModel extends ScenarioListItemDTO {
+  formattedCreatedAt: string; // "2 stycznia 2026"
+  statusBadgeColor: "yellow" | "green";
+  statusLabel: string; // "Roboczy" | "Zablokowany"
+  canEdit: boolean; // status === "Draft"
+  canLock: boolean; // status === "Draft"
+  canDelete: boolean; // zawsze true w MVP
+  overridesCount?: number; // opcjonalnie, jeśli pobrane
+}
+
+// Akcje API (typy command dla Dashboard)
+export interface LockScenarioCommandDashboard {
+  companyId: string;
+  scenarioId: number;
+}
+
+export interface SoftDeleteScenarioCommandDashboard {
+  companyId: string;
+  scenarioId: number;
+}
+
+export interface DuplicateScenarioCommandDashboard {
+  companyId: string;
+  scenarioId: number;
+  name: string;
+}
+
+export interface CreateScenarioCommandDashboard {
+  companyId: string;
+  data: CreateScenarioRequestDTO;
+}
