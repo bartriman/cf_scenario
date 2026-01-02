@@ -279,7 +279,9 @@ export type ImportDetailsResponseDTO = Pick<
   | "file_name"
   | "uploaded_by"
   | "created_at"
->;
+> & {
+  base_scenario_id?: number; // ID utworzonego scenariusza bazowego (opcjonalne)
+};
 
 // 21. Create Import Request DTO (multipart form data structure)
 export interface CreateImportRequestDTO {
@@ -925,6 +927,36 @@ export interface FileUpload {
   file: File | Blob;
   filename: string;
   content_type: string;
+}
+
+// =============================================================================
+// IMPORT WIZARD TYPES
+// =============================================================================
+
+// Stan kroku w kreatorze
+export type ImportWizardStep = 1 | 2 | 3;
+
+// Stan walidacji pliku po stronie klienta
+export interface FileValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
+// Model widoku dla danych importu w kreatorze
+export interface ImportWizardState {
+  currentStep: ImportWizardStep;
+  completedSteps: number[];
+  selectedFile: File | null;
+  datasetCode: string;
+  importId: number | null;
+  importDetails: ImportDetailsResponseDTO | null;
+  isProcessing: boolean;
+  error: string | null;
+}
+
+// Rozszerzenie ImportErrorRowDTO dla lepszej prezentacji w tabeli
+export interface ImportErrorRowVM extends ImportErrorRowDTO {
+  formattedData: string; // Sformatowane JSON dla lepszej czytelności
 }
 
 // =============================================================================

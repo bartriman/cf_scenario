@@ -1,0 +1,47 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Get user from locals (set by middleware)
+const user = Astro.locals.user;
+
+// Redirect to login if not authenticated
+if (!user) {
+  return Astro.redirect("/login");
+}
+
+// Get default company ID from user profile
+const defaultCompanyId = Astro.locals.userProfile?.default_company_id;
+
+if (!defaultCompanyId) {
+  return Astro.redirect("/");
+}
+
+const companyId = defaultCompanyId;
+---
+
+<Layout title="Import CSV">
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold mb-2">Import CSV</h1>
+      <p class="text-muted-foreground mb-8">
+        Importuj dane finansowe z pliku CSV i utwórz bazowy scenariusz
+      </p>
+      
+      <!-- ImportWizard React component will be mounted here -->
+      <div id="import-wizard-root" data-company-id={companyId}></div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { ImportWizard } from "../components/import/ImportWizard";
+  import { createRoot } from "react-dom/client";
+  import { createElement } from "react";
+
+  const rootElement = document.getElementById("import-wizard-root");
+  if (rootElement) {
+    const companyId = rootElement.dataset.companyId || "";
+    const root = createRoot(rootElement);
+    root.render(createElement(ImportWizard, { companyId }));
+  }
+</script>

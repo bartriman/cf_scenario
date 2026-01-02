@@ -20,12 +20,7 @@ interface TimelineProps {
   isLocked: boolean;
 }
 
-export function Timeline({
-  weeklyAggregates,
-  onTransactionDrop,
-  onTransactionClick,
-  isLocked,
-}: TimelineProps) {
+export function Timeline({ weeklyAggregates, onTransactionDrop, onTransactionClick, isLocked }: TimelineProps) {
   const [activeTransaction, setActiveTransaction] = useState<TransactionVM | null>(null);
 
   // Configure sensors for drag interactions
@@ -40,7 +35,7 @@ export function Timeline({
 
   const handleDragStart = (event: { active: { id: string } }) => {
     const transactionId = event.active.id;
-    
+
     // Find the transaction being dragged
     for (const week of weeklyAggregates) {
       const transaction = week.transactions.find((tx) => tx.id === transactionId);
@@ -97,12 +92,7 @@ export function Timeline({
       <div className="h-full overflow-x-auto overflow-y-hidden">
         <div className="inline-flex h-full min-w-full gap-4 px-6 py-4">
           {weeklyAggregates.map((week) => (
-            <WeekCard
-              key={week.week_index}
-              week={week}
-              onTransactionClick={onTransactionClick}
-              isLocked={isLocked}
-            />
+            <WeekCard key={week.week_index} week={week} onTransactionClick={onTransactionClick} isLocked={isLocked} />
           ))}
         </div>
       </div>
@@ -111,11 +101,7 @@ export function Timeline({
       <DragOverlay>
         {activeTransaction ? (
           <div className="w-80 rotate-3 opacity-80">
-            <TransactionCard
-              transaction={activeTransaction}
-              onClick={() => {}}
-              isLocked={isLocked}
-            />
+            <TransactionCard transaction={activeTransaction} onClick={() => {}} isLocked={isLocked} />
           </div>
         ) : null}
       </DragOverlay>
