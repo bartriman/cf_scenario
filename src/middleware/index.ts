@@ -26,11 +26,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Make the client available to routes
   context.locals.supabase = supabase;
 
+  // Get and refresh session if needed
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (session) {
+    // Session exists - check if it needs refresh
+    const expiresAt = session.expires_at;
+    const now = Math.floor(Date.now() / 1000);
+    
+    // Refresh if session expires in less than 60 seconds
+    if (expiresAt && expiresAt - now < 60) {
+      await supabase.auth.refreshSession();
+    }
+  }
+
   // Get response from next middleware/route
   const response = await next();
-
-  // Note: In production, you might want to use @supabase/ssr for better cookie handling
-  // This is a simplified version that works with Supabase Auth cookies
 
   return response;
 });

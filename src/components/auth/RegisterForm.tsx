@@ -3,39 +3,49 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import type { SignInRequestDTO, SignInResponseDTO, ErrorResponseDTO } from "../../types";
+import type { SignUpRequestDTO, ErrorResponseDTO } from "../../types";
 import { validateField } from "../../lib/validation/auth.validation";
 
-// Stan formularza logowania
-interface LoginFormState {
+// Stan formularza rejestracji
+interface RegisterFormState {
   email: string;
   password: string;
+  confirmPassword: string;
+  companyName: string;
   isSubmitting: boolean;
   apiError: string | null;
 }
 
 // Błędy walidacji formularza
-interface LoginFormErrors {
+interface RegisterFormErrors {
   email: string | null;
   password: string | null;
+  confirmPassword: string | null;
+  companyName: string | null;
 }
 
-export function LoginForm() {
-  const [formState, setFormState] = useState<LoginFormState>({
+export function RegisterForm() {
+  const [formState, setFormState] = useState<RegisterFormState>({
     email: "",
     password: "",
+    confirmPassword: "",
+    companyName: "",
     isSubmitting: false,
     apiError: null,
   });
 
-  const [errors, setErrors] = useState<LoginFormErrors>({
+  const [errors, setErrors] = useState<RegisterFormErrors>({
     email: null,
     password: null,
+    confirmPassword: null,
+    companyName: null,
   });
 
   const [touched, setTouched] = useState({
     email: false,
     password: false,
+    confirmPassword: false,
+    companyName: false,
   });
 
   const handleEmailChange = (value: string) => {
@@ -56,31 +66,70 @@ export function LoginForm() {
       const error = validateField("password", value);
       setErrors((prev) => ({ ...prev, password: error }));
     }
+
+    // Rewalidacja confirmPassword jeśli zostało dotknięte
+    if (touched.confirmPassword) {
+      const confirmError = validateField("confirmPassword", formState.confirmPassword, value);
+      setErrors((prev) => ({ ...prev, confirmPassword: confirmError }));
+    }
   };
 
-  const handleBlur = (field: "email" | "password") => {
+  const handleConfirmPasswordChange = (value: string) => {
+    setFormState((prev) => ({ ...prev, confirmPassword: value, apiError: null }));
+
+    // Walidacja w czasie rzeczywistym po dotknięciu pola
+    if (touched.confirmPassword) {
+      const error = validateField("confirmPassword", value, formState.password);
+      setErrors((prev) => ({ ...prev, confirmPassword: error }));
+    }
+  };
+
+  const handleCompanyNameChange = (value: string) => {
+    setFormState((prev) => ({ ...prev, companyName: value, apiError: null }));
+  };
+
+  const handleBlur = (field: keyof typeof touched) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
 
-    const value = field === "email" ? formState.email : formState.password;
-    const error = validateField(field, value);
+    let value = "";
+    let compareValue: string | undefined = undefined;
+
+    if (field === "email") {
+      value = formState.email;
+    } else if (field === "password") {
+      value = formState.password;
+    } else if (field === "confirmPassword") {
+      value = formState.confirmPassword;
+      compareValue = formState.password;
+    } else if (field === "companyName") {
+      value = formState.companyName;
+    }
+
+    const error = validateField(field, value, compareValue);
     setErrors((prev) => ({ ...prev, [field]: error }));
   };
 
   const validateForm = (): boolean => {
     const emailError = validateField("email", formState.email);
     const passwordError = validateField("password", formState.password);
+    const confirmPasswordError = validateField("confirmPassword", formState.confirmPassword, formState.password);
+    const companyNameError = validateField("companyName", formState.companyName);
 
     setErrors({
       email: emailError,
       password: passwordError,
+      confirmPassword: confirmPasswordError,
+      companyName: companyNameError,
     });
 
     setTouched({
       email: true,
       password: true,
+      confirmPassword: true,
+      companyName: true,
     });
 
-    return !emailError && !passwordError;
+    return !emailError && !passwordError && !confirmPasswordError && !companyNameError;
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -94,36 +143,55 @@ export function LoginForm() {
     setFormState((prev) => ({ ...prev, isSubmitting: true, apiError: null }));
 
     try {
-      // 3. Wywołanie API Sign In
-      const response = await fetch("/api/auth/signin", {
+      // 3. Wywołanie API Sign Up
+      const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formState.email,
           password: formState.password,
-        } as SignInRequestDTO),
+          companyName: formState.companyName || undefined,
+        } as SignUpRequestDTO),
       });
 
       // 4. Obsługa odpowiedzi
       if (!response.ok) {
         const errorData: ErrorResponseDTO = await response.json();
-        
-        // Wszystkie błędy wyświetlane jako ogólny komunikat
-        setFormState((prev) => ({
-          ...prev,
-          apiError: errorData.error.message || "Nieprawidłowy email lub hasło",
-          isSubmitting: false,
-        }));
+
+        // Obsługa błędów walidacji (400)
+        if (response.status === 400 && errorData.error.details) {
+          const newErrors: RegisterFormErrors = {
+            email: null,
+            password: null,
+            confirmPassword: null,
+            companyName: null,
+          };
+          errorData.error.details.forEach((detail) => {
+            if (detail.field === "email") newErrors.email = detail.message;
+            if (detail.field === "password") newErrors.password = detail.message;
+            if (detail.field === "confirmPassword") newErrors.confirmPassword = detail.message;
+            if (detail.field === "companyName") newErrors.companyName = detail.message;
+          });
+          setErrors(newErrors);
+        } else {
+          // Obsługa innych błędów
+          setFormState((prev) => ({
+            ...prev,
+            apiError: errorData.error.message || "Wystąpił błąd podczas rejestracji",
+          }));
+        }
+
+        setFormState((prev) => ({ ...prev, isSubmitting: false }));
         return;
       }
 
       // 5. Sukces - parsowanie odpowiedzi
-      const data: SignInResponseDTO = await response.json();
+      await response.json();
 
-      // 6. Przekierowanie do URL zwróconego przez API
-      window.location.href = data.redirect_url;
-    } catch (error) {
-      console.error("Login error:", error);
+      // 6. Przekierowanie (zgodnie z US-001 pkt 7 - automatyczne logowanie po rejestracji)
+      // Zakładając, że backend zwraca sesję, możemy przekierować bezpośrednio
+      window.location.href = "/";
+    } catch {
       setFormState((prev) => ({
         ...prev,
         apiError: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
@@ -135,7 +203,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Zaloguj się</CardTitle>
+        <CardTitle>Zarejestruj się</CardTitle>
       </CardHeader>
       <CardContent>
         {/* Alert z błędem API */}
@@ -192,7 +260,7 @@ export function LoginForm() {
           </div>
 
           {/* Password field */}
-          <div className="mb-6">
+          <div className="mb-4">
             <Label htmlFor="password">Hasło</Label>
             <Input
               id="password"
@@ -213,6 +281,42 @@ export function LoginForm() {
             )}
           </div>
 
+          {/* Confirm Password field */}
+          <div className="mb-4">
+            <Label htmlFor="confirmPassword">Powtórz hasło</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={formState.confirmPassword}
+              onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+              onBlur={() => handleBlur("confirmPassword")}
+              disabled={formState.isSubmitting}
+              aria-invalid={!!errors.confirmPassword}
+              aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
+              placeholder="••••••••"
+              className={errors.confirmPassword && touched.confirmPassword ? "border-red-500" : ""}
+            />
+            {errors.confirmPassword && touched.confirmPassword && (
+              <p id="confirmPassword-error" className="mt-1 text-sm text-red-600" role="alert">
+                {errors.confirmPassword}
+              </p>
+            )}
+          </div>
+
+          {/* Company Name field (optional) */}
+          <div className="mb-6">
+            <Label htmlFor="companyName">Nazwa firmy (opcjonalne)</Label>
+            <Input
+              id="companyName"
+              type="text"
+              value={formState.companyName}
+              onChange={(e) => handleCompanyNameChange(e.target.value)}
+              onBlur={() => handleBlur("companyName")}
+              disabled={formState.isSubmitting}
+              placeholder="Twoja firma"
+            />
+          </div>
+
           {/* Submit button */}
           <Button type="submit" className="w-full" disabled={formState.isSubmitting}>
             {formState.isSubmitting ? (
@@ -225,25 +329,18 @@ export function LoginForm() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Logowanie...
+                Tworzenie konta...
               </span>
             ) : (
-              "Zaloguj się"
+              "Zarejestruj się"
             )}
           </Button>
 
-          {/* Link to forgot password */}
+          {/* Link to login */}
           <div className="mt-4 text-center text-sm text-gray-600">
-            <a href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-              Nie pamiętam hasła
-            </a>
-          </div>
-
-          {/* Link to register */}
-          <div className="mt-2 text-center text-sm text-gray-600">
-            Nie masz konta?{" "}
-            <a href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              Zarejestruj się
+            Masz już konto?{" "}
+            <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+              Zaloguj się
             </a>
           </div>
         </form>

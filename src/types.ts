@@ -122,6 +122,7 @@ export type WeeklyAggregateRow = Tables<"weekly_aggregates_v">;
 export interface SignUpRequestDTO {
   email: string;
   password: string;
+  companyName?: string;
 }
 
 // 2. Sign Up Response DTO
@@ -152,6 +153,27 @@ export interface SignInResponseDTO {
     access_token: string;
     refresh_token: string;
   };
+  redirect_url: string;
+}
+
+// 5. Reset Password Request DTO
+export interface ResetPasswordRequestDTO {
+  email: string;
+}
+
+// 6. Reset Password Response DTO
+export interface ResetPasswordResponseDTO {
+  message: string;
+}
+
+// 7. Update Password Request DTO
+export interface UpdatePasswordRequestDTO {
+  password: string;
+}
+
+// 8. Update Password Response DTO
+export interface UpdatePasswordResponseDTO {
+  message: string;
 }
 
 // =============================================================================

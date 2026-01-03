@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import type { SignInRequestDTO, SignInResponseDTO, ErrorResponseDTO } from "../../../types";
+import type { SignInRequestDTO, SignInResponseDTO, ErrorResponseDTO, UserProfileResponseDTO } from "../../../types";
 import { SignInSchema } from "../../../lib/validation/auth.validation";
 import { z } from "zod";
 
@@ -8,7 +8,7 @@ import { z } from "zod";
  *
  * Authenticates user with email and password
  */
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, url }) => {
   try {
     // Step 1: Get Supabase client from locals
     const supabase = locals.supabase;
@@ -16,11 +16,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const errorResponse: ErrorResponseDTO = {
         error: {
           code: "INTERNAL_ERROR",
-          message: "Supabase client not available",
+          message: "Nieprawidłowy email lub hasło",
         },
       };
       return new Response(JSON.stringify(errorResponse), {
-        status: 500,
+        status: 401,
         headers: { "Content-Type": "application/json" },
       });
     }
@@ -31,31 +31,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const rawBody = await request.json();
       body = SignInSchema.parse(rawBody);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        const errorResponse: ErrorResponseDTO = {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid request data",
-            details: error.errors.map((e) => ({
-              field: e.path.join("."),
-              message: e.message,
-            })),
-          },
-        };
-        return new Response(JSON.stringify(errorResponse), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
+      // Unified error message for security
       const errorResponse: ErrorResponseDTO = {
         error: {
-          code: "VALIDATION_ERROR",
-          message: "Invalid JSON in request body",
+          code: "UNAUTHORIZED",
+          message: "Nieprawidłowy email lub hasło",
         },
       };
       return new Response(JSON.stringify(errorResponse), {
-        status: 400,
+        status: 401,
         headers: { "Content-Type": "application/json" },
       });
     }
@@ -66,12 +50,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       password: body.password,
     });
 
-    // Step 4: Handle authentication errors
+    // Step 4: Handle authentication errors - unified message
     if (error || !data.user || !data.session) {
       const errorResponse: ErrorResponseDTO = {
         error: {
           code: "UNAUTHORIZED",
-          message: error?.message || "Nieprawidłowy email lub hasło",
+          message: "Nieprawidłowy email lub hasło",
         },
       };
       return new Response(JSON.stringify(errorResponse), {
@@ -80,10 +64,32 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // Step 5: Set session cookies (Supabase handles this automatically)
-    // The session is automatically stored in cookies by Supabase client
+    // Step 5: Determine redirect URL
+    let redirectUrl = "/";
 
-    // Step 6: Return success response
+    try {
+      // Get user profile to determine redirect
+      const profileResponse = await fetch(`${url.origin}/api/profile`, {
+        headers: {
+          Authorization: `Bearer ${data.session.access_token}`,
+        },
+      });
+
+      if (profileResponse.ok) {
+        const profile: UserProfileResponseDTO = await profileResponse.json();
+
+        if (profile.default_company_id) {
+          redirectUrl = `/companies/${profile.default_company_id}/dashboard`;
+        } else if (profile.companies.length > 0) {
+          redirectUrl = `/companies/${profile.companies[0].company_id}/dashboard`;
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      // Continue with default redirect
+    }
+
+    // Step 6: Return success response with redirect URL
     const response: SignInResponseDTO = {
       user: {
         id: data.user.id,
@@ -93,6 +99,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       },
+      redirect_url: redirectUrl,
     };
 
     return new Response(JSON.stringify(response), {
@@ -104,12 +111,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const errorResponse: ErrorResponseDTO = {
       error: {
-        code: "INTERNAL_ERROR",
-        message: "An unexpected error occurred during sign in",
+        code: "UNAUTHORIZED",
+        message: "Nieprawidłowy email lub hasło",
       },
     };
     return new Response(JSON.stringify(errorResponse), {
-      status: 500,
+      status: 401,
       headers: { "Content-Type": "application/json" },
     });
   }

@@ -3,39 +3,36 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import type { SignInRequestDTO, SignInResponseDTO, ErrorResponseDTO } from "../../types";
+import type { ResetPasswordRequestDTO, ErrorResponseDTO } from "../../types";
 import { validateField } from "../../lib/validation/auth.validation";
 
-// Stan formularza logowania
-interface LoginFormState {
+// Stan formularza odzyskiwania hasła
+interface ForgotPasswordFormState {
   email: string;
-  password: string;
   isSubmitting: boolean;
   apiError: string | null;
+  isSuccess: boolean;
 }
 
 // Błędy walidacji formularza
-interface LoginFormErrors {
+interface ForgotPasswordFormErrors {
   email: string | null;
-  password: string | null;
 }
 
-export function LoginForm() {
-  const [formState, setFormState] = useState<LoginFormState>({
+export function ForgotPasswordForm() {
+  const [formState, setFormState] = useState<ForgotPasswordFormState>({
     email: "",
-    password: "",
     isSubmitting: false,
     apiError: null,
+    isSuccess: false,
   });
 
-  const [errors, setErrors] = useState<LoginFormErrors>({
+  const [errors, setErrors] = useState<ForgotPasswordFormErrors>({
     email: null,
-    password: null,
   });
 
   const [touched, setTouched] = useState({
     email: false,
-    password: false,
   });
 
   const handleEmailChange = (value: string) => {
@@ -48,39 +45,24 @@ export function LoginForm() {
     }
   };
 
-  const handlePasswordChange = (value: string) => {
-    setFormState((prev) => ({ ...prev, password: value, apiError: null }));
-
-    // Walidacja w czasie rzeczywistym po dotknięciu pola
-    if (touched.password) {
-      const error = validateField("password", value);
-      setErrors((prev) => ({ ...prev, password: error }));
-    }
-  };
-
-  const handleBlur = (field: "email" | "password") => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-
-    const value = field === "email" ? formState.email : formState.password;
-    const error = validateField(field, value);
-    setErrors((prev) => ({ ...prev, [field]: error }));
+  const handleBlur = () => {
+    setTouched({ email: true });
+    const error = validateField("email", formState.email);
+    setErrors({ email: error });
   };
 
   const validateForm = (): boolean => {
     const emailError = validateField("email", formState.email);
-    const passwordError = validateField("password", formState.password);
 
     setErrors({
       email: emailError,
-      password: passwordError,
     });
 
     setTouched({
       email: true,
-      password: true,
     });
 
-    return !emailError && !passwordError;
+    return !emailError;
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -94,36 +76,46 @@ export function LoginForm() {
     setFormState((prev) => ({ ...prev, isSubmitting: true, apiError: null }));
 
     try {
-      // 3. Wywołanie API Sign In
-      const response = await fetch("/api/auth/signin", {
+      // 3. Wywołanie API Reset Password
+      const response = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formState.email,
-          password: formState.password,
-        } as SignInRequestDTO),
+        } as ResetPasswordRequestDTO),
       });
 
       // 4. Obsługa odpowiedzi
       if (!response.ok) {
         const errorData: ErrorResponseDTO = await response.json();
-        
-        // Wszystkie błędy wyświetlane jako ogólny komunikat
-        setFormState((prev) => ({
-          ...prev,
-          apiError: errorData.error.message || "Nieprawidłowy email lub hasło",
-          isSubmitting: false,
-        }));
+
+        // Obsługa błędów walidacji (400)
+        if (response.status === 400 && errorData.error.details) {
+          const newErrors: ForgotPasswordFormErrors = { email: null };
+          errorData.error.details.forEach((detail) => {
+            if (detail.field === "email") newErrors.email = detail.message;
+          });
+          setErrors(newErrors);
+        } else {
+          // Obsługa innych błędów
+          setFormState((prev) => ({
+            ...prev,
+            apiError: errorData.error.message || "Wystąpił błąd. Spróbuj ponownie.",
+          }));
+        }
+
+        setFormState((prev) => ({ ...prev, isSubmitting: false }));
         return;
       }
 
-      // 5. Sukces - parsowanie odpowiedzi
-      const data: SignInResponseDTO = await response.json();
-
-      // 6. Przekierowanie do URL zwróconego przez API
-      window.location.href = data.redirect_url;
-    } catch (error) {
-      console.error("Login error:", error);
+      // 5. Sukces
+      await response.json();
+      setFormState((prev) => ({
+        ...prev,
+        isSubmitting: false,
+        isSuccess: true,
+      }));
+    } catch {
       setFormState((prev) => ({
         ...prev,
         apiError: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
@@ -132,10 +124,46 @@ export function LoginForm() {
     }
   };
 
+  // Wyświetlanie komunikatu sukcesu
+  if (formState.isSuccess) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Sprawdź swoją skrzynkę pocztową</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+            <div className="flex items-start">
+              <svg className="mr-2 h-5 w-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <div>
+                <p className="font-medium">Wysłano link resetujący hasło</p>
+                <p className="mt-1">
+                  Jeśli konto z podanym adresem email istnieje, otrzymasz wiadomość z instrukcjami resetowania hasła.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <a href="/login" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+              Powrót do logowania
+            </a>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Zaloguj się</CardTitle>
+        <CardTitle>Resetowanie hasła</CardTitle>
       </CardHeader>
       <CardContent>
         {/* Alert z błędem API */}
@@ -168,16 +196,20 @@ export function LoginForm() {
           </div>
         )}
 
+        <p className="mb-4 text-sm text-gray-600">
+          Podaj swój adres email, a wyślemy Ci instrukcje dotyczące resetowania hasła.
+        </p>
+
         <form onSubmit={handleSubmit} noValidate>
           {/* Email field */}
-          <div className="mb-4">
+          <div className="mb-6">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
               value={formState.email}
               onChange={(e) => handleEmailChange(e.target.value)}
-              onBlur={() => handleBlur("email")}
+              onBlur={handleBlur}
               disabled={formState.isSubmitting}
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? "email-error" : undefined}
@@ -187,28 +219,6 @@ export function LoginForm() {
             {errors.email && touched.email && (
               <p id="email-error" className="mt-1 text-sm text-red-600" role="alert">
                 {errors.email}
-              </p>
-            )}
-          </div>
-
-          {/* Password field */}
-          <div className="mb-6">
-            <Label htmlFor="password">Hasło</Label>
-            <Input
-              id="password"
-              type="password"
-              value={formState.password}
-              onChange={(e) => handlePasswordChange(e.target.value)}
-              onBlur={() => handleBlur("password")}
-              disabled={formState.isSubmitting}
-              aria-invalid={!!errors.password}
-              aria-describedby={errors.password ? "password-error" : undefined}
-              placeholder="••••••••"
-              className={errors.password && touched.password ? "border-red-500" : ""}
-            />
-            {errors.password && touched.password && (
-              <p id="password-error" className="mt-1 text-sm text-red-600" role="alert">
-                {errors.password}
               </p>
             )}
           </div>
@@ -225,25 +235,18 @@ export function LoginForm() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Logowanie...
+                Wysyłanie...
               </span>
             ) : (
-              "Zaloguj się"
+              "Wyślij link resetujący"
             )}
           </Button>
 
-          {/* Link to forgot password */}
+          {/* Link to login */}
           <div className="mt-4 text-center text-sm text-gray-600">
-            <a href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-              Nie pamiętam hasła
-            </a>
-          </div>
-
-          {/* Link to register */}
-          <div className="mt-2 text-center text-sm text-gray-600">
-            Nie masz konta?{" "}
-            <a href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              Zarejestruj się
+            Pamiętasz hasło?{" "}
+            <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+              Zaloguj się
             </a>
           </div>
         </form>
