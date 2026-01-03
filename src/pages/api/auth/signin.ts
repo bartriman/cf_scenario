@@ -64,30 +64,8 @@ export const POST: APIRoute = async ({ request, locals, url }) => {
       });
     }
 
-    // Step 5: Determine redirect URL
-    let redirectUrl = "/";
-
-    try {
-      // Get user profile to determine redirect
-      const profileResponse = await fetch(`${url.origin}/api/profile`, {
-        headers: {
-          Authorization: `Bearer ${data.session.access_token}`,
-        },
-      });
-
-      if (profileResponse.ok) {
-        const profile: UserProfileResponseDTO = await profileResponse.json();
-
-        if (profile.default_company_id) {
-          redirectUrl = `/companies/${profile.default_company_id}/dashboard`;
-        } else if (profile.companies.length > 0) {
-          redirectUrl = `/companies/${profile.companies[0].company_id}/dashboard`;
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      // Continue with default redirect
-    }
+    // Step 5: Redirect to home page (dashboard)
+    const redirectUrl = "/";
 
     // Step 6: Return success response with redirect URL
     const response: SignInResponseDTO = {

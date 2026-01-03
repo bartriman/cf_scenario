@@ -39,6 +39,7 @@ begin
   
   if v_company_name is not null and v_company_name <> '' then
     -- Step 3: Create company with default values
+    -- Use service role context to bypass RLS
     insert into public.companies (name, base_currency, timezone)
     values (
       v_company_name,
@@ -48,6 +49,7 @@ begin
     returning id into v_company_id;
 
     -- Step 4: Add user as company owner
+    -- Use service role context to bypass RLS
     insert into public.company_members (company_id, user_id, role)
     values (v_company_id, new.id, 'owner');
 
@@ -58,10 +60,22 @@ begin
   end if;
 
   return new;
+exception
+  when others then
+    -- Log error but don't fail user creation
+    raise warning 'Error in handle_new_user_registration: %', sqlerrm;
+    return new;
 end;
 $$;
 
 comment on function handle_new_user_registration is 'Automatically creates user profile and optional company on signup';
+
+-- Grant execute permission to authenticated users (though it's called by trigger)
+grant execute on function handle_new_user_registration to authenticated;
+grant execute on function handle_new_user_registration to service_role;
+
+-- Change function owner to postgres to bypass RLS
+alter function handle_new_user_registration owner to postgres;
 
 -- ============================================================================
 -- Trigger: on_auth_user_created

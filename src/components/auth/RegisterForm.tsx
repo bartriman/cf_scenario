@@ -186,11 +186,20 @@ export function RegisterForm() {
       }
 
       // 5. Sukces - parsowanie odpowiedzi
-      await response.json();
+      const data = await response.json();
 
       // 6. Przekierowanie (zgodnie z US-001 pkt 7 - automatyczne logowanie po rejestracji)
-      // Zakładając, że backend zwraca sesję, możemy przekierować bezpośrednio
-      window.location.href = "/";
+      if ("session" in data && "user" in data) {
+        // Auto-login jest włączony - przekieruj do auth/callback który obsłuży redirect
+        window.location.href = "/auth/callback";
+      } else {
+        // Email confirmation wymagane - pokaż komunikat
+        setFormState((prev) => ({
+          ...prev,
+          apiError: data.message || "Sprawdź swoją skrzynkę email, aby potwierdzić rejestrację",
+          isSubmitting: false,
+        }));
+      }
     } catch {
       setFormState((prev) => ({
         ...prev,

@@ -6,11 +6,11 @@ import type { ScenarioListItemDTO } from "@/types";
 // Sprawdzenie sesji użytkownika
 const supabase = Astro.locals.supabase;
 const {
-  data: { session },
-} = await supabase.auth.getSession();
+  data: { user },
+} = await supabase.auth.getUser();
 
-// Przekierowanie do logowania jeśli brak sesji
-if (!session) {
+// Przekierowanie do logowania jeśli brak użytkownika
+if (!user) {
   return Astro.redirect("/login");
 }
 
@@ -18,7 +18,7 @@ if (!session) {
 const { data: profile, error: profileError } = await supabase
   .from("user_profiles")
   .select("default_company_id")
-  .eq("user_id", session.user.id)
+  .eq("user_id", user.id)
   .single();
 
 if (profileError || !profile?.default_company_id) {

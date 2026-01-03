@@ -1,17 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { LoginForm } from "../components/auth/LoginForm";
-
-// Sprawdzenie czy użytkownik jest już zalogowany
-const {
-  data: { user },
-} = await Astro.locals.supabase.auth.getUser();
-
-if (user) {
-  // Użytkownik zalogowany - przekieruj do strony głównej
-  // Logika przekierowania do odpowiedniego dashboardu jest obsługiwana przez callback
-  return Astro.redirect("/auth/callback");
-}
 ---
 
 <Layout title="Zaloguj się - CashFlow Scenarios" showHeader={false}>

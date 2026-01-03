@@ -8,8 +8,17 @@ export const SignInSchema = z.object({
 
 export type SignInInput = z.infer<typeof SignInSchema>;
 
-// Zod schema dla rejestracji
+// Zod schema dla rejestracji (server-side - bez confirmPassword)
 export const SignUpSchema = z.object({
+  email: z.string().email('Nieprawidłowy format email'),
+  password: z.string().min(8, 'Hasło musi mieć co najmniej 8 znaków'),
+  companyName: z.string().optional()
+});
+
+export type SignUpInput = z.infer<typeof SignUpSchema>;
+
+// Zod schema dla rejestracji (client-side - z confirmPassword)
+export const SignUpClientSchema = z.object({
   email: z.string().email('Nieprawidłowy format email'),
   password: z.string().min(8, 'Hasło musi mieć co najmniej 8 znaków'),
   confirmPassword: z.string(),
@@ -19,7 +28,7 @@ export const SignUpSchema = z.object({
   path: ['confirmPassword']
 });
 
-export type SignUpInput = z.infer<typeof SignUpSchema>;
+export type SignUpClientInput = z.infer<typeof SignUpClientSchema>;
 
 // Zod schema dla resetu hasła
 export const ResetPasswordSchema = z.object({
