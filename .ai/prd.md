@@ -59,13 +59,81 @@ Poniższe funkcjonalności są świadomie wyłączone z zakresu MVP:
 
 ### Uwierzytelnianie
 - ID: US-001
-- Tytuł: Logowanie do systemu
-- Opis: Jako użytkownik chcę bezpiecznie zalogować się do aplikacji, aby mieć dostęp do moich danych finansowych.
-- Kryteria akceptacji:
-  1. Użytkownik widzi formularz logowania.
-  2. Poprawne dane uwierzytelniające przekierowują do głównego dashboardu dla firmy, do której jest przyporządkowany.
-  3. Błędne dane wyświetlają komunikat o błędzie.
-  4. Sesja użytkownika jest zachowana po odświeżeniu strony.
+- Tytuł: Uwierzytelnianie użytkownika (Rejestracja i Logowanie)
+- Opis: Jako nowy użytkownik chcę móc zarejestrować się w systemie i bezpiecznie logować, aby mieć dostęp do moich danych finansowych.
+
+#### Kryteria akceptacji - Rejestracja nowego użytkownika:
+  1. **Dostęp do formularza rejestracji:**
+     - Użytkownik może przejść do formularza rejestracji z poziomu strony logowania poprzez wyraźny link/przycisk "Zarejestruj się" lub "Stwórz konto".
+     
+  2. **Wymagane dane rejestracyjne:**
+     - Email (pole tekstowe, walidacja formatu email)
+     - Hasło (pole tekstowe typu password, minimalna długość 8 znaków)
+     - Potwierdzenie hasła (pole tekstowe typu password, musi być identyczne z polem hasło)
+     - Nazwa firmy (pole tekstowe, opcjonalne przy rejestracji - może być uzupełnione później)
+     
+  3. **Walidacja danych wejściowych:**
+     - Email musi być w poprawnym formacie i unikalny w systemie
+     - Hasło musi spełniać minimalne wymagania bezpieczeństwa (min. 8 znaków, zalecane: wielkie i małe litery, cyfry, znaki specjalne)
+     - Potwierdzenie hasła musi być identyczne z hasłem
+     - System wyświetla komunikaty błędów walidacji w czasie rzeczywistym (przy opuszczeniu pola) i przed wysłaniem formularza
+     
+  4. **Proces rejestracji:**
+     - Po wypełnieniu formularza i kliknięciu "Zarejestruj" system tworzy konto użytkownika w Supabase Auth
+     - System automatycznie tworzy profil użytkownika w tabeli `user_profiles`
+     - System automatycznie tworzy domyślną firmę dla użytkownika w tabeli `companies` (jeśli nazwa firmy została podana)
+     - System automatycznie powiązuje użytkownika z firmą w tabeli `company_members` z rolą "owner"
+     
+  5. **Weryfikacja email (opcjonalnie w MVP):**
+     - System wysyła email weryfikacyjny na podany adres
+     - Użytkownik musi kliknąć link weryfikacyjny przed pełnym dostępem do systemu
+     - Alternatywnie: weryfikacja może być pominięta w MVP, ale architektura musi to umożliwiać
+     
+  6. **Obsługa błędów rejestracji:**
+     - System wyświetla czytelne komunikaty w przypadku:
+       - Email już istnieje w systemie (sugestia: "Użyj funkcji logowania lub odzyskiwania hasła")
+       - Błąd połączenia z serwerem
+       - Inne błędy techniczne
+       
+  7. **Przekierowanie po rejestracji:**
+     - Po pomyślnej rejestracji użytkownik jest automatycznie logowany
+     - Przekierowanie do strony głównej/dashboardu (jeśli firma została utworzona) lub do kreatora konfiguracji firmy
+     
+  8. **UI/UX formularza rejestracji:**
+     - Formularz jest responsywny i działa poprawnie na urządzeniach mobilnych
+     - Wyraźne wskazówki dotyczące wymagań dla każdego pola
+     - Wskaźnik siły hasła (opcjonalnie)
+     - Link powrotny do formularza logowania dla użytkowników, którzy już posiadają konto
+
+#### Kryteria akceptacji - Logowanie:
+  9. **Formularz logowania:**
+     - Użytkownik widzi formularz logowania z polami: email i hasło
+     
+  10. **Proces logowania:**
+      - Poprawne dane uwierzytelniające przekierowują do głównego dashboardu dla firmy, do której użytkownik jest przyporządkowany
+      - Błędne dane wyświetlają komunikat o błędzie: "Nieprawidłowy email lub hasło"
+      - System nie ujawnia, czy email istnieje w bazie (bezpieczeństwo)
+      
+  11. **Sesja użytkownika:**
+      - Sesja użytkownika jest zachowana po odświeżeniu strony
+      - Opcja "Zapamiętaj mnie" (opcjonalnie w MVP) przedłuża sesję
+      
+  12. **Odzyskiwanie hasła:**
+      - Link "Nie pamiętam hasła" widoczny na formularzu logowania
+      - Użytkownik podaje email, system wysyła link do resetowania hasła
+      - Link resetujący jest ważny przez określony czas (np. 24h)
+      - Po kliknięciu w link użytkownik może ustawić nowe hasło
+      
+  13. **Ograniczenia dostępu:**
+      - Użytkownik bez logowania MOŻE korzystać z widoku Scenariusza wyłącznie z danymi mock-up (demo)
+      - Użytkownik NIE MOŻE korzystać z żadnych innych funkcji (import, tworzenie scenariuszy, zapisywanie zmian) bez logowania się do systemu
+      - System przekierowuje do strony logowania przy próbie dostępu do chronionych zasobów
+
+#### Bezpieczeństwo i RLS:
+  14. **Row Level Security:**
+      - RLS jest aktywne dla wszystkich tabel zawierających dane użytkownika
+      - Użytkownik ma dostęp tylko do danych firm, do których jest przypisany w `company_members`
+      - Polityki RLS weryfikują `auth.uid()` przy każdym zapytaniu do bazy danych
 
 ### Import Danych
 - ID: US-002
