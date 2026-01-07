@@ -1,0 +1,63 @@
+---
+// Demo banner shown to non-authenticated users
+---
+
+<div class="bg-blue-50 dark:bg-blue-950 border-b border-blue-200 dark:border-blue-800">
+  <div class="container mx-auto px-4 py-3">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2 text-sm">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-blue-800 dark:text-blue-200">
+          Testujesz wersję demo.
+          <a href="/auth/login" class="underline font-medium hover:text-blue-900 dark:hover:text-blue-100">
+            Zaloguj się
+          </a>
+          lub
+          <a href="/auth/register" class="underline font-medium hover:text-blue-900 dark:hover:text-blue-100">
+            zarejestruj się
+          </a>
+          , aby pracować na własnych danych.
+        </p>
+      </div>
+      <button
+        id="demo-reset-btn"
+        class="px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-300 bg-white dark:bg-blue-900 border border-blue-300 dark:border-blue-700 rounded-md hover:bg-blue-50 dark:hover:bg-blue-800 transition-colors shrink-0"
+      >
+        Reset demo
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Handle demo reset button click
+  const resetBtn = document.getElementById("demo-reset-btn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      // Clear demo data from localStorage
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("demo_")) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => localStorage.removeItem(key));
+
+      // Reload the page to restore initial demo state
+      window.location.reload();
+    });
+  }
+</script>

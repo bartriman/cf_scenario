@@ -1,11 +1,18 @@
 ---
 import "../styles/global.css";
+import Header from "@/components/layout/Header.astro";
 
 interface Props {
   title?: string;
+  hideHeader?: boolean;
 }
 
-const { title = "10x Astro Starter" } = Astro.props;
+const { title = "10x Astro Starter", hideHeader = false } = Astro.props;
+
+// Get session from locals (will be populated by middleware in future implementation)
+const session = Astro.locals.session;
+const isAuthenticated = !!session;
+const userEmail = session?.user?.email;
 ---
 
 <!doctype html>
@@ -18,6 +25,7 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    {!hideHeader && <Header isAuthenticated={isAuthenticated} userEmail={userEmail} />}
     <slot />
   </body>
 </html>
