@@ -15,6 +15,9 @@ Zarządzanie płynnością finansową w firmach często opiera się na statyczny
 ### 3.1. Uwierzytelnianie i Bezpieczeństwo
 - Logowanie użytkownika za pomocą Supabase Auth.
 - Row Level Security (RLS) zapewniające dostęp tylko do własnych danych (mimo założenia single-user w MVP, architektura musi być gotowa na multi-tenancy).
+- Ekran główny aplikacji (landing page) to widok tygodniowy Top-5 z danymi mock-up dostępny dla wszystkich użytkowników.
+- Niezalogowany użytkownik ma pełny dostęp do interakcji Drag & Drop na danych demonstracyjnych, ale nie może zapisywać zmian do bazy.
+- Na ekranie głównym widoczne są przyciski umożliwiające zalogowanie się lub rejestrację nowego użytkownika.
 
 ### 3.2. Zarządzanie Danymi (Import)
 - Import transakcji z plików CSV (inflow/outflow).
@@ -29,11 +32,18 @@ Zarządzanie płynnością finansową w firmach często opiera się na statyczny
 - Statusy scenariuszy: Draft (edycja możliwa), Locked (tylko odczyt).
 
 ### 3.4. Widok i Edycja (Interfejs)
+- Ekran główny aplikacji (/) to widok tygodniowy Top-5 z danymi mock-up (demonstracyjnymi).
 - Widok tygodniowy z agregacją danych.
 - Wyświetlanie 5 największych transakcji (Top-5) oraz sumy pozostałych ("Other") dla wpływów i wypływów.
 - Interakcja Drag & Drop: przesuwanie kafelków transakcji między dniami/tygodniami.
 - Natychmiastowe przeliczanie agregatów po przesunięciu transakcji.
 - Natychmistowe przeliczenie i wyświetlenie wykresu z saldem narastająco.
+- Przyciski nawigacyjne w interfejsie:
+  - "Zaloguj się" - widoczny w prawym górnym rogu, przekierowuje do formularza logowania
+  - "Zarejestruj się" - widoczny w prawym górnym rogu, przekierowuje do formularza rejestracji
+- Banner informacyjny dla niezalogowanych użytkowników: "Testujesz wersję demo. Zaloguj się lub zarejestruj, aby pracować na własnych danych."
+- Zmiany wprowadzone w trybie demo są przechowywane w localStorage przeglądarki.
+- Opcjonalny przycisk "Reset demo" przywracający dane mock-up do stanu początkowego.
 
 ### 3.5. Obsługa Walut (Multi-currency)
 - Definiowanie waluty bazowej (np. EUR).
@@ -56,6 +66,54 @@ Poniższe funkcjonalności są świadomie wyłączone z zakresu MVP:
 - Edycja danych historycznych (skupienie na prognozie future cash flow).
 
 ## 5. Historyjki użytkowników
+
+### Demo i Onboarding
+- ID: US-000
+- Tytuł: Demo aplikacji dla niezalogowanych użytkowników
+- Opis: Jako niezalogowany użytkownik chcę móc przetestować kluczowe funkcje aplikacji (widok tygodniowy + Drag & Drop) na danych przykładowych, aby ocenić wartość produktu przed rejestracją.
+- Kryteria akceptacji:
+  1. **Ekran główny jako demo:**
+     - Ekranem głównym aplikacji (/) jest widok tygodniowy z danymi mock-up
+     - Dane demonstracyjne zawierają przykładową firmę z około 3-4 tygodniami transakcji
+     - Transakcje obejmują zróżnicowane kwoty, waluty i typy płatności
+     
+  2. **Pełna funkcjonalność Drag & Drop:**
+     - Użytkownik może swobodnie przesuwać transakcje między dniami/tygodniami
+     - System natychmiastowo przelicza agregaty tygodniowe po każdej zmianie
+     - Wykres salda narastającego aktualizuje się w czasie rzeczywistym
+     
+  3. **Przechowywanie zmian lokalnie:**
+     - Wszystkie zmiany są zapisywane w localStorage przeglądarki
+     - Po odświeżeniu strony wprowadzone zmiany są zachowane
+     - Dane nie są wysyłane do bazy danych (brak persystencji serwerowej)
+     
+  4. **Elementy nawigacyjne do rejestracji/logowania:**
+     - W prawym górnym rogu ekranu widoczne są przyciski:
+       - "Zaloguj się" - przekierowuje do /login
+       - "Zarejestruj się" - przekierowuje do /register
+     - Przyciski są wyraźnie widoczne i zawsze dostępne
+     
+  5. **Komunikacja z użytkownikiem:**
+     - Banner/komunikat informuje: "Testujesz wersję demo. Zaloguj się lub zarejestruj, aby pracować na własnych danych."
+     - Banner jest widoczny, ale nie zasłania kluczowych elementów interfejsu
+     - Opcjonalnie: możliwość zamknięcia bannera (zostanie ponownie wyświetlony po odświeżeniu)
+     
+  6. **Reset danych demo:**
+     - Przycisk "Reset demo" przywraca dane mock-up do stanu początkowego
+     - Przed resetem system pyta o potwierdzenie
+     - Po resecie wszystkie lokalne zmiany są usuwane
+     
+  7. **Ograniczenia funkcjonalne:**
+     - Użytkownik NIE MOŻE zapisać zmian permanentnie bez logowania
+     - Użytkownik NIE MOŻE importować własnych danych CSV
+     - Użytkownik NIE MOŻE tworzyć nowych scenariuszy
+     - Użytkownik NIE MOŻE eksportować danych do Excela
+     - Próba dostępu do tych funkcji wyświetla komunikat: "Ta funkcja wymaga logowania. Zarejestruj się lub zaloguj."
+     
+  8. **Doświadczenie użytkownika:**
+     - Interfejs demo jest identyczny z wersją dla zalogowanych użytkowników (minus niedostępne funkcje)
+     - Wszystkie interakcje działają płynnie bez opóźnień
+     - Użytkownik może spędzić dowolnie dużo czasu w trybie demo
 
 ### Uwierzytelnianie
 - ID: US-001
