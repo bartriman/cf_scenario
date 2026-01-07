@@ -1068,3 +1068,61 @@ export interface ProcessingState {
   message: string;
   scenarioId: number | null;
 }
+
+// =============================================================================
+// SCENARIO LIST VIEW MODELS
+// =============================================================================
+
+// ViewModel dla stanu dialogu tworzenia scenariusza
+export interface CreateScenarioDialogState {
+  open: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+}
+
+// ViewModel dla stanu dialogu duplikacji
+export interface DuplicateScenarioDialogState {
+  open: boolean;
+  sourceScenario: ScenarioListItemDTO | null;
+  isSubmitting: boolean;
+  error: string | null;
+}
+
+// Dane formularza tworzenia scenariusza (przed transformacją do DTO)
+export interface CreateScenarioFormData {
+  name: string;
+  dataset_code: string;
+  start_date: Date;
+  end_date: Date;
+  base_scenario_id?: number;
+}
+
+// Dane formularza duplikacji
+export interface DuplicateScenarioFormData {
+  name: string;
+}
+
+// Dane formularza tworzenia z importu
+export interface CreateFromImportFormData {
+  import_id: number;
+  name: string;
+  start_date: Date;
+  end_date: Date;
+}
+
+// ViewModel dla karty scenariusza (rozszerzenie DTO o dane UI)
+export interface ScenarioCardViewModel extends ScenarioListItemDTO {
+  canLock: boolean; // true jeśli status === "Draft"
+  canEdit: boolean; // true jeśli status === "Draft"
+  canDelete: boolean; // true - sprawdzane przez API
+  formattedCreatedAt: string; // np. "2 dni temu"
+  statusBadgeVariant: 'default' | 'secondary'; // dla Badge component
+}
+
+// Typ dla filtrów listy scenariuszy
+export type ScenarioFilterStatus = ScenarioStatusType | 'all';
+
+export interface ScenarioListFilters {
+  status: ScenarioFilterStatus;
+  searchQuery: string;
+}

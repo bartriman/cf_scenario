@@ -1,74 +1,70 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import { ScenarioListContainer } from "@/components/scenario/ScenarioListContainer";
 
 export const prerender = false;
 
-// Get user from locals
-const user = Astro.locals.user;
+// Check authentication
+const supabase = Astro.locals.supabase;
+const {
+  data: { user },
+  error: authError,
+} = await supabase.auth.getUser();
 
-if (!user) {
-  return Astro.redirect("/auth/login");
+// Redirect to login if not authenticated
+if (authError || !user) {
+  return Astro.redirect(`/auth/login?redirect=${encodeURIComponent("/scenarios")}`);
 }
 
-// Get Supabase client
-const supabase = Astro.locals.supabase;
-
-// Get user's company from profile
-const { data: profile } = await supabase
+// Get user's default company
+const { data: profile, error: profileError } = await supabase
   .from("user_profiles")
   .select("default_company_id")
   .eq("user_id", user.id)
   .single();
 
-const companyId = profile?.default_company_id;
+if (profileError || !profile?.default_company_id) {
+  return new Response("Company not found. Please set up your company profile.", { status: 404 });
+}
 
-// Get user's scenarios if company exists
-let scenarios = null;
-let scenariosError = null;
+const companyId = profile.default_company_id;
 
-if (companyId) {
-  const result = await supabase
+// Optional: Server-side fetch of scenarios for SSR
+let initialScenarios = [];
+try {
+  const { data: scenarios, error: scenariosError } = await supabase
     .from("scenarios")
-    .select("id, name, status, created_at")
+    .select(
+      `
+      id,
+      company_id,
+      import_id,
+      dataset_code,
+      name,
+      status,
+      base_scenario_id,
+      start_date,
+      end_date,
+      locked_at,
+      locked_by,
+      created_at
+    `
+    )
     .eq("company_id", companyId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
-  scenarios = result.data;
-  scenariosError = result.error;
-
-  if (scenariosError) {
-    console.error("Error fetching scenarios:", scenariosError);
+  if (!scenariosError && scenarios) {
+    initialScenarios = scenarios;
   }
-
-  // If user has scenarios, redirect to the first one
-  if (scenarios && scenarios.length > 0) {
-    return Astro.redirect(`/scenarios/${scenarios[0].id}`);
-  }
+} catch (error) {
+  console.error("Error fetching scenarios:", error);
+  // Continue with empty array - component will fetch client-side
 }
 ---
 
-{
-  !companyId ? (
-    <Layout title="Dashboard - CashFlow Scenarios">
-      <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-        <div class="text-center max-w-md">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">Witaj w CashFlow Scenarios!</h1>
-          <p class="text-gray-600 dark:text-gray-400 mb-6">Aby rozpocząć, zaimportuj swoje dane finansowe.</p>
-          <p class="text-sm text-gray-500 dark:text-gray-500">Funkcja importu będzie dostępna wkrótce.</p>
-        </div>
-      </div>
-    </Layout>
-  ) : (
-    <Layout title="Dashboard - CashFlow Scenarios">
-      <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-        <div class="text-center max-w-md">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">Brak scenariuszy</h1>
-          <p class="text-gray-600 dark:text-gray-400 mb-6">
-            Nie masz jeszcze żadnych scenariuszy. Zaimportuj dane, aby rozpocząć.
-          </p>
-          <p class="text-sm text-gray-500 dark:text-gray-500">Funkcja importu będzie dostępna wkrótce.</p>
-        </div>
-      </div>
-    </Layout>
-  )
-}
+<Layout title="Moje scenariusze - CashFlow Scenarios">
+  <main class="min-h-screen bg-background">
+    <ScenarioListContainer client:load companyId={companyId} initialScenarios={initialScenarios} />
+  </main>
+</Layout>

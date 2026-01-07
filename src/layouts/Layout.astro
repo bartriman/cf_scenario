@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Header from "@/components/layout/Header.astro";
+import { Toaster } from "@/components/ui/sonner";
 
 interface Props {
   title?: string;
@@ -44,6 +45,7 @@ if (requireAuth && !isAuthenticated) {
     <main>
       <slot />
     </main>
+    <Toaster client:load />
   </body>
 </html>
 
