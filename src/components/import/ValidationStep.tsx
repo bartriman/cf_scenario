@@ -11,6 +11,21 @@ interface ValidationStepProps {
 }
 
 export function ValidationStep({ validationResult, onContinueWithErrors, onBack }: ValidationStepProps) {
+  // Obsługa braku danych walidacji
+  if (!validationResult) {
+    return (
+      <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md" role="alert">
+        <p className="text-red-800 dark:text-red-200 font-medium">Błąd: Brak danych walidacji</p>
+        <p className="text-sm text-red-600 dark:text-red-300 mt-2">
+          Nie można wyświetlić wyników walidacji. Spróbuj ponownie lub skontaktuj się z administratorem.
+        </p>
+        <Button onClick={onBack} className="mt-4" variant="outline">
+          Wróć
+        </Button>
+      </div>
+    );
+  }
+
   const { total_rows, valid_rows, invalid_rows, errors } = validationResult;
   const hasErrors = invalid_rows > 0;
   const canProceed = valid_rows > 0;
@@ -38,7 +53,12 @@ export function ValidationStep({ validationResult, onContinueWithErrors, onBack 
 
       {/* Information about proceeding */}
       {hasErrors && canProceed && (
-        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
+        <div
+          className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           <p className="text-sm text-blue-800 dark:text-blue-200">
             <strong>Uwaga:</strong> Możesz kontynuować import pomijając błędne wiersze. Tylko poprawne wiersze (
             {valid_rows}) zostaną zaimportowane.
@@ -48,7 +68,12 @@ export function ValidationStep({ validationResult, onContinueWithErrors, onBack 
 
       {/* Cannot proceed warning */}
       {!canProceed && (
-        <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
+        <div
+          className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
           <p className="text-sm text-red-800 dark:text-red-200">
             <strong>Nie można kontynuować:</strong> Wszystkie wiersze zawierają błędy. Popraw plik CSV i spróbuj
             ponownie.

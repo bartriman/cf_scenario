@@ -8,42 +8,53 @@ interface DownloadErrorReportButtonProps {
 
 export function DownloadErrorReportButton({ errors, fileName = "import-errors.csv" }: DownloadErrorReportButtonProps) {
   const handleDownload = () => {
-    // Generowanie CSV z błędami
-    const headers = ["Nr wiersza", "Kolumna", "Wartość", "Komunikat błędu", "Kod błędu"];
-    const rows = errors.map((error) => [
-      error.row_number,
-      error.field_name,
-      `"${error.invalid_value.replace(/"/g, '""')}"`, // Escapowanie cudzysłowów
-      `"${error.error_message.replace(/"/g, '""')}"`,
-      error.error_code || "",
-    ]);
+    try {
+      // Generowanie CSV z błędami
+      const headers = ["Nr wiersza", "Kolumna", "Wartość", "Komunikat błędu", "Kod błędu"];
+      const rows = errors.map((error) => [
+        error.row_number || 'N/A',
+        error.field_name || 'Unknown',
+        `"${(error.invalid_value || '').replace(/"/g, '""')}"`, // Escapowanie cudzysłowów
+        `"${(error.error_message || 'Nieznany błąd').replace(/"/g, '""')}"`,
+        error.error_code || "",
+      ]);
 
-    const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+      const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
 
-    // Tworzenie blob i pobieranie pliku
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
+      // Tworzenie blob i pobieranie pliku
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
 
-    link.setAttribute("href", url);
-    link.setAttribute("download", fileName);
-    link.style.visibility = "hidden";
+      link.setAttribute("href", url);
+      link.setAttribute("download", fileName);
+      link.style.visibility = "hidden";
 
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-    URL.revokeObjectURL(url);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Błąd podczas generowania raportu CSV:', error);
+      alert('Nie udało się wygenerować raportu błędów. Spróbuj ponownie.');
+    }
   };
 
   return (
-    <Button variant="outline" onClick={handleDownload} disabled={errors.length === 0}>
+    <Button
+      variant="outline"
+      onClick={handleDownload}
+      disabled={errors.length === 0}
+      aria-label={`Pobierz raport błędów w formacie CSV (${errors.length} błędów)`}
+    >
       <svg
         className="w-4 h-4 mr-2"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
       >
         <path
           strokeLinecap="round"

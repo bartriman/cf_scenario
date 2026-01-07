@@ -28,13 +28,21 @@ export function ValidationErrorTable({ errors, itemsPerPage = 10 }: ValidationEr
     <div className="space-y-4">
       <div className="border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm" aria-label="Tabela błędów walidacji">
             <thead className="bg-muted">
-              <tr>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b">Nr wiersza</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b">Kolumna</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b">Wartość</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b">Komunikat błędu</th>
+              <tr role="row">
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b" scope="col">
+                  Nr wiersza
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b" scope="col">
+                  Kolumna
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b" scope="col">
+                  Wartość
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b" scope="col">
+                  Komunikat błędu
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -48,15 +56,28 @@ export function ValidationErrorTable({ errors, itemsPerPage = 10 }: ValidationEr
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Strona {currentPage} z {totalPages} ({errors.length} błędów)
+        <div className="flex items-center justify-between" role="navigation" aria-label="Paginacja błędów">
+          <p className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
+            Strona {currentPage} z {totalPages} (wyświetlanie {startIndex + 1}-{Math.min(endIndex, errors.length)} z{" "}
+            {errors.length} błędów)
           </p>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handlePreviousPage} disabled={currentPage === 1}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              aria-label="Poprzednia strona błędów"
+            >
               Poprzednia
             </Button>
-            <Button variant="outline" size="sm" onClick={handleNextPage} disabled={currentPage === totalPages}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              aria-label="Następna strona błędów"
+            >
               Następna
             </Button>
           </div>

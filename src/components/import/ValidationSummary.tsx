@@ -64,23 +64,23 @@ export function ValidationSummary({ totalRows, validRows, invalidRows }: Validat
   const config = statusConfig[status];
 
   return (
-    <div className={`border rounded-lg p-6 ${config.bgColor} ${config.borderColor}`}>
+    <div className={`border rounded-lg p-6 ${config.bgColor} ${config.borderColor}`} role="region" aria-label="Podsumowanie walidacji">
       <div className="flex flex-col items-center text-center">
-        {config.icon}
+        <div aria-hidden="true">{config.icon}</div>
         <h3 className={`text-lg font-semibold mt-4 ${config.color}`}>{config.title}</h3>
 
         {/* Statistics */}
-        <div className="grid grid-cols-3 gap-6 mt-6 w-full max-w-md">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-6 w-full max-w-md">
           <div>
-            <div className="text-2xl font-bold">{totalRows}</div>
+            <div className="text-2xl font-bold" aria-label={`Wszystkich wierszy: ${totalRows}`}>{totalRows}</div>
             <div className="text-sm text-muted-foreground">Wszystkich</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-green-600">{validRows}</div>
+            <div className="text-2xl font-bold text-green-600" aria-label={`Prawidłowych wierszy: ${validRows}`}>{validRows}</div>
             <div className="text-sm text-muted-foreground">Prawidłowych</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-red-600">{invalidRows}</div>
+            <div className="text-2xl font-bold text-red-600" aria-label={`Błędnych wierszy: ${invalidRows}`}>{invalidRows}</div>
             <div className="text-sm text-muted-foreground">Błędnych</div>
           </div>
         </div>
@@ -89,11 +89,11 @@ export function ValidationSummary({ totalRows, validRows, invalidRows }: Validat
         <div className="mt-6 w-full max-w-md">
           <div className="flex justify-between text-sm mb-2">
             <span>Poprawność danych</span>
-            <span className="font-medium">{validPercentage}%</span>
+            <span className="font-medium" aria-label={`Procent poprawności: ${validPercentage}%`}>{validPercentage}%</span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" role="progressbar" aria-valuenow={validPercentage} aria-valuemin={0} aria-valuemax={100} aria-label="Pasek poprawności danych">
             <div
-              className={`h-2 rounded-full transition-all ${
+              className={`h-2 rounded-full transition-all duration-500 ${
                 validPercentage === 100 ? "bg-green-600" : validPercentage > 50 ? "bg-amber-600" : "bg-red-600"
               }`}
               style={{ width: `${validPercentage}%` }}
