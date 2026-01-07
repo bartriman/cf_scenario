@@ -86,7 +86,7 @@ const { isAuthenticated = false, userEmail } = Astro.props;
                 </svg>
               </button>
 
-              <!-- Dropdown menu -->
+              {/* Dropdown menu */}
               <div
                 id="user-menu-dropdown"
                 class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 hidden z-50"
@@ -126,7 +126,7 @@ const { isAuthenticated = false, userEmail } = Astro.props;
                   </a>
                   <button
                     id="logout-button"
-                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     role="menuitem"
                   >
                     <div class="flex items-center gap-2">
@@ -144,7 +144,7 @@ const { isAuthenticated = false, userEmail } = Astro.props;
                           d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                         />
                       </svg>
-                      Wyloguj się
+                      <span id="logout-text">Wyloguj się</span>
                     </div>
                   </button>
                 </div>
@@ -157,52 +157,76 @@ const { isAuthenticated = false, userEmail } = Astro.props;
   </div>
 </header>
 
-{
-  isAuthenticated && (
-    <script>
-      // User menu toggle functionality
-      const menuButton = document.getElementById("user-menu-button");
-      const menuDropdown = document.getElementById("user-menu-dropdown");
-      const menuContainer = document.getElementById("user-menu-container");
+{isAuthenticated && (
+  <script>
+    // User menu toggle functionality
+    const menuButton = document.getElementById("user-menu-button");
+    const menuDropdown = document.getElementById("user-menu-dropdown");
+    const menuContainer = document.getElementById("user-menu-container");
 
-      if (menuButton && menuDropdown && menuContainer) {
-        // Toggle menu on button click
-        menuButton.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const isExpanded = menuButton.getAttribute("aria-expanded") === "true";
-          menuButton.setAttribute("aria-expanded", String(!isExpanded));
-          menuDropdown.classList.toggle("hidden");
-        });
+    if (menuButton && menuDropdown && menuContainer) {
+      // Toggle menu on button click
+      menuButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isExpanded = menuButton.getAttribute("aria-expanded") === "true";
+        menuButton.setAttribute("aria-expanded", String(!isExpanded));
+        menuDropdown.classList.toggle("hidden");
+      });
 
-        // Close menu when clicking outside
-        document.addEventListener("click", (e) => {
-          if (!menuContainer.contains(e.target as Node)) {
-            menuButton.setAttribute("aria-expanded", "false");
-            menuDropdown.classList.add("hidden");
+      // Close menu when clicking outside
+      document.addEventListener("click", (e) => {
+        const target = e.target;
+        if (target instanceof Node && !menuContainer.contains(target)) {
+          menuButton.setAttribute("aria-expanded", "false");
+          menuDropdown.classList.add("hidden");
+        }
+      });
+
+      // Close menu on Escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && menuButton.getAttribute("aria-expanded") === "true") {
+          menuButton.setAttribute("aria-expanded", "false");
+          menuDropdown.classList.add("hidden");
+          menuButton.focus();
+        }
+      });
+
+      // Handle logout
+      const logoutButton = document.getElementById("logout-button");
+      const logoutText = document.getElementById("logout-text");
+      
+      if (logoutButton && logoutText) {
+        logoutButton.addEventListener("click", async () => {
+          // Disable button and update text
+          logoutButton.setAttribute("disabled", "true");
+          const originalText = logoutText.textContent;
+          logoutText.textContent = "Wylogowywanie...";
+          
+          try {
+            const response = await fetch("/api/auth/logout", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (response.ok) {
+              // Redirect to home page after successful logout
+              window.location.href = "/";
+            } else {
+              // Re-enable button and restore text if logout failed
+              logoutButton.removeAttribute("disabled");
+              logoutText.textContent = originalText || "Wyloguj się";
+              console.error("Logout failed");
+            }
+          } catch (error) {
+            // Re-enable button and restore text on error
+            logoutButton.removeAttribute("disabled");
+            logoutText.textContent = originalText || "Wyloguj się";
+            console.error("Logout error:", error);
           }
         });
-
-        // Handle logout
-        const logoutButton = document.getElementById("logout-button");
-        if (logoutButton) {
-          logoutButton.addEventListener("click", async () => {
-            try {
-              const response = await fetch("/api/auth/logout", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              });
-
-              if (response.ok) {
-                window.location.href = "/";
-              }
-            } catch {
-              // Silently handle logout error
-            }
-          });
-        }
       }
-    </script>
-  )
-}
+    }
+  </script>
+)}

@@ -1,16 +1,16 @@
-import type { APIRoute } from 'astro';
-import { GetWeeklyAggregatesParamsSchema } from '../../../../../../lib/validation/weekly-aggregates.validation';
-import { 
-  getWeeklyAggregates, 
-  ScenarioNotFoundError, 
-  ForbiddenError, 
-  DatabaseError 
-} from '../../../../../../lib/services/scenario-analytics.service';
-import { z } from 'zod';
+import type { APIRoute } from "astro";
+import { GetWeeklyAggregatesParamsSchema } from "../../../../../../lib/validation/weekly-aggregates.validation";
+import {
+  getWeeklyAggregates,
+  ScenarioNotFoundError,
+  ForbiddenError,
+  DatabaseError,
+} from "../../../../../../lib/services/scenario-analytics.service";
+import { z } from "zod";
 
 /**
  * GET /api/companies/{companyId}/scenarios/{scenarioId}/weekly-aggregates
- * 
+ *
  * Returns weekly aggregates with Top-5 transactions for a scenario
  */
 export const GET: APIRoute = async ({ params, locals }) => {
@@ -21,13 +21,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required'
-          }
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
+          },
         }),
-        { 
-          status: 401, 
-          headers: { 'Content-Type': 'application/json' } 
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -37,24 +37,24 @@ export const GET: APIRoute = async ({ params, locals }) => {
     try {
       validatedParams = GetWeeklyAggregatesParamsSchema.parse({
         companyId: params.companyId,
-        scenarioId: params.scenarioId
+        scenarioId: params.scenarioId,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return new Response(
           JSON.stringify({
             error: {
-              code: 'VALIDATION_ERROR',
-              message: 'Invalid request parameters',
-              details: error.errors.map(e => ({
-                field: e.path.join('.'),
-                message: e.message
-              }))
-            }
+              code: "VALIDATION_ERROR",
+              message: "Invalid request parameters",
+              details: error.errors.map((e) => ({
+                field: e.path.join("."),
+                message: e.message,
+              })),
+            },
           }),
-          { 
-            status: 400, 
-            headers: { 'Content-Type': 'application/json' } 
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
           }
         );
       }
@@ -62,37 +62,29 @@ export const GET: APIRoute = async ({ params, locals }) => {
     }
 
     // Step 3: Call service layer
-    const result = await getWeeklyAggregates(
-      supabase,
-      validatedParams.companyId,
-      validatedParams.scenarioId
-    );
+    const result = await getWeeklyAggregates(supabase, validatedParams.companyId, validatedParams.scenarioId);
 
     // Step 4: Return success response
-    return new Response(
-      JSON.stringify(result),
-      { 
-        status: 200, 
-        headers: { 'Content-Type': 'application/json' } 
-      }
-    );
-
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     // Error handling
-    console.error('Error in weekly-aggregates endpoint:', error);
+    console.error("Error in weekly-aggregates endpoint:", error);
 
     // Handle custom error types
     if (error instanceof ScenarioNotFoundError) {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'NOT_FOUND',
-            message: error.message
-          }
+            code: "NOT_FOUND",
+            message: error.message,
+          },
         }),
-        { 
-          status: 404, 
-          headers: { 'Content-Type': 'application/json' } 
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -101,13 +93,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'FORBIDDEN',
-            message: error.message
-          }
+            code: "FORBIDDEN",
+            message: error.message,
+          },
         }),
-        { 
-          status: 403, 
-          headers: { 'Content-Type': 'application/json' } 
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -116,13 +108,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'INTERNAL_ERROR',
-            message: 'An internal error occurred'
-          }
+            code: "INTERNAL_ERROR",
+            message: "An internal error occurred",
+          },
         }),
-        { 
-          status: 500, 
-          headers: { 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -131,13 +123,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
     return new Response(
       JSON.stringify({
         error: {
-          code: 'INTERNAL_ERROR',
-          message: 'An internal error occurred'
-        }
+          code: "INTERNAL_ERROR",
+          message: "An internal error occurred",
+        },
       }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
       }
     );
   }

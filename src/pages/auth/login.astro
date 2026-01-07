@@ -1,21 +1,20 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import { AuthForm } from "@/components/auth/AuthForm";
+import { LoginForm } from "@/components/auth/LoginForm";
+
+// Get redirect URL from query params
+const redirectTo = Astro.url.searchParams.get("redirectTo") || "/scenarios";
 ---
 
 <Layout title="Zaloguj się - CashFlow Scenarios">
   <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
     <div class="w-full max-w-md">
       <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Witaj ponownie
-        </h1>
-        <p class="text-gray-600 dark:text-gray-400">
-          Zaloguj się, aby kontynuować
-        </p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Witaj ponownie</h1>
+        <p class="text-gray-600 dark:text-gray-400">Zaloguj się, aby kontynuować</p>
       </div>
-      
-      <AuthForm client:load mode="login" />
+
+      <LoginForm client:load mode="login" redirectTo={redirectTo} />
     </div>
   </div>
 </Layout>

@@ -6,12 +6,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 type AuthFormMode = "login" | "register" | "forgot-password" | "update-password";
 
-interface AuthFormProps {
+interface LoginFormProps {
   mode: AuthFormMode;
+  redirectTo?: string;
   onSuccess?: (redirectUrl?: string) => void;
 }
 
-export function AuthForm({ mode, onSuccess }: AuthFormProps) {
+export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -167,12 +168,12 @@ export function AuthForm({ mode, onSuccess }: AuthFormProps) {
           window.location.href = "/auth/login";
         }, 2000);
       } else {
-        // For login and register, redirect
-        const redirectUrl = data.redirectUrl || "/";
+        // For login and register, redirect to specified URL or default
+        const finalRedirectUrl = redirectTo || data.redirectUrl || "/scenarios";
         if (onSuccess) {
-          onSuccess(redirectUrl);
+          onSuccess(finalRedirectUrl);
         } else {
-          window.location.href = redirectUrl;
+          window.location.href = finalRedirectUrl;
         }
       }
     } catch (err) {

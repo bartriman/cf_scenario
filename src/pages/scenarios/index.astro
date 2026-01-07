@@ -1,0 +1,74 @@
+---
+import Layout from "@/layouts/Layout.astro";
+
+export const prerender = false;
+
+// Get user from locals
+const user = Astro.locals.user;
+
+if (!user) {
+  return Astro.redirect("/auth/login");
+}
+
+// Get Supabase client
+const supabase = Astro.locals.supabase;
+
+// Get user's company from profile
+const { data: profile } = await supabase
+  .from("user_profiles")
+  .select("default_company_id")
+  .eq("user_id", user.id)
+  .single();
+
+const companyId = profile?.default_company_id;
+
+// Get user's scenarios if company exists
+let scenarios = null;
+let scenariosError = null;
+
+if (companyId) {
+  const result = await supabase
+    .from("scenarios")
+    .select("id, name, status, created_at")
+    .eq("company_id", companyId)
+    .order("created_at", { ascending: false });
+
+  scenarios = result.data;
+  scenariosError = result.error;
+
+  if (scenariosError) {
+    console.error("Error fetching scenarios:", scenariosError);
+  }
+
+  // If user has scenarios, redirect to the first one
+  if (scenarios && scenarios.length > 0) {
+    return Astro.redirect(`/scenarios/${scenarios[0].id}`);
+  }
+}
+---
+
+{
+  !companyId ? (
+    <Layout title="Dashboard - CashFlow Scenarios">
+      <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+        <div class="text-center max-w-md">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">Witaj w CashFlow Scenarios!</h1>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">Aby rozpocząć, zaimportuj swoje dane finansowe.</p>
+          <p class="text-sm text-gray-500 dark:text-gray-500">Funkcja importu będzie dostępna wkrótce.</p>
+        </div>
+      </div>
+    </Layout>
+  ) : (
+    <Layout title="Dashboard - CashFlow Scenarios">
+      <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+        <div class="text-center max-w-md">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">Brak scenariuszy</h1>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">
+            Nie masz jeszcze żadnych scenariuszy. Zaimportuj dane, aby rozpocząć.
+          </p>
+          <p class="text-sm text-gray-500 dark:text-gray-500">Funkcja importu będzie dostępna wkrótce.</p>
+        </div>
+      </div>
+    </Layout>
+  )
+}

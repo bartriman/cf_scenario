@@ -1,15 +1,14 @@
 /// <reference types="astro/client" />
 
-import type { SupabaseClient } from './db/supabase.client.ts';
+import type { SupabaseClient } from "./db/supabase.client.ts";
 
 declare global {
   namespace App {
     interface Locals {
       supabase: SupabaseClient;
-      session?: {
-        user?: {
-          email?: string;
-        };
+      user?: {
+        id: string;
+        email?: string;
       };
     }
   }

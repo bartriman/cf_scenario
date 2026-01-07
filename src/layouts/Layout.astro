@@ -5,28 +5,45 @@ import Header from "@/components/layout/Header.astro";
 interface Props {
   title?: string;
   hideHeader?: boolean;
+  requireAuth?: boolean;
 }
 
-const { title = "10x Astro Starter", hideHeader = false } = Astro.props;
+const { title = "CashFlow Scenarios", hideHeader = false, requireAuth = false } = Astro.props;
 
-// Get session from locals (will be populated by middleware in future implementation)
-const session = Astro.locals.session;
-const isAuthenticated = !!session;
-const userEmail = session?.user?.email;
+// Get user from locals (populated by middleware)
+const user = Astro.locals.user;
+const isAuthenticated = !!user;
+const userEmail = user?.email;
+
+// If page requires authentication and user is not logged in, redirect handled by middleware
+// This is just a safety check for props-based auth requirement
+if (requireAuth && !isAuthenticated) {
+  return Astro.redirect("/auth/login");
+}
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Narzędzie do zarządzania i prognozowania przepływów pieniężnych" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
+
+    <!-- Security headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
     <title>{title}</title>
   </head>
   <body>
     {!hideHeader && <Header isAuthenticated={isAuthenticated} userEmail={userEmail} />}
-    <slot />
+    <main>
+      <slot />
+    </main>
   </body>
 </html>
 

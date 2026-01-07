@@ -7,6 +7,7 @@
 **Cel:** Zwrócenie tygodniowych agregacji dla konkretnego scenariusza z Top-5 transakcjami inflow/outflow dla każdego tygodnia. Endpoint ten służy do wizualizacji danych w interfejsie użytkownika, umożliwiając wyświetlenie podsumowania przepływów finansowych w podziale na tygodnie.
 
 **Funkcjonalność:**
+
 - Pobiera dane z widoku `weekly_aggregates_v` dla danego scenariusza
 - Zwraca agregacje tygodniowe w walucie bazowej firmy
 - Zawiera Top-5 największych transakcji (inflow i outflow) dla każdego tygodnia
@@ -16,28 +17,35 @@
 ## 2. Szczegóły żądania
 
 ### Metoda HTTP
+
 `GET`
 
 ### Struktura URL
+
 `/api/companies/{companyId}/scenarios/{scenarioId}/weekly-aggregates`
 
 ### Parametry
 
 #### Wymagane (Path Parameters):
+
 - **companyId** (string, UUID): Identyfikator firmy, do której należy scenariusz
 - **scenarioId** (number, integer, positive): Identyfikator scenariusza
 
 #### Opcjonalne:
+
 - Brak parametrów query dla tego endpointu w MVP
 
 ### Headers
+
 - **Authorization**: `Bearer {access_token}` (wymagany) - JWT token z Supabase Auth
 - **Content-Type**: nie dotyczy (GET request)
 
 ### Request Body
+
 Brak (GET request)
 
 ### Przykład żądania
+
 ```
 GET /api/companies/550e8400-e29b-41d4-a716-446655440000/scenarios/789/weekly-aggregates
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -48,6 +56,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ### DTOs (Data Transfer Objects)
 
 #### Response DTOs:
+
 1. **WeeklyAggregatesResponseDTO** - główna struktura odpowiedzi
    - Lokalizacja: `src/types.ts` (już zdefiniowany)
    - Pola:
@@ -86,11 +95,11 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 Do utworzenia w `src/lib/validation/weekly-aggregates.validation.ts`:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 export const GetWeeklyAggregatesParamsSchema = z.object({
-  companyId: z.string().uuid('Invalid company ID format'),
-  scenarioId: z.coerce.number().int().positive('Scenario ID must be a positive integer')
+  companyId: z.string().uuid("Invalid company ID format"),
+  scenarioId: z.coerce.number().int().positive("Scenario ID must be a positive integer"),
 });
 
 export type GetWeeklyAggregatesParams = z.infer<typeof GetWeeklyAggregatesParamsSchema>;
@@ -103,9 +112,11 @@ Dla tego endpointu (GET) **nie są wymagane Command Models**, ponieważ nie wyko
 ### Database View Type
 
 Wykorzystanie istniejącego typu z `src/types.ts`:
+
 - **WeeklyAggregateRow** - typ z widoku `weekly_aggregates_v` generowany automatycznie przez Supabase
 
 **Uwaga:** Należy upewnić się, że widok `weekly_aggregates_v` został dodany do `database.types.ts` poprzez regenerację typów Supabase:
+
 ```bash
 npm run db:types
 ```
@@ -115,9 +126,11 @@ npm run db:types
 ### Success Response (200 OK)
 
 **Headers:**
+
 - `Content-Type: application/json`
 
 **Body Structure:**
+
 ```json
 {
   "scenario_id": 790,
@@ -168,11 +181,14 @@ npm run db:types
 ### Error Responses
 
 #### 400 Bad Request
+
 **Sytuacje:**
+
 - Nieprawidłowy format UUID dla companyId
 - Nieprawidłowa wartość scenarioId (nie jest liczbą lub jest ujemna)
 
 **Body:**
+
 ```json
 {
   "error": {
@@ -189,11 +205,14 @@ npm run db:types
 ```
 
 #### 401 Unauthorized
+
 **Sytuacje:**
+
 - Brak tokenu JWT w nagłówku Authorization
 - Token JWT jest nieprawidłowy lub wygasł
 
 **Body:**
+
 ```json
 {
   "error": {
@@ -204,11 +223,14 @@ npm run db:types
 ```
 
 #### 403 Forbidden
+
 **Sytuacje:**
+
 - Użytkownik nie jest członkiem firmy o podanym companyId
 - Automatycznie obsługiwane przez RLS Supabase
 
 **Body:**
+
 ```json
 {
   "error": {
@@ -219,12 +241,15 @@ npm run db:types
 ```
 
 #### 404 Not Found
+
 **Sytuacje:**
+
 - Scenariusz o podanym ID nie istnieje
 - Scenariusz nie należy do podanej firmy
 - Scenariusz jest soft-deleted (deleted_at IS NOT NULL)
 
 **Body:**
+
 ```json
 {
   "error": {
@@ -235,12 +260,15 @@ npm run db:types
 ```
 
 #### 500 Internal Server Error
+
 **Sytuacje:**
+
 - Błąd połączenia z bazą danych
 - Nieobsłużony wyjątek w kodzie aplikacji
 - Błąd widoku bazy danych
 
 **Body:**
+
 ```json
 {
   "error": {
@@ -253,6 +281,7 @@ npm run db:types
 ## 5. Przepływ danych
 
 ### Architektura warstw
+
 ```
 Client Request
     ↓
@@ -276,11 +305,13 @@ Client Response (JSON)
 ### Szczegółowy przepływ
 
 #### 1. Request Handling (Astro API Route)
+
 - Wyodrębnienie parametrów ścieżki: `companyId`, `scenarioId`
 - Pobranie klienta Supabase z `context.locals.supabase`
 - Wywołanie walidacji parametrów
 
 #### 2. Authentication & Authorization (Middleware)
+
 - Middleware Astro (`src/middleware/index.ts`) automatycznie:
   - Weryfikuje JWT token z nagłówka Authorization
   - Tworzy sesję użytkownika w Supabase
@@ -288,10 +319,12 @@ Client Response (JSON)
 - RLS w PostgreSQL automatycznie filtruje dane według `company_members`
 
 #### 3. Validation
+
 - Walidacja parametrów ścieżki za pomocą Zod schema
 - Zwrócenie 400 Bad Request przy błędach walidacji
 
 #### 4. Service Layer Operations
+
 - Wywołanie `getWeeklyAggregates(supabase, companyId, scenarioId)`
 - Weryfikacja istnienia scenariusza i przynależności do firmy
 - Zapytanie do widoku `weekly_aggregates_v` z filtrowaniem:
@@ -300,7 +333,9 @@ Client Response (JSON)
 - Sortowanie wyników po `week_index ASC`
 
 #### 5. Database View Query
+
 Widok `weekly_aggregates_v` wykonuje:
+
 - Join `scenario_transactions_v` z `scenarios`
 - Grupowanie transakcji po tygodniach (obliczenie week_index)
 - Ranking transakcji w każdym tygodniu (RANK() OVER ... ORDER BY amount DESC)
@@ -309,12 +344,14 @@ Widok `weekly_aggregates_v` wykonuje:
 - Wszystko w walucie bazowej firmy (`base_currency`)
 
 #### 6. Response Transformation
+
 - Mapowanie wyników z widoku na DTO
 - Parsowanie JSONB (top5 arrays) na właściwe typy TypeScript
 - Pobranie `base_currency` z tabeli `companies`
 - Konstrukcja `WeeklyAggregatesResponseDTO`
 
 #### 7. Error Handling
+
 - Obsługa błędów na każdym etapie
 - Transformacja błędów do standardowego formatu `ErrorResponseDTO`
 - Zwrócenie odpowiedniego kodu statusu HTTP
@@ -322,12 +359,14 @@ Widok `weekly_aggregates_v` wykonuje:
 ### Interakcje z zewnętrznymi systemami
 
 #### Supabase PostgreSQL
+
 - **Połączenie:** Przez Supabase Client z user context
 - **Zabezpieczenie:** Row Level Security (RLS) aktywny
 - **Timeout:** Domyślny timeout połączenia (konfigurowalne)
 - **Connection Pooling:** Zarządzane automatycznie przez Supabase
 
 #### Widok `weekly_aggregates_v`
+
 - Zoptymalizowany widok z indeksami na:
   - `(company_id, scenario_id)`
   - `(company_id, scenario_id, week_index)`
@@ -337,6 +376,7 @@ Widok `weekly_aggregates_v` wykonuje:
 ## 6. Względy bezpieczeństwa
 
 ### Authentication (Uwierzytelnianie)
+
 - **Mechanizm:** JWT tokens z Supabase Auth
 - **Weryfikacja:** Automatyczna przez middleware Astro
 - **Token Lifetime:** 1 godzina (domyślnie, konfigurowalne w Supabase)
@@ -344,12 +384,13 @@ Widok `weekly_aggregates_v` wykonuje:
 - **Headers:** `Authorization: Bearer {access_token}`
 
 ### Authorization (Autoryzacja)
+
 - **Row Level Security (RLS):** Włączone na wszystkich tabelach
 - **Membership Check:** Automatyczny filtr przez `company_members` table
   ```sql
   EXISTS (
-    SELECT 1 FROM company_members cm 
-    WHERE cm.company_id = <row>.company_id 
+    SELECT 1 FROM company_members cm
+    WHERE cm.company_id = <row>.company_id
     AND cm.user_id = auth.uid()
   )
   ```
@@ -357,6 +398,7 @@ Widok `weekly_aggregates_v` wykonuje:
 - **Soft Delete Filter:** Automatyczne wykluczenie scenariuszy z `deleted_at IS NOT NULL`
 
 ### Input Validation
+
 - **Schema Validation:** Zod schemas dla wszystkich parametrów
 - **UUID Validation:** Sprawdzenie formatu UUID dla companyId
 - **Type Safety:** TypeScript strict mode
@@ -364,6 +406,7 @@ Widok `weekly_aggregates_v` wykonuje:
 - **XSS Prevention:** Automatyczne escapowanie przez Astro/React
 
 ### Data Protection
+
 - **Principle of Least Privilege:** Użytkownik widzi tylko dane swoich firm
 - **No Direct Table Access:** Dostęp tylko przez widoki z RLS
 - **Company Isolation:** Pełna izolacja danych między firmami (multi-tenancy)
@@ -371,17 +414,20 @@ Widok `weekly_aggregates_v` wykonuje:
 - **No PII Exposure:** Zwracane tylko niezbędne dane biznesowe
 
 ### Rate Limiting (zgodnie z API Plan)
+
 - **Limit:** 100 requests per minute per user (ogólny API limit)
 - **Response:** 429 Too Many Requests
 - **Headers:** `Retry-After: {seconds}`
 - **Implementation:** Middleware-based (do zaimplementowania w przyszłości)
 
 ### CORS
+
 - **Allowed Origins:** Tylko produkcyjna domena i localhost:4321
 - **Credentials:** Allowed (dla JWT cookies jeśli używane)
 - **Methods:** GET (dla tego endpointu)
 
 ### Audit & Logging
+
 - **Request Logging:** IP, user_id, timestamp, endpoint
 - **Error Logging:** Stack traces tylko dla dev environment
 - **No Sensitive Data:** Nie logować tokenów ani danych osobowych
@@ -394,32 +440,34 @@ Widok `weekly_aggregates_v` wykonuje:
 #### 1. Validation Errors (400 Bad Request)
 
 **Przyczyny:**
+
 - Nieprawidłowy format UUID dla `companyId`
 - `scenarioId` nie jest dodatnią liczbą całkowitą
 - Brakujące parametry ścieżki
 
 **Obsługa:**
+
 ```typescript
 // W route handler
 try {
   const params = GetWeeklyAggregatesParamsSchema.parse({
     companyId,
-    scenarioId
+    scenarioId,
   });
 } catch (error) {
   if (error instanceof z.ZodError) {
     return new Response(
       JSON.stringify({
         error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Invalid request parameters',
-          details: error.errors.map(e => ({
-            field: e.path.join('.'),
-            message: e.message
-          }))
-        }
+          code: "VALIDATION_ERROR",
+          message: "Invalid request parameters",
+          details: error.errors.map((e) => ({
+            field: e.path.join("."),
+            message: e.message,
+          })),
+        },
       }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
+      { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
 }
@@ -430,24 +478,29 @@ try {
 #### 2. Authentication Errors (401 Unauthorized)
 
 **Przyczyny:**
+
 - Brak nagłówka Authorization
 - Nieprawidłowy format tokenu
 - Token wygasł
 - Token został unieważniony
 
 **Obsługa:**
+
 ```typescript
 // W middleware
-const { data: { user }, error } = await supabase.auth.getUser();
+const {
+  data: { user },
+  error,
+} = await supabase.auth.getUser();
 if (error || !user) {
   return new Response(
     JSON.stringify({
       error: {
-        code: 'UNAUTHORIZED',
-        message: 'Authentication required'
-      }
+        code: "UNAUTHORIZED",
+        message: "Authentication required",
+      },
     }),
-    { status: 401, headers: { 'Content-Type': 'application/json' } }
+    { status: 401, headers: { "Content-Type": "application/json" } }
   );
 }
 ```
@@ -457,6 +510,7 @@ if (error || !user) {
 #### 3. Authorization Errors (403 Forbidden)
 
 **Przyczyny:**
+
 - Użytkownik nie jest członkiem firmy
 - RLS zablokował dostęp do danych
 
@@ -465,17 +519,18 @@ Automatyczna przez RLS - zapytanie zwróci puste wyniki.
 Endpoint interpretuje brak danych jako 404 (scenariusz nie znaleziony).
 
 **Alternatywnie** - explicit check:
+
 ```typescript
 // W service
 const { data: membership } = await supabase
-  .from('company_members')
-  .select('company_id')
-  .eq('company_id', companyId)
-  .eq('user_id', user.id)
+  .from("company_members")
+  .select("company_id")
+  .eq("company_id", companyId)
+  .eq("user_id", user.id)
   .single();
 
 if (!membership) {
-  throw new Error('FORBIDDEN');
+  throw new Error("FORBIDDEN");
 }
 ```
 
@@ -484,36 +539,39 @@ if (!membership) {
 #### 4. Not Found Errors (404 Not Found)
 
 **Przyczyny:**
+
 - Scenariusz nie istnieje
 - Scenariusz należy do innej firmy
 - Scenariusz jest soft-deleted
 
 **Obsługa:**
+
 ```typescript
 // W service
 const { data, error } = await supabase
-  .from('scenarios')
-  .select('id, company_id')
-  .eq('id', scenarioId)
-  .eq('company_id', companyId)
-  .is('deleted_at', null)
+  .from("scenarios")
+  .select("id, company_id")
+  .eq("id", scenarioId)
+  .eq("company_id", companyId)
+  .is("deleted_at", null)
   .single();
 
 if (error || !data) {
-  throw new Error('NOT_FOUND');
+  throw new Error("NOT_FOUND");
 }
 ```
 
 **Odpowiedź:**
+
 ```typescript
 return new Response(
   JSON.stringify({
     error: {
-      code: 'NOT_FOUND',
-      message: 'Scenario not found'
-    }
+      code: "NOT_FOUND",
+      message: "Scenario not found",
+    },
   }),
-  { status: 404, headers: { 'Content-Type': 'application/json' } }
+  { status: 404, headers: { "Content-Type": "application/json" } }
 );
 ```
 
@@ -522,27 +580,29 @@ return new Response(
 #### 5. Database Errors (500 Internal Server Error)
 
 **Przyczyny:**
+
 - Błąd połączenia z bazą danych
 - Timeout zapytania
 - Błąd w widoku `weekly_aggregates_v`
 - Constraint violations (nie powinny wystąpić dla GET)
 
 **Obsługa:**
+
 ```typescript
 try {
   const aggregates = await getWeeklyAggregates(supabase, companyId, scenarioId);
   // ...
 } catch (error) {
-  console.error('Database error:', error);
-  
+  console.error("Database error:", error);
+
   return new Response(
     JSON.stringify({
       error: {
-        code: 'INTERNAL_ERROR',
-        message: 'An internal error occurred'
-      }
+        code: "INTERNAL_ERROR",
+        message: "An internal error occurred",
+      },
     }),
-    { status: 500, headers: { 'Content-Type': 'application/json' } }
+    { status: 500, headers: { "Content-Type": "application/json" } }
   );
 }
 ```
@@ -552,27 +612,29 @@ try {
 #### 6. Unexpected Errors (500 Internal Server Error)
 
 **Przyczyny:**
+
 - Nieobsłużone wyjątki w kodzie
 - Błędy transformacji danych
 - Out of memory
 
 **Obsługa:**
 Global error handler w Astro route:
+
 ```typescript
 export const GET: APIRoute = async (context) => {
   try {
     // ... main logic
   } catch (error) {
-    console.error('Unexpected error:', error);
-    
+    console.error("Unexpected error:", error);
+
     return new Response(
       JSON.stringify({
         error: {
-          code: 'INTERNAL_ERROR',
-          message: 'An internal error occurred'
-        }
+          code: "INTERNAL_ERROR",
+          message: "An internal error occurred",
+        },
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 };
@@ -600,6 +662,7 @@ Wszystkie błędy zwracane w standardowym formacie `ErrorResponseDTO`:
 ### Retry Strategy (Client Side)
 
 Zalecana strategia retry dla clienta:
+
 - **401 Unauthorized:** Nie retry, wymaga ponownego logowania
 - **403 Forbidden:** Nie retry, problem z uprawnieniami
 - **404 Not Found:** Nie retry, zasób nie istnieje
@@ -612,35 +675,43 @@ Zalecana strategia retry dla clienta:
 ### Potencjalne wąskie gardła
 
 #### 1. Database Query Performance
+
 **Problem:** Widok `weekly_aggregates_v` może być kosztowny dla scenariuszy z dużą liczbą transakcji (>50k)
 
 **Mitigacje:**
+
 - Indeksy composite na `(company_id, scenario_id, week_index)`
 - Wykorzystanie CTE (Common Table Expressions) w widoku dla optymalizacji
 - EXPLAIN ANALYZE na produkcji dla monitorowania
 - Potencjalnie: materialized view z refresh strategy
 
 #### 2. Large Response Size
+
 **Problem:** Scenariusze obejmujące wiele tygodni (>52) mogą generować duże odpowiedzi JSON
 
 **Mitigacje:**
+
 - Response compression (gzip) na poziomie serwera
 - Opcjonalna pagination (w przyszłych wersjach)
 - Limit maksymalnej liczby tygodni w widoku
 - Client-side streaming dla bardzo dużych odpowiedzi
 
 #### 3. N+1 Query Problem
+
 **Problem:** Jeśli widok nie jest zoptymalizowany, mogą wystąpić wielokrotne podzapytania
 
 **Mitigacje:**
+
 - Widok używa window functions zamiast korelowanych podzapytań
 - Single query do widoku zwraca wszystkie dane
 - Brak dodatkowych zapytań dla company czy scenario metadata
 
 #### 4. Memory Usage
+
 **Problem:** Parsowanie i transformacja dużych JSONB arrays (top5) w pamięci
 
 **Mitigacje:**
+
 - Streaming JSON parsing (jeśli konieczne)
 - Limit Top-5 (już zaimplementowany w widoku)
 - Generator functions dla dużych data sets
@@ -650,21 +721,22 @@ Zalecana strategia retry dla clienta:
 #### Database Level
 
 1. **Indexing Strategy:**
+
 ```sql
 -- UWAGA: Nie można tworzyć indeksów bezpośrednio na widokach (views).
 -- Indeksy muszą być utworzone na tabelach bazowych, z których widok korzysta.
 -- Poniższe indeksy powinny być na tabelach: scenarios, transactions, scenario_overrides
 
 -- Indeks na tabeli scenarios dla szybkiego wyszukiwania scenariuszy
-CREATE INDEX IF NOT EXISTS idx_scenarios_company_id 
+CREATE INDEX IF NOT EXISTS idx_scenarios_company_id
 ON scenarios (company_id, id) WHERE deleted_at IS NULL;
 
 -- Indeksy na tabeli transactions dla agregacji
-CREATE INDEX IF NOT EXISTS idx_transactions_company_dataset 
+CREATE INDEX IF NOT EXISTS idx_transactions_company_dataset
 ON transactions (company_id, dataset_code, date_due) WHERE is_active = true;
 
 -- Indeks na scenario_overrides dla joinów w widoku
-CREATE INDEX IF NOT EXISTS idx_overrides_scenario_flow 
+CREATE INDEX IF NOT EXISTS idx_overrides_scenario_flow
 ON scenario_overrides (scenario_id, flow_id);
 
 -- Dla materialized view (opcjonalnie):
@@ -673,11 +745,13 @@ ON scenario_overrides (scenario_id, flow_id);
 ```
 
 2. **Query Optimization:**
+
 - Użycie EXPLAIN ANALYZE dla identyfikacji bottlenecks
 - Limit na liczbie zwracanych tygodni (np. max 104 = 2 lata)
 - Partial indexes na najczęściej używanych scenariuszach
 
 3. **View Materialization (optional):**
+
 ```sql
 -- Dla bardzo dużych scenariuszy
 CREATE MATERIALIZED VIEW weekly_aggregates_mv AS
@@ -696,13 +770,14 @@ $$ LANGUAGE plpgsql;
 #### Application Level
 
 1. **Response Caching:**
+
 ```typescript
 // Cache dla locked scenarios (immutable)
 if (scenario.status === 'Locked') {
   const cacheKey = `weekly-agg:${scenarioId}`;
   const cached = await cache.get(cacheKey);
   if (cached) return cached;
-  
+
   const result = await getWeeklyAggregates(...);
   await cache.set(cacheKey, result, { ttl: 3600 }); // 1 hour
   return result;
@@ -710,11 +785,13 @@ if (scenario.status === 'Locked') {
 ```
 
 2. **Connection Pooling:**
+
 - Supabase automatycznie zarządza poolingiem
 - Konfiguracja max connections w Supabase dashboard
 - Monitoring connection usage
 
 3. **Lazy Loading (Future Enhancement):**
+
 ```typescript
 // Opcja query param dla lazy loading tygodni
 ?weeks_from=0&weeks_to=12  // Tylko pierwsze 12 tygodni
@@ -723,12 +800,14 @@ if (scenario.status === 'Locked') {
 #### Network Level
 
 1. **Compression:**
+
 ```typescript
 // W Astro config lub middleware
-response.headers.set('Content-Encoding', 'gzip');
+response.headers.set("Content-Encoding", "gzip");
 ```
 
 2. **CDN Caching:**
+
 - Cache-Control headers dla locked scenarios
 - Vary header na Authorization
 - Edge caching dla często używanych scenariuszy
@@ -736,12 +815,14 @@ response.headers.set('Content-Encoding', 'gzip');
 ### Performance Metrics
 
 **Target SLAs:**
+
 - **Response Time (P95):** < 500ms dla scenariuszy z <10k transakcji
 - **Response Time (P99):** < 1000ms
 - **Database Query Time:** < 200ms
 - **Throughput:** > 100 requests/second (przy cache)
 
 **Monitoring:**
+
 ```typescript
 const startTime = Date.now();
 const result = await getWeeklyAggregates(...);
@@ -760,12 +841,14 @@ metrics.increment('api.weekly_aggregates.requests');
 ### Load Testing
 
 **Scenarios to test:**
+
 1. Single user, single scenario (baseline)
 2. 100 concurrent users, different scenarios
 3. Single scenario, 1000 weeks (edge case)
 4. Cold cache vs warm cache performance
 
 **Tools:**
+
 - k6 or Apache JMeter for load testing
 - pg_stat_statements for database query analysis
 - Supabase dashboard metrics
@@ -773,10 +856,13 @@ metrics.increment('api.weekly_aggregates.requests');
 ## 9. Etapy wdrożenia
 
 ### Krok 1: Przygotowanie struktury projektu
+
 **Cel:** Utworzenie niezbędnych katalogów i plików oraz weryfikacja typów bazy danych
 
 **Akcje:**
+
 1. Weryfikacja typów bazy danych - upewnij się, że widok `weekly_aggregates_v` jest w `database.types.ts`:
+
    ```bash
    # Jeśli widok nie jest w typach, zregeneruj je:
    npx supabase gen types typescript --project-id "$PROJECT_ID" > src/db/database.types.ts
@@ -785,11 +871,13 @@ metrics.increment('api.weekly_aggregates.requests');
    ```
 
 2. Utworzenie katalogu dla validation schemas:
+
    ```bash
    mkdir -p src/lib/validation
    ```
 
 3. Utworzenie katalogu dla services:
+
    ```bash
    mkdir -p src/lib/services
    ```
@@ -799,26 +887,29 @@ metrics.increment('api.weekly_aggregates.requests');
    mkdir -p src/pages/api/companies/[companyId]/scenarios/[scenarioId]
    ```
 
-**Weryfikacja:** 
+**Weryfikacja:**
+
 - Wszystkie katalogi istnieją w strukturze projektu
 - Typ `Tables<'weekly_aggregates_v'>` jest dostępny w `src/types.ts`
 - Import `WeeklyAggregateRow` działa poprawnie
 
 ### Krok 2: Implementacja Validation Schema
+
 **Cel:** Definicja Zod schema dla walidacji parametrów
 
 **Plik:** `src/lib/validation/weekly-aggregates.validation.ts`
 
 **Kod:**
+
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Validation schema for GET weekly aggregates endpoint path parameters
  */
 export const GetWeeklyAggregatesParamsSchema = z.object({
-  companyId: z.string().uuid('Invalid company ID format'),
-  scenarioId: z.coerce.number().int().positive('Scenario ID must be a positive integer')
+  companyId: z.string().uuid("Invalid company ID format"),
+  scenarioId: z.coerce.number().int().positive("Scenario ID must be a positive integer"),
 });
 
 /**
@@ -828,42 +919,45 @@ export type GetWeeklyAggregatesParams = z.infer<typeof GetWeeklyAggregatesParams
 ```
 
 **Weryfikacja:**
+
 - Plik kompiluje się bez błędów
 - Schema exportuje poprawne typy
 - Import z `zod` działa
 
 ### Krok 3: Implementacja Service Layer
+
 **Cel:** Utworzenie logiki biznesowej do pobierania agregacji
 
 **Plik:** `src/lib/services/scenario-analytics.service.ts`
 
 **Kod:**
+
 ```typescript
-import type { SupabaseClient } from '../../db/supabase.client';
-import type { WeeklyAggregatesResponseDTO, WeekAggregateDTO, TopTransactionItemDTO } from '../../types';
-import { z } from 'zod';
+import type { SupabaseClient } from "../../db/supabase.client";
+import type { WeeklyAggregatesResponseDTO, WeekAggregateDTO, TopTransactionItemDTO } from "../../types";
+import { z } from "zod";
 
 /**
  * Custom error classes for better error handling
  */
 export class ScenarioNotFoundError extends Error {
-  constructor(message = 'Scenario not found') {
+  constructor(message = "Scenario not found") {
     super(message);
-    this.name = 'ScenarioNotFoundError';
+    this.name = "ScenarioNotFoundError";
   }
 }
 
 export class ForbiddenError extends Error {
-  constructor(message = 'User not a member of company') {
+  constructor(message = "User not a member of company") {
     super(message);
-    this.name = 'ForbiddenError';
+    this.name = "ForbiddenError";
   }
 }
 
 export class DatabaseError extends Error {
-  constructor(message = 'Database error occurred') {
+  constructor(message = "Database error occurred") {
     super(message);
-    this.name = 'DatabaseError';
+    this.name = "DatabaseError";
   }
 }
 
@@ -875,12 +969,12 @@ const Top5ItemSchema = z.object({
   amount_book_cents: z.number(),
   counterparty: z.string(),
   description: z.string(),
-  date_due: z.string()
+  date_due: z.string(),
 });
 
 /**
  * Get weekly aggregates for a scenario
- * 
+ *
  * @param supabase - Supabase client with user context
  * @param companyId - Company UUID
  * @param scenarioId - Scenario ID
@@ -895,29 +989,31 @@ export async function getWeeklyAggregates(
   scenarioId: number
 ): Promise<WeeklyAggregatesResponseDTO> {
   // Step 1: Verify user is a member of the company (explicit check)
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
-    throw new ForbiddenError('User not authenticated');
+    throw new ForbiddenError("User not authenticated");
   }
 
   const { data: membership, error: membershipError } = await supabase
-    .from('company_members')
-    .select('company_id')
-    .eq('company_id', companyId)
-    .eq('user_id', user.id)
+    .from("company_members")
+    .select("company_id")
+    .eq("company_id", companyId)
+    .eq("user_id", user.id)
     .single();
 
   if (membershipError || !membership) {
-    throw new ForbiddenError('User not a member of company');
+    throw new ForbiddenError("User not a member of company");
   }
 
   // Step 2: Verify scenario exists and belongs to company
   const { data: scenario, error: scenarioError } = await supabase
-    .from('scenarios')
-    .select('id, company_id, dataset_code')
-    .eq('id', scenarioId)
-    .eq('company_id', companyId)
-    .is('deleted_at', null)
+    .from("scenarios")
+    .select("id, company_id, dataset_code")
+    .eq("id", scenarioId)
+    .eq("company_id", companyId)
+    .is("deleted_at", null)
     .single();
 
   if (scenarioError || !scenario) {
@@ -926,30 +1022,30 @@ export async function getWeeklyAggregates(
 
   // Step 3: Get company base currency
   const { data: company, error: companyError } = await supabase
-    .from('companies')
-    .select('base_currency')
-    .eq('id', companyId)
+    .from("companies")
+    .select("base_currency")
+    .eq("id", companyId)
     .single();
 
   if (companyError || !company) {
-    throw new ScenarioNotFoundError('Company not found');
+    throw new ScenarioNotFoundError("Company not found");
   }
 
   // Step 4: Query weekly aggregates view
   const { data: weeklyData, error: aggregatesError } = await supabase
-    .from('weekly_aggregates_v')
-    .select('*')
-    .eq('company_id', companyId)
-    .eq('scenario_id', scenarioId)
-    .order('week_index', { ascending: true });
+    .from("weekly_aggregates_v")
+    .select("*")
+    .eq("company_id", companyId)
+    .eq("scenario_id", scenarioId)
+    .order("week_index", { ascending: true });
 
   if (aggregatesError) {
-    console.error('Error fetching weekly aggregates:', aggregatesError);
-    throw new DatabaseError('Failed to fetch weekly aggregates');
+    console.error("Error fetching weekly aggregates:", aggregatesError);
+    throw new DatabaseError("Failed to fetch weekly aggregates");
   }
 
   // Step 5: Transform data to DTO format
-  const weeks: WeekAggregateDTO[] = (weeklyData || []).map(week => ({
+  const weeks: WeekAggregateDTO[] = (weeklyData || []).map((week) => ({
     week_index: week.week_index,
     week_label: week.week_label,
     week_start_date: week.week_start_date,
@@ -958,19 +1054,19 @@ export async function getWeeklyAggregates(
     inflow_top5: parseTop5Transactions(week.inflow_top5),
     outflow_top5: parseTop5Transactions(week.outflow_top5),
     inflow_other_book_cents: week.inflow_other_book_cents,
-    outflow_other_book_cents: week.outflow_other_book_cents
+    outflow_other_book_cents: week.outflow_other_book_cents,
   }));
 
   return {
     scenario_id: scenarioId,
     base_currency: company.base_currency,
-    weeks
+    weeks,
   };
 }
 
 /**
  * Parse JSONB top5 array to TopTransactionItemDTO[]
- * 
+ *
  * @param jsonbData - JSONB data from database view
  * @returns Parsed array of top transactions
  */
@@ -982,44 +1078,47 @@ function parseTop5Transactions(jsonbData: unknown): TopTransactionItemDTO[] {
   try {
     // Validate and parse each item using Zod schema
     return jsonbData
-      .map(item => {
+      .map((item) => {
         const parsed = Top5ItemSchema.safeParse(item);
         return parsed.success ? parsed.data : null;
       })
       .filter((item): item is TopTransactionItemDTO => item !== null);
   } catch (error) {
-    console.error('Error parsing top5 transactions:', error);
+    console.error("Error parsing top5 transactions:", error);
     return [];
   }
 }
 ```
 
 **Weryfikacja:**
+
 - Service kompiluje się bez błędów TypeScript
 - Wszystkie importy są poprawne
 - Logika obsługi błędów działa
 - Unit testy dla `parseTop5Transactions` (opcjonalnie)
 
 ### Krok 4: Implementacja API Route
+
 **Cel:** Utworzenie Astro endpoint handler
 
 **Plik:** `src/pages/api/companies/[companyId]/scenarios/[scenarioId]/weekly-aggregates.ts`
 
 **Kod:**
+
 ```typescript
-import type { APIRoute } from 'astro';
-import { GetWeeklyAggregatesParamsSchema } from '../../../../../../lib/validation/weekly-aggregates.validation';
-import { 
-  getWeeklyAggregates, 
-  ScenarioNotFoundError, 
-  ForbiddenError, 
-  DatabaseError 
-} from '../../../../../../lib/services/scenario-analytics.service';
-import { z } from 'zod';
+import type { APIRoute } from "astro";
+import { GetWeeklyAggregatesParamsSchema } from "../../../../../../lib/validation/weekly-aggregates.validation";
+import {
+  getWeeklyAggregates,
+  ScenarioNotFoundError,
+  ForbiddenError,
+  DatabaseError,
+} from "../../../../../../lib/services/scenario-analytics.service";
+import { z } from "zod";
 
 /**
  * GET /api/companies/{companyId}/scenarios/{scenarioId}/weekly-aggregates
- * 
+ *
  * Returns weekly aggregates with Top-5 transactions for a scenario
  */
 export const GET: APIRoute = async ({ params, locals }) => {
@@ -1030,13 +1129,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'UNAUTHORIZED',
-            message: 'Authentication required'
-          }
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
+          },
         }),
-        { 
-          status: 401, 
-          headers: { 'Content-Type': 'application/json' } 
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -1046,24 +1145,24 @@ export const GET: APIRoute = async ({ params, locals }) => {
     try {
       validatedParams = GetWeeklyAggregatesParamsSchema.parse({
         companyId: params.companyId,
-        scenarioId: params.scenarioId
+        scenarioId: params.scenarioId,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return new Response(
           JSON.stringify({
             error: {
-              code: 'VALIDATION_ERROR',
-              message: 'Invalid request parameters',
-              details: error.errors.map(e => ({
-                field: e.path.join('.'),
-                message: e.message
-              }))
-            }
+              code: "VALIDATION_ERROR",
+              message: "Invalid request parameters",
+              details: error.errors.map((e) => ({
+                field: e.path.join("."),
+                message: e.message,
+              })),
+            },
           }),
-          { 
-            status: 400, 
-            headers: { 'Content-Type': 'application/json' } 
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
           }
         );
       }
@@ -1071,37 +1170,29 @@ export const GET: APIRoute = async ({ params, locals }) => {
     }
 
     // Step 3: Call service layer
-    const result = await getWeeklyAggregates(
-      supabase,
-      validatedParams.companyId,
-      validatedParams.scenarioId
-    );
+    const result = await getWeeklyAggregates(supabase, validatedParams.companyId, validatedParams.scenarioId);
 
     // Step 4: Return success response
-    return new Response(
-      JSON.stringify(result),
-      { 
-        status: 200, 
-        headers: { 'Content-Type': 'application/json' } 
-      }
-    );
-
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     // Error handling
-    console.error('Error in weekly-aggregates endpoint:', error);
+    console.error("Error in weekly-aggregates endpoint:", error);
 
     // Handle custom error types
     if (error instanceof ScenarioNotFoundError) {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'NOT_FOUND',
-            message: error.message
-          }
+            code: "NOT_FOUND",
+            message: error.message,
+          },
         }),
-        { 
-          status: 404, 
-          headers: { 'Content-Type': 'application/json' } 
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -1110,13 +1201,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'FORBIDDEN',
-            message: error.message
-          }
+            code: "FORBIDDEN",
+            message: error.message,
+          },
         }),
-        { 
-          status: 403, 
-          headers: { 'Content-Type': 'application/json' } 
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -1125,13 +1216,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
       return new Response(
         JSON.stringify({
           error: {
-            code: 'INTERNAL_ERROR',
-            message: 'An internal error occurred'
-          }
+            code: "INTERNAL_ERROR",
+            message: "An internal error occurred",
+          },
         }),
-        { 
-          status: 500, 
-          headers: { 'Content-Type': 'application/json' } 
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -1140,13 +1231,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
     return new Response(
       JSON.stringify({
         error: {
-          code: 'INTERNAL_ERROR',
-          message: 'An internal error occurred'
-        }
+          code: "INTERNAL_ERROR",
+          message: "An internal error occurred",
+        },
       }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
       }
     );
   }
@@ -1157,29 +1248,35 @@ export const prerender = false;
 ```
 
 **Weryfikacja:**
+
 - Route kompiluje się bez błędów
 - Astro rozpoznaje endpoint
 - Prerender jest wyłączony
 
 ### Krok 5: Testowanie lokalne
+
 **Cel:** Weryfikacja działania endpointu w środowisku developerskim
 
 **Akcje:**
+
 1. Uruchomienie Supabase lokalnie:
+
    ```bash
    supabase start
    ```
 
 2. Uruchomienie serwera Astro:
+
    ```bash
    npm run dev
    ```
 
 3. Testowanie z curl lub Postman:
+
    ```bash
    # Pobierz token JWT z Supabase
    export TOKEN="your-jwt-token"
-   
+
    # Test request
    curl -X GET \
      "http://localhost:4321/api/companies/{companyId}/scenarios/{scenarioId}/weekly-aggregates" \
@@ -1193,22 +1290,25 @@ export const prerender = false;
    - Nieistniejący scenariusz
 
 **Weryfikacja:**
+
 - 200 OK dla prawidłowych requestów
 - Odpowiednie kody błędów (400, 401, 404)
 - Response zgodny ze specyfikacją DTO
 - RLS działa poprawnie (user widzi tylko swoje dane)
 
 ### Krok 6: Implementacja testów jednostkowych
+
 **Cel:** Zapewnienie jakości kodu przez testy
 
 **Plik:** `src/lib/services/scenario-analytics.service.test.ts`
 
 **Kod (przykład):**
-```typescript
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { getWeeklyAggregates } from './scenario-analytics.service';
 
-describe('getWeeklyAggregates', () => {
+```typescript
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { getWeeklyAggregates } from "./scenario-analytics.service";
+
+describe("getWeeklyAggregates", () => {
   let mockSupabase: any;
 
   beforeEach(() => {
@@ -1218,97 +1318,101 @@ describe('getWeeklyAggregates', () => {
       eq: vi.fn(() => mockSupabase),
       is: vi.fn(() => mockSupabase),
       order: vi.fn(() => mockSupabase),
-      single: vi.fn()
+      single: vi.fn(),
     };
   });
 
-  it('should return weekly aggregates for valid scenario', async () => {
+  it("should return weekly aggregates for valid scenario", async () => {
     // Setup mocks
     mockSupabase.single
-      .mockResolvedValueOnce({ 
-        data: { id: 1, company_id: 'uuid', dataset_code: 'Q1' }, 
-        error: null 
+      .mockResolvedValueOnce({
+        data: { id: 1, company_id: "uuid", dataset_code: "Q1" },
+        error: null,
       })
-      .mockResolvedValueOnce({ 
-        data: { base_currency: 'EUR' }, 
-        error: null 
+      .mockResolvedValueOnce({
+        data: { base_currency: "EUR" },
+        error: null,
       });
 
     mockSupabase.order.mockResolvedValueOnce({
       data: [
         {
           week_index: 0,
-          week_label: 'IB',
+          week_label: "IB",
           week_start_date: null,
           inflow_total_book_cents: 0,
           outflow_total_book_cents: 0,
           inflow_top5: [],
           outflow_top5: [],
           inflow_other_book_cents: 0,
-          outflow_other_book_cents: 0
-        }
+          outflow_other_book_cents: 0,
+        },
       ],
-      error: null
+      error: null,
     });
 
     // Execute
-    const result = await getWeeklyAggregates(mockSupabase, 'uuid', 1);
+    const result = await getWeeklyAggregates(mockSupabase, "uuid", 1);
 
     // Assert
     expect(result.scenario_id).toBe(1);
-    expect(result.base_currency).toBe('EUR');
+    expect(result.base_currency).toBe("EUR");
     expect(result.weeks).toHaveLength(1);
   });
 
-  it('should throw ScenarioNotFoundError for non-existent scenario', async () => {
+  it("should throw ScenarioNotFoundError for non-existent scenario", async () => {
     // Mock auth.getUser
     mockSupabase.auth = {
-      getUser: vi.fn().mockResolvedValue({ 
-        data: { user: { id: 'user-uuid' } }, 
-        error: null 
-      })
+      getUser: vi.fn().mockResolvedValue({
+        data: { user: { id: "user-uuid" } },
+        error: null,
+      }),
     };
 
     // Mock membership check (success)
-    mockSupabase.single.mockResolvedValueOnce({ 
-      data: { company_id: 'uuid' }, 
-      error: null 
+    mockSupabase.single.mockResolvedValueOnce({
+      data: { company_id: "uuid" },
+      error: null,
     });
 
     // Mock scenario check (not found)
-    mockSupabase.single.mockResolvedValueOnce({ 
-      data: null, 
-      error: { message: 'Not found' } 
+    mockSupabase.single.mockResolvedValueOnce({
+      data: null,
+      error: { message: "Not found" },
     });
 
-    await expect(
-      getWeeklyAggregates(mockSupabase, 'uuid', 999)
-    ).rejects.toThrow(ScenarioNotFoundError);
+    await expect(getWeeklyAggregates(mockSupabase, "uuid", 999)).rejects.toThrow(ScenarioNotFoundError);
   });
 });
 ```
 
 **Weryfikacja:**
+
 - Wszystkie testy przechodzą
 - Coverage > 80% dla service layer
 - Edge cases są pokryte
 
 ### Krok 7: Dokumentacja
+
 **Cel:** Udokumentowanie endpointu dla zespołu
 
 **Akcje:**
+
 1. Dodanie komentarzy JSDoc do wszystkich funkcji publicznych
 2. Aktualizacja README.md z przykładem użycia
 3. Dodanie przykładów request/response do dokumentacji API
 
 **Weryfikacja:**
+
 - TypeScript generuje poprawne type hints
 - Dokumentacja jest kompletna i zrozumiała
 
 ### Krok 8: Code Review
+
 **Cel:** Weryfikacja jakości kodu przez zespół
 
 **Checklist:**
+
 - [ ] Kod zgodny z guidelines projektu (copilot-instructions.md)
 - [ ] Wszystkie typy TypeScript są poprawne
 - [ ] Obsługa błędów jest kompletna
@@ -1318,10 +1422,13 @@ describe('getWeeklyAggregates', () => {
 - [ ] Dokumentacja jest kompletna
 
 ### Krok 9: Integracja z frontendem
+
 **Cel:** Umożliwienie wykorzystania endpointu w UI
 
 **Akcje:**
+
 1. Utworzenie React hook do pobierania danych:
+
    ```typescript
    // src/components/hooks/useWeeklyAggregates.ts
    export function useWeeklyAggregates(companyId: string, scenarioId: number) {
@@ -1333,14 +1440,17 @@ describe('getWeeklyAggregates', () => {
 3. Obsługa stanów ładowania i błędów w UI
 
 **Weryfikacja:**
+
 - Frontend poprawnie wywołuje endpoint
 - Dane są wyświetlane zgodnie z UX
 - Błędy są obsługiwane user-friendly
 
 ### Krok 10: Deployment
+
 **Cel:** Wdrożenie na środowisko produkcyjne
 
 **Akcje:**
+
 1. Merge do main branch przez Pull Request
 2. Uruchomienie CI/CD pipeline
 3. Deployment na DigitalOcean
@@ -1348,6 +1458,7 @@ describe('getWeeklyAggregates', () => {
 5. Monitoring metryk (response time, error rate)
 
 **Weryfikacja:**
+
 - Endpoint działa na produkcji
 - Performance SLA są spełnione
 - Monitoring i alerty działają
@@ -1358,6 +1469,7 @@ describe('getWeeklyAggregates', () => {
 ## 10. Checklisty i narzędzia pomocnicze
 
 ### Pre-implementation Checklist
+
 - [ ] Przeczytano i zrozumiano API specification
 - [ ] Przeczytano database schema (szczególnie `weekly_aggregates_v`)
 - [ ] Zrozumiano flow danych i RLS policies
@@ -1365,6 +1477,7 @@ describe('getWeeklyAggregates', () => {
 - [ ] Zainstalowano wszystkie zależności (`npm install`)
 
 ### Implementation Checklist
+
 - [ ] Utworzono validation schema z Zod
 - [ ] Zaimplementowano service layer z proper error handling
 - [ ] Utworzono API route w Astro
@@ -1374,6 +1487,7 @@ describe('getWeeklyAggregates', () => {
 - [ ] Dodano JSDoc comments
 
 ### Testing Checklist
+
 - [ ] Unit tests dla service layer (>80% coverage)
 - [ ] Integration tests z mock Supabase
 - [ ] Manual testing wszystkich happy paths
@@ -1382,6 +1496,7 @@ describe('getWeeklyAggregates', () => {
 - [ ] Load testing (opcjonalnie dla production)
 
 ### Security Checklist
+
 - [ ] JWT authentication jest wymagane
 - [ ] RLS policies są aktywne na wszystkich tabelach/widokach
 - [ ] Walidacja wszystkich parametrów wejściowych (Zod)
@@ -1391,6 +1506,7 @@ describe('getWeeklyAggregates', () => {
 - [ ] Rate limiting jest skonfigurowany (opcjonalnie)
 
 ### Performance Checklist
+
 - [ ] Database indexes są na miejscu
 - [ ] Query performance jest mierzona (EXPLAIN ANALYZE)
 - [ ] Response time < 500ms dla typowych scenariuszy
@@ -1399,6 +1515,7 @@ describe('getWeeklyAggregates', () => {
 - [ ] Caching strategy (dla locked scenarios)
 
 ### Documentation Checklist
+
 - [ ] JSDoc comments dla wszystkich funkcji publicznych
 - [ ] README.md zawiera przykłady użycia
 - [ ] API documentation jest aktualna
@@ -1406,6 +1523,7 @@ describe('getWeeklyAggregates', () => {
 - [ ] Performance characteristics są opisane
 
 ### Deployment Checklist
+
 - [ ] Code review completed i approved
 - [ ] Wszystkie testy przechodzą (CI green)
 - [ ] Database migrations są applied (jeśli potrzebne)
@@ -1419,6 +1537,7 @@ describe('getWeeklyAggregates', () => {
 ## Dodatkowe uwagi
 
 ### Kolejne kroki po implementacji
+
 1. **Caching Strategy:** Implementacja cache dla locked scenarios
 2. **Pagination:** Dodanie opcjonalnej paginacji dla bardzo długich okresów
 3. **Filtering:** Możliwość filtrowania tygodni (date_from, date_to)
@@ -1426,6 +1545,7 @@ describe('getWeeklyAggregates', () => {
 5. **Rate Limiting:** Implementacja middleware dla rate limiting
 
 ### Potencjalne rozszerzenia
+
 - Export agregacji do CSV/Excel
 - Real-time updates przez WebSockets (dla Draft scenarios)
 - Comparison endpoint (porównanie wielu scenariuszy)
@@ -1433,6 +1553,7 @@ describe('getWeeklyAggregates', () => {
 - Custom aggregation periods (daily, monthly, quarterly)
 
 ### Znane ograniczenia MVP
+
 - Brak pagination (może być problem dla >100 tygodni)
 - Brak caching (każde zapytanie idzie do DB)
 - Brak rate limiting
@@ -1440,6 +1561,7 @@ describe('getWeeklyAggregates', () => {
 - Brak streaming responses
 
 ### Zalecana kolejność implementacji pozostałych endpointów
+
 1. `GET /api/companies/{companyId}/scenarios/{scenarioId}/running-balance` - podobny pattern
 2. `GET /api/companies/{companyId}/scenarios/{scenarioId}/transactions` - bazowy endpoint
 3. `POST /api/companies/{companyId}/scenarios/{scenarioId}/overrides/batch` - bardziej złożony

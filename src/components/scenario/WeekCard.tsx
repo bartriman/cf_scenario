@@ -31,9 +31,7 @@ export function WeekCard({ week, onTransactionClick, isLocked }: WeekCardProps) 
   return (
     <Card
       ref={setNodeRef}
-      className={`w-80 flex-shrink-0 snap-center transition-colors ${
-        isOver ? "ring-2 ring-primary" : ""
-      }`}
+      className={`w-80 flex-shrink-0 snap-center transition-colors ${isOver ? "ring-2 ring-primary" : ""}`}
     >
       <CardHeader className="pb-3">
         <CardTitle className="text-base">{week.week_label}</CardTitle>

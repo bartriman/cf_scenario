@@ -1,12 +1,15 @@
 ## Plan implementacji widoku Scenario View
 
 ### 1. Przegląd
+
 Widok Scenariusza (`Scenario View`) jest głównym obszarem roboczym aplikacji, przeznaczonym do interaktywnej analizy i modyfikacji scenariuszy przepływów pieniężnych. Umożliwia użytkownikom wizualizację tygodniowych agregatów finansowych na osi czasu, analizę wykresu salda bieżącego oraz symulowanie zmian poprzez przesuwanie transakcji między tygodniami i edycję ich szczegółów.
 
 ### 2. Routing widoku
+
 Widok będzie dostępny pod dynamiczną ścieżką: `/scenarios/[scenarioId]`, gdzie `[scenarioId]` jest identyfikatorem wybranego scenariusza.
 
 ### 3. Struktura komponentów
+
 Hierarchia komponentów dla widoku `Scenario View` przedstawia się następująco:
 
 ```
@@ -25,6 +28,7 @@ Hierarchia komponentów dla widoku `Scenario View` przedstawia się następując
 ### 4. Szczegóły komponentów
 
 #### ScenarioView (React Island)
+
 - **Opis komponentu**: Główny kontener widoku, zarządzający stanem i orkiestrujący interakcje między komponentami podrzędnymi. Odpowiedzialny za pobieranie danych scenariusza, agregatów tygodniowych i salda bieżącego.
 - **Główne elementy**: Kontener `div` dla całego widoku, zawierający komponenty `RunningBalanceChart` i `Timeline`. Renderuje także modale `EditTransactionModal` i `ExportDialog`.
 - **Obsługiwane interakcje**:
@@ -36,6 +40,7 @@ Hierarchia komponentów dla widoku `Scenario View` przedstawia się następując
 - **Propsy**: `scenarioId: string`.
 
 #### Timeline (React)
+
 - **Opis komponentu**: Interaktywna, horyzontalna oś czasu wyświetlająca tygodnie. Implementuje logikę "przeciągnij i upuść" dla transakcji przy użyciu `dnd-kit`.
 - **Główne elementy**: Kontener `div` z przewijaniem horyzontalnym. Mapuje dane `weeklyAggregates` na komponenty `WeekCard`. Otacza karty kontekstem `DndContext`.
 - **Obsługiwane interakcje**:
@@ -49,6 +54,7 @@ Hierarchia komponentów dla widoku `Scenario View` przedstawia się następując
   - `onTransactionClick: (transaction: TransactionVM) => void`
 
 #### WeekCard (React)
+
 - **Opis komponentu**: Reprezentuje pojedynczą kolumnę tygodnia na osi czasu. Wyświetla podsumowanie (wpływy/wypływy) oraz listy transakcji Top 5 i "Inne".
 - **Główne elementy**: Nagłówek z datą tygodnia, dwie sekcje (wpływy i wypływy), każda zawierająca listę komponentów `TransactionCard`. Definiuje obszar upuszczania (`droppable`) dla `dnd-kit`.
 - **Obsługiwane interakcje**: Służy jako cel dla upuszczanych transakcji.
@@ -59,6 +65,7 @@ Hierarchia komponentów dla widoku `Scenario View` przedstawia się następując
   - `onTransactionClick: (transaction: TransactionVM) => void`
 
 #### TransactionCard (React)
+
 - **Opis komponentu**: Karta reprezentująca pojedynczą transakcję lub zagregowaną grupę "Inne". Jest elementem przeciąganym (`draggable`).
 - **Główne elementy**: `div` z informacjami o transakcji (kontrahent, kwota). Klikalny, jeśli nie jest to grupa "Inne".
 - **Obsługiwane interakcje**:
@@ -71,6 +78,7 @@ Hierarchia komponentów dla widoku `Scenario View` przedstawia się następując
   - `onClick: (transaction: TransactionVM) => void`
 
 #### RunningBalanceChart (React Island)
+
 - **Opis komponentu**: Wykres liniowy przedstawiający saldo bieżące w czasie. Zbudowany przy użyciu `Recharts`.
 - **Główne elementy**: Komponent `LineChart` z `Recharts` z odpowiednio skonfigurowanymi osiami (`XAxis`, `YAxis`), linią (`Line`) i podpowiedziami (`Tooltip`).
 - **Obsługiwane interakcje**: Wyświetlanie `Tooltip` z danymi po najechaniu na punkt danych.
@@ -79,6 +87,7 @@ Hierarchia komponentów dla widoku `Scenario View` przedstawia się następując
 - **Propsy**: `data: RunningBalancePoint[]`, `baseCurrency: string`.
 
 #### EditTransactionModal (React)
+
 - **Opis komponentu**: Modal do edycji daty i kwoty transakcji.
 - **Główne elementy**: Formularz z polami `input[type=date]` i `input[type=number]`. Przyciski "Zapisz" i "Anuluj".
 - **Obsługiwane interakcje**:
@@ -96,6 +105,7 @@ Hierarchia komponentów dla widoku `Scenario View` przedstawia się następując
   - `onClose: () => void`
 
 ### 5. Typy
+
 Do implementacji widoku wymagane będą następujące nowe typy ViewModel, które transformują dane z API na potrzeby UI:
 
 ```typescript
@@ -104,8 +114,8 @@ Do implementacji widoku wymagane będą następujące nowe typy ViewModel, któr
 // Reprezentuje pojedynczą transakcję na karcie (Top5 lub "Other")
 export interface TransactionVM {
   id: string; // flow_id lub syntetyczny ID dla "Other"
-  type: 'transaction' | 'other';
-  direction: 'INFLOW' | 'OUTFLOW';
+  type: "transaction" | "other";
+  direction: "INFLOW" | "OUTFLOW";
   amount_book_cents: number;
   counterparty: string | null; // null dla "Other"
   description: string; // "Other" dla grupy
@@ -130,9 +140,11 @@ export interface RunningBalancePoint {
 ```
 
 ### 6. Zarządzanie stanem
+
 Zarządzanie stanem zostanie zaimplementowane w głównym komponencie `ScenarioView` przy użyciu hooków React. Wskazane jest stworzenie customowego hooka `useScenarioData`, aby hermetyzować logikę pobierania danych, obsługi ładowania, błędów oraz aktualizacji.
 
 **Custom Hook: `useScenarioData(scenarioId: string)`**
+
 - **Cel**: Zarządzanie całym cyklem życia danych dla widoku scenariusza.
 - **Zarządzane stany**:
   - `scenario: Scenario | null`
@@ -145,6 +157,7 @@ Zarządzanie stanem zostanie zaimplementowane w głównym komponencie `ScenarioV
   - `updateTransaction(overrideData)`: Funkcja do wywołania API (PUT lub POST) i optymistycznej aktualizacji UI, a następnie odświeżenia danych.
 
 ### 7. Integracja API
+
 Integracja z API będzie realizowana poprzez wywołania `fetch` do odpowiednich endpointów z poziomu hooka `useScenarioData`.
 
 1.  **Pobieranie danych inicjalnych (równolegle)**:
@@ -166,6 +179,7 @@ Integracja z API będzie realizowana poprzez wywołania `fetch` do odpowiednich 
       - **Logika**: Wywoływane po zapisaniu zmian w modalu. UI zostanie zaktualizowane optymistycznie, a następnie dane zostaną odświeżone.
 
 ### 8. Interakcje użytkownika
+
 - **Przeciągnięcie i upuszczenie transakcji**:
   - Użytkownik chwyta `TransactionCard`.
   - UI pokazuje wizualny wskaźnik przeciągania.
@@ -185,6 +199,7 @@ Integracja z API będzie realizowana poprzez wywołania `fetch` do odpowiednich 
   - Modal się zamyka, a UI jest aktualizowane (optymistycznie + odświeżenie).
 
 ### 9. Warunki i walidacja
+
 - **Przeciąganie i upuszczanie**:
   - **Warunek**: Przeciągać można tylko `TransactionCard`, które nie są typu "Other".
   - **Walidacja**: Akcja zapisu (`onTransactionDrop`) jest wywoływana tylko wtedy, gdy `flow_id` istnieje i transakcja została upuszczona w innej kolumnie tygodnia.
@@ -196,6 +211,7 @@ Integracja z API będzie realizowana poprzez wywołania `fetch` do odpowiednich 
     - Przycisk "Zapisz" jest nieaktywny, dopóki formularz nie jest poprawny i zmieniony.
 
 ### 10. Obsługa błędów
+
 - **Błędy sieciowe / API**:
   - W przypadku niepowodzenia pobierania danych, `useScenarioData` ustawi stan `error`. Komponent `ScenarioView` wyświetli komunikat o błędzie z przyciskiem "Spróbuj ponownie", który wywoła `refetch()`.
   - W przypadku niepowodzenia operacji zapisu (PUT/POST), optymistyczna aktualizacja zostanie cofnięta, a użytkownikowi zostanie wyświetlony komunikat `toast` informujący o niepowodzeniu (np. "Nie udało się zaktualizować transakcji. Scenariusz może być zablokowany.").
@@ -205,6 +221,7 @@ Integracja z API będzie realizowana poprzez wywołania `fetch` do odpowiednich 
   - Strona `/scenarios/[scenarioId].astro` powinna obsłużyć błąd 404 z API i zwrócić odpowiednią stronę błędu Astro.
 
 ### 11. Kroki implementacji
+
 1.  **Struktura plików**: Utwórz plik strony `src/pages/scenarios/[scenarioId].astro` oraz pliki dla komponentów React: `src/components/scenario/ScenarioView.tsx`, `Timeline.tsx`, `WeekCard.tsx`, `TransactionCard.tsx`, `RunningBalanceChart.tsx`, `EditTransactionModal.tsx`.
 2.  **Strona Astro**: W `[scenarioId].astro` pobierz `scenarioId` z parametrów URL i przekaż go jako prop do komponentu-wyspy `<ScenarioView client:load />`.
 3.  **Typy i Hook**: Zdefiniuj typy `ViewModel` (`TransactionVM`, `WeeklyAggregateVM`, `RunningBalancePoint`). Zaimplementuj customowy hook `useScenarioData` z logiką pobierania danych (początkowo bez logiki zapisu).
