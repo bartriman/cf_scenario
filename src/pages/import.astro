@@ -1,0 +1,38 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import ImportWizard from "@/components/import/ImportWizard";
+
+export const prerender = false;
+
+// Get user from locals
+const user = Astro.locals.user;
+
+if (!user) {
+  return Astro.redirect("/auth/login?redirect=/import");
+}
+
+// Get Supabase client
+const supabase = Astro.locals.supabase;
+
+// Get user's company from profile
+const { data: profile } = await supabase
+  .from("user_profiles")
+  .select("default_company_id")
+  .eq("user_id", user.id)
+  .single();
+
+const companyId = profile?.default_company_id;
+
+// Redirect to login if no company assigned
+if (!companyId) {
+  return Astro.redirect("/auth/login?redirect=/import");
+}
+---
+
+<Layout title="Import danych CSV - CashFlow Scenarios">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div class="container mx-auto px-4">
+      <ImportWizard client:only="react" companyId={companyId} />
+    </div>
+  </div>
+</Layout>

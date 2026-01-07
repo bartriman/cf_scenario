@@ -957,3 +957,114 @@ export interface RunningBalancePoint {
   date: string; // as_of_date
   balance: number; // running_balance_book_cents / 100
 }
+
+// =============================================================================
+// CSV IMPORT VIEW MODELS AND TYPES
+// =============================================================================
+
+// Enum dla kroków kreatora
+export enum WizardStep {
+  FileUpload = 1,
+  ColumnMapping = 2,
+  Validation = 3,
+  Processing = 4,
+}
+
+// Stan kreatora
+export interface ImportWizardState {
+  currentStep: WizardStep;
+  companyId: string;
+  file: File | null;
+  datasetCode: string;
+  csvHeaders: string[];
+  previewRows: string[][];
+  columnMapping: ColumnMapping;
+  validationResult: ValidationResult | null;
+  importId: number | null;
+  scenarioId: number | null;
+  error: string | null;
+}
+
+// Mapowanie kolumn CSV na pola systemowe
+export interface ColumnMapping {
+  date_due: string | null;       // WYMAGANE
+  amount: string | null;          // WYMAGANE
+  direction: string | null;       // WYMAGANE
+  currency: string | null;        // WYMAGANE
+  flow_id?: string | null;        // opcjonalne
+  counterparty?: string | null;   // opcjonalne
+  description?: string | null;    // opcjonalne
+  project?: string | null;        // opcjonalne
+  document?: string | null;       // opcjonalne
+  payment_source?: string | null; // opcjonalne
+}
+
+// Definicja pola systemowego
+export interface SystemField {
+  key: keyof ColumnMapping;
+  label: string;
+  required: boolean;
+  description?: string;
+}
+
+// Wynik walidacji całego pliku
+export interface ValidationResult {
+  import_id: number;
+  total_rows: number;
+  valid_rows: number;
+  invalid_rows: number;
+  errors: ValidationError[];
+  status: 'success' | 'warning' | 'error';
+}
+
+// Pojedynczy błąd walidacji
+export interface ValidationError {
+  row_number: number;
+  field_name: string;
+  invalid_value: string;
+  error_message: string;
+  error_code?: string;
+}
+
+// Kody błędów walidacji
+export enum ValidationErrorCode {
+  REQUIRED_FIELD_MISSING = 'REQUIRED_FIELD_MISSING',
+  INVALID_DATE_FORMAT = 'INVALID_DATE_FORMAT',
+  INVALID_AMOUNT_FORMAT = 'INVALID_AMOUNT_FORMAT',
+  INVALID_DIRECTION = 'INVALID_DIRECTION',
+  INVALID_CURRENCY_CODE = 'INVALID_CURRENCY_CODE',
+  NEGATIVE_AMOUNT = 'NEGATIVE_AMOUNT',
+  DUPLICATE_FLOW_ID = 'DUPLICATE_FLOW_ID',
+}
+
+// Stan uploadu pliku
+export interface FileUploadState {
+  file: File | null;
+  uploadProgress: number;
+  isUploading: boolean;
+  error: string | null;
+}
+
+// Stan mapowania
+export interface MappingState {
+  csvHeaders: string[];
+  previewRows: string[][];
+  mapping: ColumnMapping;
+  isComplete: boolean;
+}
+
+// Stan walidacji
+export interface ValidationState {
+  isValidating: boolean;
+  result: ValidationResult | null;
+  selectedAction: 'continue' | 'back' | null;
+}
+
+// Stan przetwarzania
+export interface ProcessingState {
+  importId: number;
+  status: ImportStatusType;
+  progress: number; // 0-100
+  message: string;
+  scenarioId: number | null;
+}
