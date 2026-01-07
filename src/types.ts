@@ -375,6 +375,7 @@ export type ScenarioDetailsResponseDTO = ScenarioListItemDTO & {
 
 // 31. Create Scenario Request DTO
 export interface CreateScenarioRequestDTO {
+  import_id: number;
   dataset_code: string;
   name: string;
   base_scenario_id?: number;

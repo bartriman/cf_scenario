@@ -4,6 +4,7 @@ import { z } from "zod";
 export const createScenarioSchema = z
   .object({
     name: z.string().min(1, "Nazwa jest wymagana").max(255, "Nazwa nie może przekraczać 255 znaków"),
+    import_id: z.number().int().positive("Import ID jest wymagany"),
     dataset_code: z
       .string()
       .min(1, "Kod datasetu jest wymagany")

@@ -121,7 +121,14 @@ export function useScenarios(companyId: string): UseScenariosResult {
       const duplicated: DuplicateScenarioResponseDTO = await response.json();
 
       // Optimistic update - dodaj zduplikowany scenariusz do listy
-      setScenarios((prev) => [...prev, duplicated as ScenarioListItemDTO]);
+      setScenarios((prev) => [
+        ...prev,
+        {
+          ...duplicated,
+          locked_at: null,
+          locked_by: null,
+        } as ScenarioListItemDTO,
+      ]);
 
       return duplicated;
     },

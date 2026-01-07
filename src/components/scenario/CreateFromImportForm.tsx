@@ -70,6 +70,7 @@ export function CreateFromImportForm({ companyId, onSubmit, isSubmitting, onCanc
   const onFormSubmit = async (data: CreateFromImportFormValues) => {
     // Przekształć dane formularza do DTO
     const requestData: CreateScenarioRequestDTO = {
+      import_id: data.import_id,
       name: data.name,
       dataset_code: selectedImport?.dataset_code || "",
       start_date: data.start_date,
