@@ -9,6 +9,7 @@ import type {
   UpsertOverrideRequestDTO,
 } from "@/types";
 import type { WeeklyAggregateVM, TransactionVM, RunningBalancePoint } from "@/types";
+import { getDemoData, saveDemoData } from "@/lib/mock-data";
 
 interface UseScenarioDataResult {
   scenario: Scenario | null;
@@ -19,6 +20,7 @@ interface UseScenarioDataResult {
   refetch: () => Promise<void>;
   updateTransaction: (flowId: string, data: UpsertOverrideRequestDTO) => Promise<void>;
   moveTransaction: (flowId: string, newWeekStartDate: string) => Promise<void>;
+  isDemoMode: boolean;
 }
 
 // Helper function to transform WeekAggregateDTO to WeeklyAggregateVM
@@ -87,15 +89,34 @@ function transformWeekAggregate(week: WeekAggregateDTO): WeeklyAggregateVM {
   };
 }
 
-export function useScenarioData(scenarioId: string, companyId: string): UseScenarioDataResult {
+export function useScenarioData(scenarioId?: string, companyId?: string): UseScenarioDataResult {
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [weeklyAggregates, setWeeklyAggregates] = useState<WeeklyAggregateVM[]>([]);
   const [runningBalance, setRunningBalance] = useState<RunningBalancePoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Demo mode is active when scenarioId or companyId is not provided
+  const isDemoMode = !scenarioId || !companyId;
+
   const fetchData = useCallback(async () => {
-    if (!scenarioId || !companyId) return;
+    // Demo mode - load from localStorage or use initial mock data
+    if (isDemoMode) {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const demoData = getDemoData();
+        setScenario(demoData.scenario);
+        setWeeklyAggregates(demoData.weeklyAggregates);
+        setRunningBalance(demoData.runningBalance);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error("Failed to load demo data"));
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -139,7 +160,7 @@ export function useScenarioData(scenarioId: string, companyId: string): UseScena
     } finally {
       setIsLoading(false);
     }
-  }, [scenarioId, companyId]);
+  }, [scenarioId, companyId, isDemoMode]);
 
   useEffect(() => {
     fetchData();
@@ -151,7 +172,32 @@ export function useScenarioData(scenarioId: string, companyId: string): UseScena
 
   const updateTransaction = useCallback(
     async (flowId: string, data: UpsertOverrideRequestDTO) => {
-      if (!scenarioId || !companyId) return;
+      // Demo mode - update locally only
+      if (isDemoMode) {
+        try {
+          // Find and update the transaction in weeklyAggregates
+          const updatedWeeks = weeklyAggregates.map((week) => ({
+            ...week,
+            transactions: week.transactions.map((tx) => {
+              if (tx.id === flowId) {
+                return {
+                  ...tx,
+                  amount_book_cents: data.new_amount_book_cents ?? tx.amount_book_cents,
+                  date_due: data.new_date_due ?? tx.date_due,
+                };
+              }
+              return tx;
+            }),
+          }));
+
+          setWeeklyAggregates(updatedWeeks);
+          saveDemoData(updatedWeeks, runningBalance);
+        } catch (err) {
+          setError(err instanceof Error ? err : new Error("Failed to update demo transaction"));
+          throw err;
+        }
+        return;
+      }
 
       try {
         const response = await fetch(`/api/companies/${companyId}/scenarios/${scenarioId}/overrides/${flowId}`, {
@@ -173,12 +219,51 @@ export function useScenarioData(scenarioId: string, companyId: string): UseScena
         throw err;
       }
     },
-    [scenarioId, companyId, refetch]
+    [scenarioId, companyId, refetch, isDemoMode, weeklyAggregates, runningBalance]
   );
 
   const moveTransaction = useCallback(
     async (flowId: string, newWeekStartDate: string) => {
-      if (!scenarioId || !companyId) return;
+      // Demo mode - move transaction locally
+      if (isDemoMode) {
+        try {
+          // Find the transaction and move it to the target week
+          let movedTransaction: TransactionVM | null = null;
+
+          // Remove transaction from current week
+          const updatedWeeks = weeklyAggregates.map((week) => {
+            const txIndex = week.transactions.findIndex((tx) => tx.id === flowId);
+            if (txIndex !== -1) {
+              movedTransaction = { ...week.transactions[txIndex], date_due: newWeekStartDate };
+              return {
+                ...week,
+                transactions: week.transactions.filter((tx) => tx.id !== flowId),
+              };
+            }
+            return week;
+          });
+
+          // Add transaction to target week
+          if (movedTransaction) {
+            const finalWeeks = updatedWeeks.map((week) => {
+              if (week.week_start_date === newWeekStartDate) {
+                return {
+                  ...week,
+                  transactions: [...week.transactions, movedTransaction!],
+                };
+              }
+              return week;
+            });
+
+            setWeeklyAggregates(finalWeeks);
+            saveDemoData(finalWeeks, runningBalance);
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err : new Error("Failed to move demo transaction"));
+          throw err;
+        }
+        return;
+      }
 
       try {
         const batchData: BatchUpdateOverridesRequestDTO = {
@@ -209,7 +294,7 @@ export function useScenarioData(scenarioId: string, companyId: string): UseScena
         throw err;
       }
     },
-    [scenarioId, companyId, refetch]
+    [scenarioId, companyId, refetch, isDemoMode, weeklyAggregates, runningBalance]
   );
 
   return {
@@ -221,5 +306,6 @@ export function useScenarioData(scenarioId: string, companyId: string): UseScena
     refetch,
     updateTransaction,
     moveTransaction,
+    isDemoMode,
   };
 }

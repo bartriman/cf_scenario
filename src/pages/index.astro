@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import ScenarioView from "../components/scenario/ScenarioView";
 
 export const prerender = false;
 
@@ -11,10 +12,12 @@ if (user) {
   return Astro.redirect("/scenarios");
 }
 
-// For non-authenticated users, show demo
-import Welcome from "../components/Welcome.astro";
+// For non-authenticated users, show demo scenario
+const DEMO_BASE_CURRENCY = "USD";
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="Demo - CashFlow Scenarios">
+  <main class="h-screen w-full overflow-hidden bg-background">
+    <ScenarioView client:load baseCurrency={DEMO_BASE_CURRENCY} />
+  </main>
 </Layout>

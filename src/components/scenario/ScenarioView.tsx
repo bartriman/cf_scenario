@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, RefreshCw } from "lucide-react";
 
 interface ScenarioViewProps {
-  scenarioId: string;
-  companyId: string;
+  scenarioId?: string;
+  companyId?: string;
   baseCurrency: string;
 }
 
 export default function ScenarioView({ scenarioId, companyId, baseCurrency }: ScenarioViewProps) {
-  const { scenario, weeklyAggregates, runningBalance, isLoading, error, refetch, updateTransaction, moveTransaction } =
+  const { scenario, weeklyAggregates, runningBalance, isLoading, error, refetch, updateTransaction, moveTransaction, isDemoMode } =
     useScenarioData(scenarioId, companyId);
 
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionVM | null>(null);
@@ -104,12 +104,19 @@ export default function ScenarioView({ scenarioId, companyId, baseCurrency }: Sc
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">{scenario.name}</h1>
-            <p className="text-sm text-muted-foreground">
-              {scenario.start_date} - {scenario.end_date}
-            </p>
+            {!isDemoMode && scenario.start_date && scenario.end_date && (
+              <p className="text-sm text-muted-foreground">
+                {scenario.start_date} - {scenario.end_date}
+              </p>
+            )}
+            {isDemoMode && (
+              <p className="text-sm text-muted-foreground">
+                Tryb demonstracyjny - wszystkie zmiany zapisywane lokalnie
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
-            {isLocked && <span className="rounded-md bg-muted px-3 py-1 text-sm font-medium">Locked</span>}
+            {!isDemoMode && isLocked && <span className="rounded-md bg-muted px-3 py-1 text-sm font-medium">Locked</span>}
             <Button onClick={refetch} variant="outline" size="sm">
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
@@ -135,7 +142,7 @@ export default function ScenarioView({ scenarioId, companyId, baseCurrency }: Sc
             weeklyAggregates={weeklyAggregates}
             onTransactionDrop={handleTransactionDrop}
             onTransactionClick={handleTransactionClick}
-            isLocked={isLocked}
+            isLocked={!isDemoMode && isLocked}
           />
         </div>
       </div>
@@ -146,7 +153,7 @@ export default function ScenarioView({ scenarioId, companyId, baseCurrency }: Sc
         transaction={selectedTransaction}
         onSave={handleSaveTransaction}
         onClose={handleCloseModal}
-        isLocked={isLocked}
+        isLocked={!isDemoMode && isLocked}
       />
     </div>
   );
