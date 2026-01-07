@@ -167,8 +167,17 @@ export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
         setTimeout(() => {
           window.location.href = "/auth/login";
         }, 2000);
+      } else if (mode === "register") {
+        // Show email verification message and clear form
+        setSuccessMessage(
+          data.message || "Konto zostało utworzone! Sprawdź swoją skrzynkę email i kliknij link weryfikacyjny, aby aktywować konto."
+        );
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setCompanyName("");
       } else {
-        // For login and register, redirect to specified URL or default
+        // For login only, redirect to specified URL or default
         const finalRedirectUrl = redirectTo || data.redirectUrl || "/scenarios";
         if (onSuccess) {
           onSuccess(finalRedirectUrl);

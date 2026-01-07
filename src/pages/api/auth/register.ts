@@ -68,8 +68,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(
       JSON.stringify({
         user: data.user,
-        message: "Konto zostało utworzone. Sprawdź swoją skrzynkę email, aby potwierdzić adres.",
-        redirectUrl: "/scenarios",
+        message: "Konto zostało utworzone! Sprawdź swoją skrzynkę email i kliknij link weryfikacyjny, aby aktywować konto. Link jest ważny przez 24 godziny.",
       }),
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
