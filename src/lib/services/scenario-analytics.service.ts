@@ -1,5 +1,11 @@
 import type { SupabaseClient } from "../../db/supabase.client";
-import type { WeeklyAggregatesResponseDTO, WeekAggregateDTO, TopTransactionItemDTO } from "../../types";
+import type {
+  WeeklyAggregatesResponseDTO,
+  WeekAggregateDTO,
+  TopTransactionItemDTO,
+  RunningBalanceResponseDTO,
+  RunningBalanceItemDTO,
+} from "../../types";
 import { z } from "zod";
 
 /**
@@ -207,4 +213,89 @@ function parseTop5Transactions(jsonbData: unknown): TopTransactionItemDTO[] {
     console.error("Error parsing top5 transactions:", error);
     return [];
   }
+}
+
+/**
+ * Get daily running balance for a scenario
+ *
+ * @param supabase - Supabase client with user context
+ * @param companyId - Company UUID
+ * @param scenarioId - Scenario ID
+ * @returns Running balance data with daily balances
+ * @throws ScenarioNotFoundError if scenario not found
+ * @throws ForbiddenError if user not a member of company
+ * @throws DatabaseError if database operation fails
+ */
+export async function getRunningBalance(
+  supabase: SupabaseClient,
+  companyId: string,
+  scenarioId: number
+): Promise<RunningBalanceResponseDTO> {
+  // Step 1: Verify user is a member of the company (explicit check)
+  const { data, error: authError } = await supabase.auth.getUser();
+
+  if (!data.user) {
+    throw new ForbiddenError("User not authenticated");
+  }
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("company_members")
+    .select("company_id")
+    .eq("company_id", companyId)
+    .eq("user_id", data.user.id)
+    .single();
+
+  if (membershipError || !membership) {
+    throw new ForbiddenError("User not a member of company");
+  }
+
+  // Step 2: Verify scenario exists and belongs to company
+  const { data: scenario, error: scenarioError } = await supabase
+    .from("scenarios")
+    .select("id, company_id")
+    .eq("id", scenarioId)
+    .eq("company_id", companyId)
+    .is("deleted_at", null)
+    .single();
+
+  if (scenarioError || !scenario) {
+    throw new ScenarioNotFoundError();
+  }
+
+  // Step 3: Get company base currency
+  const { data: company, error: companyError } = await supabase
+    .from("companies")
+    .select("base_currency")
+    .eq("id", companyId)
+    .single();
+
+  if (companyError || !company) {
+    throw new ScenarioNotFoundError("Company not found");
+  }
+
+  // Step 4: Query running balance view
+  const { data: balanceData, error: balanceError } = await supabase
+    .from("running_balance_v")
+    .select("*")
+    .eq("company_id", companyId)
+    .eq("scenario_id", scenarioId)
+    .order("as_of_date", { ascending: true });
+
+  if (balanceError) {
+    console.error("Error fetching running balance:", balanceError);
+    throw new DatabaseError("Failed to fetch running balance");
+  }
+
+  // Step 5: Transform data to DTO format
+  const balances: RunningBalanceItemDTO[] = (balanceData || []).map((row) => ({
+    as_of_date: row.as_of_date ?? "",
+    delta_book_cents: row.delta_book_cents ?? 0,
+    running_balance_book_cents: row.running_balance_book_cents ?? 0,
+  }));
+
+  return {
+    scenario_id: scenarioId,
+    base_currency: company.base_currency,
+    balances,
+  };
 }
