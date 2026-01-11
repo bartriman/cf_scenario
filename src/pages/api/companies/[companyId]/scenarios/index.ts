@@ -11,6 +11,8 @@ import {
 import type { ScenarioListResponseDTO, CreateScenarioRequestDTO } from "@/types";
 import { createScenarioSchema } from "@/lib/validation/scenario.validation";
 
+export const prerender = false;
+
 /**
  * Query parameters schema for listing scenarios
  */

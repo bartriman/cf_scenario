@@ -9,6 +9,7 @@ import type {
   UpdateScenarioResponseDTO,
   DuplicateScenarioRequestDTO,
   DuplicateScenarioResponseDTO,
+  LockScenarioResponseDTO,
   ScenarioListFilters,
 } from "@/types";
 
@@ -981,6 +982,93 @@ export async function createScenarioFromImport(
     }
     console.error("[createScenarioFromImport] Unexpected error:", error);
     throw new DatabaseError("An unexpected error occurred while creating scenario");
+  }
+}
+
+/**
+ * Lock a scenario to prevent further modifications
+ */
+export async function lockScenario(
+  supabase: SupabaseClient<Database>,
+  companyId: string,
+  scenarioId: number
+): Promise<LockScenarioResponseDTO> {
+  try {
+    // Step 1: Verify user has access to this company
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new ForbiddenError("User not authenticated");
+    }
+
+    const { data: memberCheck, error: memberError } = await supabase
+      .from("company_members")
+      .select("company_id")
+      .eq("company_id", companyId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (memberError || !memberCheck) {
+      throw new ForbiddenError("You do not have access to this company");
+    }
+
+    // Step 2: Verify scenario exists and belongs to this company
+    const { data: scenario, error: scenarioError } = await supabase
+      .from("scenarios")
+      .select("id, company_id, status, is_active")
+      .eq("id", scenarioId)
+      .eq("company_id", companyId)
+      .eq("is_active", true)
+      .single();
+
+    if (scenarioError || !scenario) {
+      throw new ScenarioNotFoundError(`Scenario with ID ${scenarioId} not found`);
+    }
+
+    // Step 3: Check if already locked
+    if (scenario.status === "Locked") {
+      throw new ConflictError("Scenario is already locked");
+    }
+
+    // Step 4: Lock the scenario
+    const now = new Date().toISOString();
+    const { data: lockedScenario, error: lockError } = await supabase
+      .from("scenarios")
+      .update({
+        status: "Locked",
+        locked_at: now,
+        locked_by: user.id,
+      })
+      .eq("id", scenarioId)
+      .eq("company_id", companyId)
+      .select("id, status, locked_at, locked_by")
+      .single();
+
+    if (lockError || !lockedScenario) {
+      console.error("[scenario.service] Error locking scenario:", lockError);
+      throw new DatabaseError("Failed to lock scenario");
+    }
+
+    // Step 5: Return response
+    return {
+      id: lockedScenario.id,
+      status: lockedScenario.status,
+      locked_at: lockedScenario.locked_at || now,
+      locked_by: lockedScenario.locked_by || user.id,
+    };
+  } catch (error) {
+    if (
+      error instanceof ForbiddenError ||
+      error instanceof ScenarioNotFoundError ||
+      error instanceof ConflictError ||
+      error instanceof DatabaseError
+    ) {
+      throw error;
+    }
+    console.error("[lockScenario] Unexpected error:", error);
+    throw new DatabaseError("An unexpected error occurred while locking scenario");
   }
 }
 

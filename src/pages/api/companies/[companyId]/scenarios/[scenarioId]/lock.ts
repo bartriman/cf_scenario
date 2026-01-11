@@ -1,16 +1,14 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
-
-export const prerender = false;
-
 import {
-  duplicateScenario,
+  lockScenario,
   ForbiddenError,
   DatabaseError,
   ScenarioNotFoundError,
   ConflictError,
 } from "@/lib/services/scenario.service";
-import type { DuplicateScenarioRequestDTO } from "@/types";
+
+export const prerender = false;
 
 /**
  * Path parameters schema
@@ -21,18 +19,11 @@ const PathParamsSchema = z.object({
 });
 
 /**
- * Request body schema for duplicating scenario
- */
-const DuplicateScenarioBodySchema = z.object({
-  name: z.string().min(1, "Nazwa jest wymagana").max(255, "Nazwa nie może przekraczać 255 znaków"),
-});
-
-/**
- * POST /api/companies/{companyId}/scenarios/{scenarioId}/duplicate
+ * POST /api/companies/{companyId}/scenarios/{scenarioId}/lock
  *
- * Duplicates a scenario with all its overrides
+ * Locks a scenario to prevent further modifications
  */
-export const POST: APIRoute = async ({ params, locals, request }) => {
+export const POST: APIRoute = async ({ params, locals }) => {
   try {
     // Step 1: Check authentication
     const supabase = locals.supabase;
@@ -80,60 +71,16 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
       throw error;
     }
 
-    // Step 3: Parse and validate request body
-    let body: DuplicateScenarioRequestDTO;
-    try {
-      const rawBody = await request.json();
-      body = DuplicateScenarioBodySchema.parse(rawBody);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return new Response(
-          JSON.stringify({
-            error: {
-              code: "VALIDATION_ERROR",
-              message: "Invalid request body",
-              details: error.errors.map((e) => ({
-                field: e.path.join("."),
-                message: e.message,
-              })),
-            },
-          }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      }
-      return new Response(
-        JSON.stringify({
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid JSON body",
-          },
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
+    // Step 3: Call service layer
+    const lockedScenario = await lockScenario(supabase, validatedParams.companyId, validatedParams.scenarioId);
 
-    // Step 4: Call service layer
-    const duplicatedScenario = await duplicateScenario(
-      supabase,
-      validatedParams.companyId,
-      validatedParams.scenarioId,
-      body
-    );
-
-    // Step 5: Return duplicated scenario
-    return new Response(JSON.stringify(duplicatedScenario), {
-      status: 201,
+    // Step 4: Return locked scenario details
+    return new Response(JSON.stringify(lockedScenario), {
+      status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("[POST /scenarios/:id/duplicate] Error:", error);
+    console.error("[POST /scenarios/:id/lock] Error:", error);
 
     // Handle custom error types
     if (error instanceof ScenarioNotFoundError) {

@@ -1,5 +1,8 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
+
+export const prerender = false;
+
 import {
   getScenarioDetails,
   updateScenario,
