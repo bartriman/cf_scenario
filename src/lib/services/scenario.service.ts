@@ -852,3 +852,135 @@ export async function duplicateScenario(
     throw new DatabaseError("An unexpected error occurred while duplicating scenario");
   }
 }
+
+/**
+ * Create scenario from completed import with auto-calculated date range
+ */
+export async function createScenarioFromImport(
+  supabase: SupabaseClient<Database>,
+  companyId: string,
+  importId: number,
+  name: string,
+  startDate?: string,
+  endDate?: string
+): Promise<CreateScenarioResponseDTO> {
+  try {
+    // Step 1: Verify user has access to this company
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new ForbiddenError("User not authenticated");
+    }
+
+    const { data: membership, error: membershipError } = await supabase
+      .from("company_members")
+      .select("role")
+      .eq("company_id", companyId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (membershipError || !membership) {
+      throw new ForbiddenError("User is not a member of this company");
+    }
+
+    // Step 2: Verify import exists and is completed
+    const { data: importRecord, error: importError } = await supabase
+      .from("imports")
+      .select("id, company_id, dataset_code, status")
+      .eq("id", importId)
+      .eq("company_id", companyId)
+      .maybeSingle();
+
+    if (importError) {
+      console.error("[createScenarioFromImport] Import fetch error:", importError);
+      throw new DatabaseError("Failed to fetch import");
+    }
+
+    if (!importRecord) {
+      throw new ValidationError(`Import ${importId} not found`);
+    }
+
+    if (importRecord.status !== "completed") {
+      throw new ValidationError(`Import must be completed. Current status: ${importRecord.status}`);
+    }
+
+    // Step 3: Calculate date range from transactions if not provided
+    let finalStartDate = startDate;
+    let finalEndDate = endDate;
+
+    if (!finalStartDate || !finalEndDate) {
+      const { data: dateRange, error: rangeError } = await supabase
+        .from("transactions")
+        .select("date_due")
+        .eq("import_id", importId)
+        .order("date_due", { ascending: true });
+
+      if (rangeError) {
+        console.error("[createScenarioFromImport] Date range calculation error:", rangeError);
+      }
+
+      if (dateRange && dateRange.length > 0) {
+        finalStartDate = finalStartDate || dateRange[0].date_due;
+        finalEndDate = finalEndDate || dateRange[dateRange.length - 1].date_due;
+      } else {
+        // Default to current month if no transactions
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        finalStartDate = finalStartDate || firstDay.toISOString().split("T")[0];
+        finalEndDate = finalEndDate || lastDay.toISOString().split("T")[0];
+      }
+    }
+
+    // Step 4: Create scenario
+    const { data: newScenario, error: createError } = await supabase
+      .from("scenarios")
+      .insert({
+        company_id: companyId,
+        import_id: importId,
+        dataset_code: importRecord.dataset_code,
+        name,
+        status: "Draft",
+        base_scenario_id: null,
+        start_date: finalStartDate,
+        end_date: finalEndDate,
+        locked_at: null,
+        locked_by: null,
+        deleted_at: null,
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      console.error("[createScenarioFromImport] Create error:", createError);
+      throw new DatabaseError("Failed to create scenario");
+    }
+
+    // Step 5: Return scenario details
+    return {
+      id: newScenario.id,
+      company_id: newScenario.company_id,
+      import_id: newScenario.import_id,
+      dataset_code: newScenario.dataset_code,
+      name: newScenario.name,
+      status: newScenario.status,
+      base_scenario_id: newScenario.base_scenario_id,
+      start_date: newScenario.start_date,
+      end_date: newScenario.end_date,
+      created_at: newScenario.created_at,
+    };
+  } catch (error) {
+    if (
+      error instanceof ForbiddenError ||
+      error instanceof DatabaseError ||
+      error instanceof ValidationError
+    ) {
+      throw error;
+    }
+    console.error("[createScenarioFromImport] Unexpected error:", error);
+    throw new DatabaseError("An unexpected error occurred while creating scenario");
+  }
+}
+
