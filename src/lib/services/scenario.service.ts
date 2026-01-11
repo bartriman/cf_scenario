@@ -11,6 +11,11 @@ import type {
   DuplicateScenarioResponseDTO,
   LockScenarioResponseDTO,
   ScenarioListFilters,
+  UpsertOverrideRequestDTO,
+  UpsertOverrideResponseDTO,
+  BatchUpdateOverridesRequestDTO,
+  BatchUpdateOverridesResponseDTO,
+  ScenarioOverrideDTO,
 } from "@/types";
 
 // Custom Error Classes
@@ -1069,6 +1074,304 @@ export async function lockScenario(
     }
     console.error("[lockScenario] Unexpected error:", error);
     throw new DatabaseError("An unexpected error occurred while locking scenario");
+  }
+}
+
+/**
+ * Upsert a single override for a transaction in a scenario
+ * Creates or updates an override for a specific flow_id
+ */
+export async function upsertOverride(
+  supabase: SupabaseClient<Database>,
+  companyId: string,
+  scenarioId: number,
+  flowId: string,
+  data: UpsertOverrideRequestDTO
+): Promise<UpsertOverrideResponseDTO> {
+  try {
+    // Step 1: Verify user authentication
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new ForbiddenError("User not authenticated");
+    }
+
+    // Step 2: Verify company membership
+    const { data: membership, error: membershipError } = await supabase
+      .from("company_members")
+      .select("role")
+      .eq("company_id", companyId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (membershipError) {
+      console.error("[upsertOverride] Membership check error:", membershipError);
+      throw new DatabaseError("Failed to verify company access");
+    }
+
+    if (!membership) {
+      throw new ForbiddenError("User is not a member of this company");
+    }
+
+    // Step 3: Verify scenario exists and belongs to company
+    const { data: scenario, error: scenarioError } = await supabase
+      .from("scenarios")
+      .select("id, status, company_id")
+      .eq("id", scenarioId)
+      .eq("company_id", companyId)
+      .maybeSingle();
+
+    if (scenarioError) {
+      console.error("[upsertOverride] Scenario fetch error:", scenarioError);
+      throw new DatabaseError("Failed to fetch scenario");
+    }
+
+    if (!scenario) {
+      throw new ScenarioNotFoundError(`Scenario with ID ${scenarioId} not found`);
+    }
+
+    // Step 4: Check if scenario is Draft (only Draft can be edited)
+    if (scenario.status !== "Draft") {
+      throw new ConflictError("Cannot modify overrides for a Locked scenario");
+    }
+
+    // Step 5: Get the original transaction to freeze original values
+    const { data: transaction, error: transactionError } = await supabase
+      .from("transactions")
+      .select("flow_id, date_due, amount_book_cents")
+      .eq("company_id", companyId)
+      .eq("flow_id", flowId)
+      .maybeSingle();
+
+    if (transactionError) {
+      console.error("[upsertOverride] Transaction fetch error:", transactionError);
+      throw new DatabaseError("Failed to fetch transaction");
+    }
+
+    if (!transaction) {
+      throw new ValidationError(`Transaction with flow_id '${flowId}' not found`);
+    }
+
+    // Step 6: Check if override already exists
+    const { data: existingOverride, error: checkError } = await supabase
+      .from("scenario_overrides")
+      .select("*")
+      .eq("company_id", companyId)
+      .eq("scenario_id", scenarioId)
+      .eq("flow_id", flowId)
+      .maybeSingle();
+
+    if (checkError && checkError.code !== "PGRST116") {
+      // PGRST116 = no rows returned (OK)
+      console.error("[upsertOverride] Override check error:", checkError);
+      throw new DatabaseError("Failed to check existing override");
+    }
+
+    // Step 7: Upsert the override
+    const overrideData = {
+      company_id: companyId,
+      scenario_id: scenarioId,
+      flow_id: flowId,
+      // Preserve original values from existing override, or set from transaction
+      original_date_due: existingOverride?.original_date_due || transaction.date_due,
+      original_amount_book_cents: existingOverride?.original_amount_book_cents || transaction.amount_book_cents,
+      // Update new values from request
+      new_date_due: data.new_date_due !== undefined ? data.new_date_due : existingOverride?.new_date_due,
+      new_amount_book_cents:
+        data.new_amount_book_cents !== undefined ? data.new_amount_book_cents : existingOverride?.new_amount_book_cents,
+    };
+
+    const { data: upsertedOverride, error: upsertError } = await supabase
+      .from("scenario_overrides")
+      .upsert(overrideData, {
+        onConflict: "company_id,scenario_id,flow_id",
+      })
+      .select("*")
+      .single();
+
+    if (upsertError) {
+      console.error("[upsertOverride] Upsert error:", upsertError);
+      throw new DatabaseError("Failed to save override");
+    }
+
+    // Step 8: Return response DTO
+    return {
+      id: upsertedOverride.id,
+      scenario_id: upsertedOverride.scenario_id,
+      flow_id: upsertedOverride.flow_id,
+      original_date_due: upsertedOverride.original_date_due,
+      original_amount_book_cents: upsertedOverride.original_amount_book_cents,
+      new_date_due: upsertedOverride.new_date_due,
+      new_amount_book_cents: upsertedOverride.new_amount_book_cents,
+      created_at: upsertedOverride.created_at,
+      updated_at: upsertedOverride.updated_at,
+    };
+  } catch (error) {
+    if (
+      error instanceof ForbiddenError ||
+      error instanceof ScenarioNotFoundError ||
+      error instanceof ValidationError ||
+      error instanceof ConflictError ||
+      error instanceof DatabaseError
+    ) {
+      throw error;
+    }
+    console.error("[upsertOverride] Unexpected error:", error);
+    throw new DatabaseError("An unexpected error occurred while saving override");
+  }
+}
+
+/**
+ * Batch upsert overrides for multiple transactions
+ * Used for drag & drop operations
+ */
+export async function batchUpdateOverrides(
+  supabase: SupabaseClient<Database>,
+  companyId: string,
+  scenarioId: number,
+  data: BatchUpdateOverridesRequestDTO
+): Promise<BatchUpdateOverridesResponseDTO> {
+  try {
+    // Step 1: Verify user authentication
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new ForbiddenError("User not authenticated");
+    }
+
+    // Step 2: Verify company membership
+    const { data: membership, error: membershipError } = await supabase
+      .from("company_members")
+      .select("role")
+      .eq("company_id", companyId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (membershipError) {
+      console.error("[batchUpdateOverrides] Membership check error:", membershipError);
+      throw new DatabaseError("Failed to verify company access");
+    }
+
+    if (!membership) {
+      throw new ForbiddenError("User is not a member of this company");
+    }
+
+    // Step 3: Verify scenario exists and is Draft
+    const { data: scenario, error: scenarioError } = await supabase
+      .from("scenarios")
+      .select("id, status, company_id")
+      .eq("id", scenarioId)
+      .eq("company_id", companyId)
+      .maybeSingle();
+
+    if (scenarioError) {
+      console.error("[batchUpdateOverrides] Scenario fetch error:", scenarioError);
+      throw new DatabaseError("Failed to fetch scenario");
+    }
+
+    if (!scenario) {
+      throw new ScenarioNotFoundError(`Scenario with ID ${scenarioId} not found`);
+    }
+
+    if (scenario.status !== "Draft") {
+      throw new ConflictError("Cannot modify overrides for a Locked scenario");
+    }
+
+    // Step 4: Validate that all flow_ids exist
+    const flowIds = data.overrides.map((o) => o.flow_id);
+    const { data: transactions, error: transactionsError } = await supabase
+      .from("transactions")
+      .select("flow_id, date_due, amount_book_cents")
+      .eq("company_id", companyId)
+      .in("flow_id", flowIds);
+
+    if (transactionsError) {
+      console.error("[batchUpdateOverrides] Transactions fetch error:", transactionsError);
+      throw new DatabaseError("Failed to fetch transactions");
+    }
+
+    if (!transactions || transactions.length !== flowIds.length) {
+      const foundFlowIds = transactions?.map((t) => t.flow_id) || [];
+      const missingFlowIds = flowIds.filter((id) => !foundFlowIds.includes(id));
+      throw new ValidationError(`Transactions not found for flow_ids: ${missingFlowIds.join(", ")}`);
+    }
+
+    // Step 5: Get existing overrides for these flow_ids
+    const { data: existingOverrides, error: overridesError } = await supabase
+      .from("scenario_overrides")
+      .select("*")
+      .eq("company_id", companyId)
+      .eq("scenario_id", scenarioId)
+      .in("flow_id", flowIds);
+
+    if (overridesError && overridesError.code !== "PGRST116") {
+      console.error("[batchUpdateOverrides] Existing overrides fetch error:", overridesError);
+      throw new DatabaseError("Failed to fetch existing overrides");
+    }
+
+    // Step 6: Build upsert data
+    const overridesMap = new Map(existingOverrides?.map((o) => [o.flow_id, o]) || []);
+    const transactionsMap = new Map(transactions.map((t) => [t.flow_id, t]));
+
+    const upsertData = data.overrides.map((override) => {
+      const existing = overridesMap.get(override.flow_id);
+      const transaction = transactionsMap.get(override.flow_id)!;
+
+      return {
+        company_id: companyId,
+        scenario_id: scenarioId,
+        flow_id: override.flow_id,
+        // Freeze original values from transaction if this is first override
+        original_date_due: existing?.original_date_due || transaction.date_due,
+        original_amount_book_cents: existing?.original_amount_book_cents || transaction.amount_book_cents,
+        // Update new values from request
+        new_date_due: override.new_date_due !== undefined ? override.new_date_due : existing?.new_date_due,
+        new_amount_book_cents:
+          override.new_amount_book_cents !== undefined
+            ? override.new_amount_book_cents
+            : existing?.new_amount_book_cents,
+      };
+    });
+
+    // Step 7: Batch upsert
+    const { data: upsertedOverrides, error: upsertError } = await supabase
+      .from("scenario_overrides")
+      .upsert(upsertData, {
+        onConflict: "company_id,scenario_id,flow_id",
+      })
+      .select("id, flow_id, new_date_due, new_amount_book_cents");
+
+    if (upsertError) {
+      console.error("[batchUpdateOverrides] Batch upsert error:", upsertError);
+      throw new DatabaseError("Failed to save overrides");
+    }
+
+    // Step 8: Return response
+    return {
+      updated_count: upsertedOverrides?.length || 0,
+      overrides: (upsertedOverrides || []).map((o) => ({
+        id: o.id,
+        flow_id: o.flow_id,
+        new_date_due: o.new_date_due,
+        new_amount_book_cents: o.new_amount_book_cents,
+      })),
+    };
+  } catch (error) {
+    if (
+      error instanceof ForbiddenError ||
+      error instanceof ScenarioNotFoundError ||
+      error instanceof ValidationError ||
+      error instanceof ConflictError ||
+      error instanceof DatabaseError
+    ) {
+      throw error;
+    }
+    console.error("[batchUpdateOverrides] Unexpected error:", error);
+    throw new DatabaseError("An unexpected error occurred while batch updating overrides");
   }
 }
 

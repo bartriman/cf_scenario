@@ -66,3 +66,59 @@ export const createFromImportSchema = z
 export type CreateScenarioFormValues = z.infer<typeof createScenarioSchema>;
 export type DuplicateScenarioFormValues = z.infer<typeof duplicateScenarioSchema>;
 export type CreateFromImportFormValues = z.infer<typeof createFromImportSchema>;
+
+// Schemat walidacji dla upsert override (PUT endpoint)
+export const upsertOverrideSchema = z
+  .object({
+    new_date_due: z
+      .string()
+      .nullable()
+      .optional()
+      .refine((val) => val === null || val === undefined || !isNaN(Date.parse(val)), {
+        message: "Nieprawidłowa data",
+      }),
+    new_amount_book_cents: z
+      .number()
+      .int("Kwota musi być liczbą całkowitą")
+      .nonnegative("Kwota nie może być ujemna")
+      .nullable()
+      .optional(),
+  })
+  .refine((data) => data.new_date_due !== undefined || data.new_amount_book_cents !== undefined, {
+    message: "Musisz podać przynajmniej jedną wartość do zmiany (datę lub kwotę)",
+  });
+
+// Schemat walidacji dla pojedynczego override w batch
+export const batchOverrideItemSchema = z
+  .object({
+    flow_id: z.string().min(1, "flow_id jest wymagany"),
+    new_date_due: z
+      .string()
+      .nullable()
+      .optional()
+      .refine((val) => val === null || val === undefined || !isNaN(Date.parse(val)), {
+        message: "Nieprawidłowa data",
+      }),
+    new_amount_book_cents: z
+      .number()
+      .int("Kwota musi być liczbą całkowitą")
+      .nonnegative("Kwota nie może być ujemna")
+      .nullable()
+      .optional(),
+  })
+  .refine((data) => data.new_date_due !== undefined || data.new_amount_book_cents !== undefined, {
+    message: "Musisz podać przynajmniej jedną wartość do zmiany (datę lub kwotę)",
+  });
+
+// Schemat walidacji dla batch update overrides (POST endpoint)
+export const batchUpdateOverridesSchema = z.object({
+  overrides: z
+    .array(batchOverrideItemSchema)
+    .min(1, "Lista override'ów nie może być pusta")
+    .max(100, "Maksymalna liczba override'ów w jednym batchu to 100"),
+});
+
+// Typy inferred dla walidacji override'ów
+export type UpsertOverrideFormValues = z.infer<typeof upsertOverrideSchema>;
+export type BatchOverrideItemFormValues = z.infer<typeof batchOverrideItemSchema>;
+export type BatchUpdateOverridesFormValues = z.infer<typeof batchUpdateOverridesSchema>;

@@ -4,6 +4,7 @@ import { ScenarioListHeader } from "./ScenarioListHeader";
 import { ScenarioGrid } from "./ScenarioGrid";
 import { CreateScenarioDialog } from "./CreateScenarioDialog";
 import { DuplicateScenarioDialog } from "./DuplicateScenarioDialog";
+import { ExportDialog } from "./ExportDialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { ScenarioListItemDTO, ScenarioFilterStatus } from "@/types";
@@ -24,7 +25,9 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
   // Stany dialogów
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [scenarioToDuplicate, setScenarioToDuplicate] = useState<ScenarioListItemDTO | null>(null);
+  const [scenarioToExport, setScenarioToExport] = useState<ScenarioListItemDTO | null>(null);
 
   // Initial fetch
   useEffect(() => {
@@ -66,6 +69,12 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
   const handleDuplicateClick = useCallback((scenario: ScenarioListItemDTO) => {
     setScenarioToDuplicate(scenario);
     setDuplicateDialogOpen(true);
+  }, []);
+
+  // Handler dla eksportu
+  const handleExportClick = useCallback((scenario: ScenarioListItemDTO) => {
+    setScenarioToExport(scenario);
+    setExportDialogOpen(true);
   }, []);
 
   // Handler po pomyślnym utworzeniu scenariusza
@@ -193,6 +202,7 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
         onDuplicateClick={handleDuplicateClick}
         onLockClick={handleLockClick}
         onDeleteClick={handleDeleteClick}
+        onExportClick={handleExportClick}
         onCreateClick={() => setCreateDialogOpen(true)}
       />
 
@@ -212,6 +222,16 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
           if (!open) setScenarioToDuplicate(null);
         }}
         onSuccess={handleDuplicateSuccess}
+      />
+
+      <ExportDialog
+        companyId={companyId}
+        scenario={scenarioToExport}
+        open={exportDialogOpen}
+        onOpenChange={(open) => {
+          setExportDialogOpen(open);
+          if (!open) setScenarioToExport(null);
+        }}
       />
     </div>
   );

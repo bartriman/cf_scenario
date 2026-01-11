@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Eye, Copy, Lock, Trash2 } from "lucide-react";
+import { MoreVertical, Eye, Copy, Lock, Trash2, Download } from "lucide-react";
 import type { ScenarioListItemDTO } from "@/types";
 
 interface ScenarioCardProps {
@@ -17,6 +17,7 @@ interface ScenarioCardProps {
   onDuplicate: () => void;
   onLock: () => void;
   onDelete: () => void;
+  onExport: () => void;
 }
 
 function formatDate(dateString: string): string {
@@ -42,8 +43,9 @@ function formatRelativeTime(dateString: string): string {
   return `${Math.floor(diffInDays / 365)} lat temu`;
 }
 
-export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete }: ScenarioCardProps) {
+export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete, onExport }: ScenarioCardProps) {
   const isDraft = scenario.status === "Draft";
+  const isLocked = scenario.status === "Locked";
   const canLock = isDraft;
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -89,6 +91,18 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete 
               <Copy className="mr-2 h-4 w-4" />
               Duplikuj
             </DropdownMenuItem>
+
+            {isLocked && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onExport();
+                }}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Eksportuj do Excel
+              </DropdownMenuItem>
+            )}
 
             {canLock && (
               <>

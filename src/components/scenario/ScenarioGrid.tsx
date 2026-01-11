@@ -10,6 +10,7 @@ interface ScenarioGridProps {
   onDuplicateClick: (scenario: ScenarioListItemDTO) => void;
   onLockClick: (scenarioId: number) => void;
   onDeleteClick: (scenarioId: number) => void;
+  onExportClick: (scenario: ScenarioListItemDTO) => void;
   onCreateClick: () => void;
 }
 
@@ -40,6 +41,7 @@ export function ScenarioGrid({
   onDuplicateClick,
   onLockClick,
   onDeleteClick,
+  onExportClick,
   onCreateClick,
 }: ScenarioGridProps) {
   // Stan ładowania - wyświetl szkielety
@@ -69,6 +71,7 @@ export function ScenarioGrid({
           onDuplicate={() => onDuplicateClick(scenario)}
           onLock={() => onLockClick(scenario.id)}
           onDelete={() => onDeleteClick(scenario.id)}
+          onExport={() => onExportClick(scenario)}
         />
       ))}
     </div>

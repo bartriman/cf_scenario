@@ -1127,3 +1127,32 @@ export interface ScenarioListFilters {
   status: ScenarioFilterStatus;
   searchQuery: string;
 }
+
+// =============================================================================
+// EXPORT DTOs
+// =============================================================================
+
+// Export weekly summary data
+export interface ExportWeeklySummaryDTO {
+  week_index: number;
+  inflow_total_book_cents: number;
+  outflow_total_book_cents: number;
+}
+
+// Export transaction data
+export interface ExportTransactionDTO {
+  date_due_effective: string;
+  direction: TransactionDirectionType;
+  amount_book_cents_effective: number;
+  counterparty: string | null;
+  description: string | null;
+  project: string | null;
+  document: string | null;
+  is_overridden: boolean;
+}
+
+// Export running balance data
+export interface ExportRunningBalanceDTO {
+  as_of_date: string;
+  running_balance_book_cents: number;
+}
