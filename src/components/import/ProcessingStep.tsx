@@ -2,45 +2,89 @@ import { useEffect, useState } from "react";
 
 interface ProcessingStepProps {
   importId: number;
+  companyId: string;
   onComplete: (scenarioId: number) => void;
   onError: (error: string) => void;
 }
 
-export function ProcessingStep({ importId, onComplete, onError }: ProcessingStepProps) {
+export function ProcessingStep({ importId, companyId, onComplete, onError }: ProcessingStepProps) {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("Inicjalizacja importu...");
+  const [scenarioId, setScenarioId] = useState<number | null>(null);
 
   useEffect(() => {
-    // Symulacja postępu (w przyszłości będzie to polling do API)
-    const steps = [
-      { progress: 10, message: "Sprawdzanie pliku...", delay: 500 },
-      { progress: 30, message: "Parsowanie danych CSV...", delay: 1000 },
-      { progress: 50, message: "Walidacja transakcji...", delay: 1500 },
-      { progress: 70, message: "Importowanie danych...", delay: 2000 },
-      { progress: 90, message: "Tworzenie scenariusza bazowego...", delay: 2500 },
-      { progress: 100, message: "Import zakończony!", delay: 3000 },
-    ];
+    let polling = true;
 
-    let currentStep = 0;
-    const interval = setInterval(() => {
-      if (currentStep < steps.length) {
-        const step = steps[currentStep];
-        setProgress(step.progress);
-        setMessage(step.message);
-        currentStep++;
+    const pollImportStatus = async () => {
+      try {
+        const response = await fetch(`/api/companies/${companyId}/imports/${importId}/status`);
 
-        if (step.progress === 100) {
-          clearInterval(interval);
-          // Symulacja utworzenia scenariusza (w przyszłości z API)
-          setTimeout(() => {
-            onComplete(1); // Placeholder scenario ID
-          }, 1000);
+        if (!response.ok) {
+          throw new Error("Failed to fetch import status");
         }
-      }
-    }, 500);
 
-    return () => clearInterval(interval);
-  }, [importId, onComplete, onError]);
+        const data = await response.json();
+
+        // Update progress based on status
+        if (data.status === "pending") {
+          setProgress(10);
+          setMessage("Oczekiwanie na przetwarzanie...");
+        } else if (data.status === "processing") {
+          setProgress(data.progress || 50);
+          setMessage("Przetwarzanie danych CSV...");
+        } else if (data.status === "completed") {
+          setProgress(100);
+          setMessage("Import zakończony pomyślnie!");
+
+          // Find scenario ID from response (if created automatically)
+          // Note: The endpoint returns scenario_id in the POST response, not GET status
+          // So we check if we already have it from the initial POST
+          if (scenarioId) {
+            polling = false;
+            setTimeout(() => {
+              onComplete(scenarioId);
+            }, 1000);
+          } else {
+            // If no scenario was created, still mark as complete
+            polling = false;
+            setTimeout(() => {
+              onComplete(0); // 0 indicates no scenario created
+            }, 1000);
+          }
+        } else if (data.status === "failed") {
+          setProgress(100);
+          setMessage("Import zakończony z błędami");
+          polling = false;
+          onError(
+            data.error_report_json
+              ? `Import failed: ${data.invalid_rows} invalid rows`
+              : "Import processing failed"
+          );
+        }
+      } catch (error) {
+        console.error("Error polling import status:", error);
+        polling = false;
+        onError(error instanceof Error ? error.message : "Unknown error occurred");
+      }
+    };
+
+    // Poll every 2 seconds
+    const interval = setInterval(() => {
+      if (polling) {
+        pollImportStatus();
+      } else {
+        clearInterval(interval);
+      }
+    }, 2000);
+
+    // Initial poll
+    pollImportStatus();
+
+    return () => {
+      polling = false;
+      clearInterval(interval);
+    };
+  }, [importId, companyId, onComplete, onError, scenarioId]);
 
   return (
     <div className="space-y-6">

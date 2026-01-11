@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { useImportWizard } from "@/components/hooks/useImportWizard";
 import { WizardProgress } from "./WizardProgress";
 import { FileUploadStep } from "./FileUploadStep";
 import { ColumnMappingStep } from "./ColumnMappingStep";
 import { ValidationStep } from "./ValidationStep";
 import { ProcessingStep } from "./ProcessingStep";
-import type { WizardStep } from "@/types";
+import { prepareImportPayload, submitImport } from "@/lib/utils/csv-import";
+import type { WizardStep, ValidationResult } from "@/types";
 
 interface ImportWizardProps {
   companyId: string;
@@ -20,8 +22,20 @@ const STEP_LABELS = [
 ];
 
 export default function ImportWizard({ companyId, onCancel }: ImportWizardProps) {
-  const { state, nextStep, previousStep, setFileData, setMapping, setImportId, setScenarioId, canProceed } =
-    useImportWizard(companyId);
+  const {
+    state,
+    nextStep,
+    previousStep,
+    setFileData,
+    setMapping,
+    setValidationResult,
+    setImportId,
+    setScenarioId,
+    setError,
+    canProceed,
+  } = useImportWizard(companyId);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Przygotowanie kroków dla WizardProgress
   const steps = STEP_LABELS.map((stepLabel, index) => {
@@ -52,10 +66,52 @@ export default function ImportWizard({ companyId, onCancel }: ImportWizardProps)
     setScenarioId(scenarioId);
     // Przekierowanie będzie obsłużone przez useEffect w komponencie nadrzędnym
     // lub bezpośrednio poprzez nawigację
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && scenarioId > 0) {
       setTimeout(() => {
         window.location.href = `/scenarios/${scenarioId}`;
       }, 1000);
+    }
+  };
+
+  const handleValidationStart = async () => {
+    if (!state.file || !state.datasetCode) {
+      setError("Brak pliku lub kodu datasetu");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Prepare import payload
+      const payload = await prepareImportPayload(state.file, state.datasetCode, state.columnMapping, true);
+
+      // Submit to API
+      const result = await submitImport(companyId, payload);
+
+      // Store import ID and scenario ID
+      setImportId(result.import_id);
+      if (result.scenario_id) {
+        setScenarioId(result.scenario_id);
+      }
+
+      // Create validation result from API response
+      const validationResult: ValidationResult = {
+        import_id: result.import_id,
+        total_rows: result.total_rows,
+        valid_rows: result.valid_rows,
+        invalid_rows: result.invalid_rows,
+        errors: result.errors || [],
+        status: result.invalid_rows === 0 ? "success" : result.valid_rows === 0 ? "error" : "warning",
+      };
+
+      setValidationResult(validationResult);
+      nextStep();
+    } catch (error) {
+      console.error("Import submission error:", error);
+      setError(error instanceof Error ? error.message : "Wystąpił błąd podczas importu");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -79,45 +135,31 @@ export default function ImportWizard({ companyId, onCancel }: ImportWizardProps)
             previewRows={state.previewRows}
             mapping={state.columnMapping}
             onMappingChange={setMapping}
-            onNext={nextStep}
+            onNext={handleValidationStart}
             onBack={previousStep}
-            canProceed={canProceed}
+            canProceed={canProceed && !isSubmitting}
+            isLoading={isSubmitting}
           />
         );
 
       case 3: {
-        // Validation
-        // Dla demonstracji używamy mock validationResult
-        // W przyszłości będzie to dane z API
-        const mockValidationResult = state.validationResult || {
-          import_id: 1,
-          total_rows: 100,
-          valid_rows: 95,
-          invalid_rows: 5,
-          errors: [
-            {
-              row_number: 5,
-              field_name: "amount",
-              invalid_value: "-100",
-              error_message: "Kwota nie może być ujemna",
-              error_code: "NEGATIVE_AMOUNT",
-            },
-            {
-              row_number: 12,
-              field_name: "date_due",
-              invalid_value: "2024-13-01",
-              error_message: "Nieprawidłowy format daty",
-              error_code: "INVALID_DATE_FORMAT",
-            },
-          ],
-          status: "warning" as const,
-        };
+        // Validation - use actual validation result from API
+        if (!state.validationResult) {
+          return (
+            <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-red-800 dark:text-red-200 font-medium">Błąd: Brak danych walidacji</p>
+              <p className="text-sm text-red-600 dark:text-red-300 mt-2">
+                Wróć do poprzedniego kroku i spróbuj ponownie.
+              </p>
+            </div>
+          );
+        }
 
         return (
           <ValidationStep
-            validationResult={mockValidationResult}
+            validationResult={state.validationResult}
             onContinueWithErrors={() => {
-              setImportId(1); // Mock import ID
+              // Import already submitted, just move to processing step
               nextStep();
             }}
             onBack={previousStep}
@@ -141,12 +183,21 @@ export default function ImportWizard({ companyId, onCancel }: ImportWizardProps)
     }
   };
 
-  return (
-    <div className="max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Import danych CSV</h1>
-        <p className="text-muted-foreground">Zaimportuj dane finansowe z pliku CSV i utwórz nowy scenariusz bazowy</p>
+  returnif (!state.importId) {
+          return (
+            <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-red-800 dark:text-red-200 font-medium">Błąd: Brak ID importu</p>
+            </div>
+          );
+        }
+
+        return (
+          <ProcessingStep
+            importId={state.importId}
+            companyId={companyId}
+            onComplete={handleCompleteImport}
+            onError={(errorMsg) => {
+              setError(errorMsg);portuj dane finansowe z pliku CSV i utwórz nowy scenariusz bazowy</p>
       </div>
 
       {/* Progress indicator */}
