@@ -53,3 +53,12 @@
 - **Performance:** Heavy aggregations (Top-5 ranking) performed in SQL (CTE + Indexes) rather than client-side.
 - **Rendering:** Virtualization for long lists of transactions to maintain UI responsiveness.
 - **Scenario Logic:** "Copy-on-write" approach using `scenario_overrides` table instead of duplicating all transactions for every scenario.
+
+## 6. Testing
+
+- **Unit & Integration Testing:**
+  - **Runner:** Vitest
+  - **Component & Hooks Testing:** @testing-library/react
+- **E2E Testing:**
+  - **Framework:** Playwright
+  - **Data Generation:** Faker.js

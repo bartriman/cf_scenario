@@ -48,6 +48,8 @@ npm run build
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Fix ESLint issues
+- `npm run test` - Run unit and integration tests
+- `npm run test:e2e` - Run end-to-end tests
 
 ## Project Structure
 

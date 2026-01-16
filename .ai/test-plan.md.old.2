@@ -1,0 +1,208 @@
+# Plan Testów dla Aplikacji "CashFlow Scenarios"
+
+**Wersja:** 1.0
+**Data:** 2026-01-16
+**Autor:** GitHub Copilot (jako Inżynier QA)
+
+---
+
+## 1. Wprowadzenie i Cele Testowania
+
+### 1.1. Wprowadzenie
+
+Niniejszy dokument opisuje kompleksowy plan testów dla aplikacji webowej "CashFlow Scenarios". Aplikacja ta jest narzędziem do zarządzania i prognozowania przepływów pieniężnych, umożliwiającym użytkownikom importowanie danych finansowych, tworzenie scenariuszy "co-jeśli", modyfikowanie transakcji oraz analizowanie wyników.
+
+Plan ten definiuje zakres, podejście, zasoby i harmonogram działań testowych. Jego celem jest zapewnienie, że aplikacja spełnia wymagania biznesowe, jest stabilna, bezpieczna i oferuje wysoką jakość użytkową.
+
+### 1.2. Cele Testowania
+
+Główne cele procesu testowego to:
+
+- **Weryfikacja funkcjonalności:** Zapewnienie, że wszystkie kluczowe funkcje, takie jak import danych, zarządzanie scenariuszami i uwierzytelnianie, działają zgodnie ze specyfikacją.
+- **Zapewnienie jakości danych:** Sprawdzenie poprawności przetwarzania, walidacji i prezentacji danych finansowych.
+- **Ocena użyteczności i UX:** Upewnienie się, że interfejs użytkownika jest intuicyjny, responsywny i spójny.
+- **Identyfikacja i raportowanie defektów:** Wczesne wykrywanie błędów w celu ich sprawnej naprawy.
+- **Weryfikacja bezpieczeństwa:** Potwierdzenie, że dane użytkownika i firmy są chronione, a system jest odporny na podstawowe ataki.
+- **Ocena wydajności:** Sprawdzenie, jak aplikacja zachowuje się pod obciążeniem, zwłaszcza podczas operacji importu i przetwarzania danych.
+- **Zapewnienie zgodności:** Potwierdzenie, że aplikacja działa poprawnie w zdefiniowanych środowiskach i przeglądarkach.
+
+---
+
+## 2. Zakres Testów
+
+### 2.1. Funkcjonalności w Zakresie Testów
+
+- **Uwierzytelnianie i Autoryzacja:**
+  - Rejestracja nowego użytkownika i firmy.
+  - Logowanie i wylogowywanie.
+  - Resetowanie hasła.
+  - Ochrona tras wymagających autentykacji.
+  - Izolacja danych między różnymi firmami/użytkownikami (testy uprawnień).
+- **Zarządzanie Scenariuszami:**
+  - Tworzenie nowego scenariusza (pustego i z importu).
+  - Wyświetlanie listy scenariuszy wraz z filtrowaniem i wyszukiwaniem.
+  - Duplikowanie scenariusza.
+  - Blokowanie scenariusza ("Lock").
+  - Usuwanie scenariusza (z uwzględnieniem zależności).
+  - Eksport danych scenariusza do pliku Excel.
+- **Kreator Importu Danych (CSV):**
+  - Krok 1: Upload pliku CSV z walidacją formatu i rozmiaru.
+  - Krok 2: Mapowanie kolumn z pliku CSV na pola systemowe.
+  - Krok 3: Walidacja danych po stronie serwera i prezentacja wyników (wiersze poprawne i błędne).
+  - Krok 4: Przetwarzanie importu (w tle) i tworzenie transakcji.
+  - Pobieranie raportu błędów.
+- **Widok Scenariusza:**
+  - Wykres salda bieżącego (`RunningBalanceChart`).
+  - Oś czasu z tygodniowymi agregatami (`Timeline`).
+  - Przeciąganie i upuszczanie transakcji między tygodniami.
+  - Edycja pojedynczej transakcji (zmiana daty, kwoty).
+  - Wyświetlanie transakcji w podziale na wpływy i wypływy.
+- **API Endpoints:**
+  - Testowanie wszystkich publicznych punktów końcowych API pod kątem poprawności działania, obsługi błędów i bezpieczeństwa.
+
+### 2.2. Funkcjonalności Poza Zakresem Testów
+
+- Testy związane z infrastrukturą Supabase (traktowane jako stabilna usługa zewnętrzna).
+- Testy generowania kodu przez narzędzia deweloperskie (np. `shadcn/ui`).
+- Testy wydajnościowe na dużą skalę (symulujące tysiące jednoczesnych użytkowników), chyba że zostaną specjalnie zlecone.
+
+---
+
+## 3. Typy Testów
+
+1.  **Testy Jednostkowe (Unit Tests):**
+    - **Cel:** Weryfikacja pojedynczych funkcji, komponentów React i logiki biznesowej w izolacji.
+    - **Zakres:** Hooki React (`useScenarios`, `useImportWizard`), funkcje pomocnicze (`utils.ts`), walidatory Zod, logika serwisów (`*.service.ts`).
+2.  **Testy Integracyjne (Integration Tests):**
+    - **Cel:** Sprawdzenie współpracy między komponentami i modułami.
+    - **Zakres:** Integracja komponentów front-endowych z API (np. formularz logowania wysyłający dane do `/api/auth/login`), interakcje między komponentami React (np. `ScenarioListContainer` i `ScenarioGrid`).
+3.  **Testy End-to-End (E2E):**
+    - **Cel:** Symulacja pełnych przepływów użytkownika w aplikacji, od początku do końca.
+    - **Zakres:** Pełny proces importu CSV, cykl życia scenariusza (tworzenie, edycja, blokowanie, eksport), proces rejestracji i logowania.
+4.  **Testy API:**
+    - **Cel:** Bezpośrednie testowanie punktów końcowych API w celu weryfikacji logiki biznesowej, kontraktu danych (DTO) i obsługi błędów.
+    - **Zakres:** Wszystkie endpointy w `src/pages/api/`. Wykorzystanie skryptu `test-endpoint.sh` jako punktu wyjścia.
+5.  **Testy Wizualnej Regresji:**
+    - **Cel:** Wykrywanie niezamierzonych zmian w interfejsie użytkownika.
+    - **Zakres:** Kluczowe komponenty UI (`Header`, `Card`, `Dialog`), strony o złożonym layoucie.
+6.  **Testy Użyteczności (Manualne):**
+    - **Cel:** Ocena intuicyjności, spójności i ogólnego doświadczenia użytkownika.
+    - **Zakres:** Cała aplikacja, ze szczególnym uwzględnieniem kreatora importu i interakcji na osi czasu.
+7.  **Testy Kompatybilności:**
+    - **Cel:** Zapewnienie poprawnego działania aplikacji w różnych przeglądarkach.
+    - **Zakres:** Testowanie kluczowych funkcjonalności na zdefiniowanych przeglądarkach.
+
+---
+
+## 4. Scenariusze Testowe dla Kluczowych Funkcjonalności
+
+### 4.1. Kreator Importu CSV
+
+| ID | Scenariusz | Oczekiwany Rezultat | Priorytet |
+|----|------------|---------------------|-----------|
+| TC-IMP-01 | Pomyślny import poprawnego pliku CSV | Użytkownik przechodzi przez wszystkie 4 kroki, dane są poprawnie zwalidowane, a na końcu zostaje utworzony nowy scenariusz. | Wysoki |
+| TC-IMP-02 | Próba importu pliku w nieobsługiwanym formacie (np. .xlsx) | Wyświetlany jest błąd walidacji formatu pliku, przejście dalej jest niemożliwe. | Wysoki |
+| TC-IMP-03 | Próba importu pliku CSV przekraczającego limit rozmiaru | Wyświetlany jest błąd walidacji rozmiaru pliku. | Średni |
+| TC-IMP-04 | Import pliku z brakującymi wymaganymi kolumnami | Kreator pozwala na mapowanie, ale walidacja w kroku 3. zwraca błędy dla wszystkich wierszy. | Wysoki |
+| TC-IMP-05 | Import pliku z częściowo błędnymi danymi (np. zły format daty) | Krok 3. pokazuje podsumowanie z poprawnymi i błędnymi wierszami. Użytkownik może kontynuować, importując tylko poprawne dane. | Wysoki |
+| TC-IMP-06 | Anulowanie importu w trakcie dowolnego kroku | Kreator zostaje zamknięty, żadne dane nie są trwale zapisane. | Średni |
+
+### 4.2. Zarządzanie Scenariuszami
+
+| ID | Scenariusz | Oczekiwany Rezultat | Priorytet |
+|----|------------|---------------------|-----------|
+| TC-SCN-01 | Tworzenie nowego, pustego scenariusza | Nowy scenariusz pojawia się na liście ze statusem "Draft". | Wysoki |
+| TC-SCN-02 | Duplikowanie istniejącego scenariusza | Na liście pojawia się nowy scenariusz z dopiskiem "(kopia)" i statusem "Draft". Modyfikacje są skopiowane. | Wysoki |
+| TC-SCN-03 | Blokowanie scenariusza w statusie "Draft" | Status scenariusza zmienia się na "Locked". Opcje edycji i przeciągania transakcji stają się nieaktywne. | Wysoki |
+| TC-SCN-04 | Próba usunięcia scenariusza, który jest bazą dla innego | Operacja jest blokowana, a użytkownik otrzymuje komunikat o istniejących zależnościach. | Średni |
+| TC-SCN-05 | Eksport zablokowanego scenariusza do Excela | Rozpoczyna się pobieranie pliku .xlsx zawierającego dane scenariusza. | Wysoki |
+| TC-SCN-06 | Filtrowanie i wyszukiwanie na liście scenariuszy | Lista dynamicznie aktualizuje się, pokazując tylko scenariusze pasujące do kryteriów. | Średni |
+
+### 4.3. Widok Scenariusza i Modyfikacje
+
+| ID | Scenariusz | Oczekiwany Rezultat | Priorytet |
+|----|------------|---------------------|-----------|
+| TC-MOD-01 | Przeciągnięcie transakcji do innego tygodnia | Transakcja wizualnie przenosi się do nowej karty tygodnia. Dane na serwerze są aktualizowane, a wykresy odświeżane. | Wysoki |
+| TC-MOD-02 | Edycja kwoty transakcji w modalnym oknie | Kwota transakcji zostaje zaktualizowana, co jest odzwierciedlone w podsumowaniu tygodnia i na wykresie salda. | Wysoki |
+| TC-MOD-03 | Próba modyfikacji transakcji w zablokowanym scenariuszu | Przyciski edycji i możliwość przeciągania są nieaktywne. | Wysoki |
+
+---
+
+## 5. Środowisko Testowe
+
+- **Serwer:** Lokalna instancja deweloperska (`npm run dev`).
+- **Baza danych:** Lokalna instancja Supabase (lub dedykowane środowisko deweloperskie/stagingowe Supabase).
+- **System operacyjny:** Linux (zgodnie z informacjami o środowisku użytkownika).
+- **Przeglądarki:**
+  - Google Chrome (najnowsza wersja) - priorytet główny.
+  - Mozilla Firefox (najnowsza wersja).
+  - Microsoft Edge (najnowsza wersja).
+
+---
+
+## 6. Narzędzia do Testowania
+
+- **Testy Jednostkowe i Integracyjne:**
+  - **Framework:** Vitest (kompatybilny z Vite, używanym przez Astro).
+  - **Biblioteki pomocnicze:** React Testing Library (do testowania komponentów React), `@testing-library/jest-dom`.
+- **Testy End-to-End:**
+  - **Framework:** Playwright lub Cypress.
+- **Testy API:**
+  - **Narzędzia:** Postman, `curl` (jak w `test-endpoint.sh`), lub testy w ramach frameworka E2E/integracyjnego.
+- **Testy Wizualnej Regresji:**
+  - **Narzędzie:** Chromatic (integracja ze Storybook) lub Percy.
+- **Linting i Jakość Kodu:**
+  - **Narzędzia:** ESLint, Prettier (już skonfigurowane w projekcie).
+
+---
+
+## 7. Harmonogram Testów
+
+Testowanie powinno być procesem ciągłym, zintegrowanym z cyklem rozwoju.
+
+- **Testy jednostkowe i integracyjne:** Pisane na bieżąco przez deweloperów wraz z nowymi funkcjonalnościami.
+- **Testy E2E i API:** Rozwijane równolegle do developmentu kluczowych przepływów. Uruchamiane przed każdym wdrożeniem na produkcję.
+- **Testy regresji (automatyczne i manualne):** Wykonywane przed każdym wydaniem nowej wersji.
+- **Testy użyteczności (manualne):** Przeprowadzane cyklicznie, np. raz na sprint/miesiąc.
+
+---
+
+## 8. Kryteria Akceptacji Testów
+
+### 8.1. Kryteria Wejścia
+
+- Dostępna jest stabilna wersja aplikacji do testów.
+- Wszystkie nowe funkcjonalności są zaimplementowane.
+- Testy jednostkowe dla nowych komponentów i logiki przechodzą pomyślnie.
+
+### 8.2. Kryteria Wyjścia
+
+- 100% krytycznych scenariuszy testowych (priorytet "Wysoki") zakończonych pomyślnie.
+- Brak otwartych błędów krytycznych (blokujących) i wysokich.
+- Pokrycie kodu testami jednostkowymi na poziomie co najmniej 70%.
+- Wszystkie testy w pipeline CI/CD przechodzą pomyślnie.
+
+---
+
+## 9. Role i Odpowiedzialności
+
+- **Inżynier QA:** Odpowiedzialny za tworzenie i utrzymanie planu testów, projektowanie scenariuszy testowych, automatyzację testów, raportowanie błędów i ostateczną akceptację jakości.
+- **Deweloperzy:** Odpowiedzialni za pisanie testów jednostkowych i integracyjnych, naprawę zgłoszonych błędów oraz wsparcie w analizie skomplikowanych problemów.
+- **Product Owner/Manager:** Odpowiedzialny za dostarczenie kryteriów akceptacji dla nowych funkcjonalności i udział w testach użyteczności.
+
+---
+
+## 10. Procedury Raportowania Błędów
+
+Wszystkie zidentyfikowane błędy powinny być raportowane w systemie do śledzenia zadań (np. Jira, GitHub Issues).
+
+Każdy raport błędu powinien zawierać:
+
+- **Tytuł:** Zwięzły opis problemu.
+- **Opis:** Szczegółowe informacje o błędzie.
+- **Kroki do reprodukcji:** Ponumerowana lista kroków prowadzących do wystąpienia błędu.
+- **Oczekiwany rezultat:** Jak system powinien się zachować.
+- **Aktualny rezultat:** Co faktycznie się stało.
+- **Środowisko:** Wersja przeglądarki, system operacyjny.
+- **Priorytet/Waga:** (np. Krytyczny, Wysoki, Średni, Niski).
+- **Załączniki:** Zrzuty ekranu, nagrania wideo, logi z konsoli.

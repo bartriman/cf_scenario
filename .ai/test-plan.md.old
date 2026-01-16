@@ -1,0 +1,1217 @@
+# Plan Testów - CashFlow Scenarios MVP
+
+## 1. Wprowadzenie i Cele Testowania
+
+### 1.1. Cel dokumentu
+Niniejszy dokument przedstawia kompleksowy plan testów dla aplikacji CashFlow Scenarios - systemu zarządzania scenariuszami przepływów pieniężnych z możliwością importu danych CSV, analizy finansowej oraz eksportu raportów.
+
+### 1.2. Cele testowania
+- **Zapewnienie jakości:** Weryfikacja poprawności funkcjonalności biznesowych
+- **Bezpieczeństwo:** Walidacja mechanizmów autoryzacji i Row Level Security (RLS)
+- **Wydajność:** Sprawdzenie efektywności operacji na dużych zbiorach danych
+- **Stabilność:** Potwierdzenie odporności na błędne dane wejściowe
+- **Użyteczność:** Weryfikacja intuicyjności interfejsu użytkownika
+- **Zgodność:** Sprawdzenie poprawności działania w różnych środowiskach
+
+### 1.3. Zakres projektu
+Aplikacja webowa umożliwiająca:
+- Zarządzanie wieloma firmami (multi-tenancy)
+- Import transakcji finansowych z plików CSV
+- Tworzenie i zarządzanie scenariuszami cash flow
+- Modyfikację transakcji poprzez overrides (copy-on-write)
+- Analizę danych z widokami tygodniowymi i wykresami
+- Eksport danych do formatu Excel
+
+## 2. Zakres Testów
+
+### 2.1. Obszary objęte testami
+
+#### 2.1.1. Funkcjonalności podstawowe
+- ✅ Autentykacja i autoryzacja użytkowników
+- ✅ Zarządzanie profilami użytkowników
+- ✅ Zarządzanie firmami i członkostwem
+- ✅ Import plików CSV z walidacją
+- ✅ Tworzenie i zarządzanie scenariuszami
+- ✅ Modyfikacja transakcji (overrides)
+- ✅ Widoki analityczne (tygodniowe agregaty, Top-5)
+- ✅ Eksport danych do Excel
+- ✅ Zarządzanie kontami finansowymi
+
+#### 2.1.2. Komponenty techniczne
+- ✅ API REST endpoints (Astro API routes)
+- ✅ Komponenty React (interactive islands)
+- ✅ Komponenty Astro (static content)
+- ✅ Walidacja danych (Zod schemas)
+- ✅ Warstwa serwisowa (business logic)
+- ✅ Baza danych (PostgreSQL/Supabase)
+- ✅ RLS policies
+- ✅ Database views i funkcje
+- ✅ Middleware (autoryzacja)
+
+### 2.2. Obszary wyłączone z testów
+- ❌ Infrastruktura DigitalOcean (testy na poziomie platformy)
+- ❌ Wewnętrzne mechanizmy Supabase Auth
+- ❌ Edge Functions Supabase (jeśli nie zaimplementowane)
+- ❌ Testy penetracyjne (security audit)
+- ❌ Testy dostępności WCAG (accessibility audit)
+
+## 3. Typy Testów do Przeprowadzenia
+
+### 3.1. Testy Jednostkowe (Unit Tests)
+
+**Zakres:**
+- Funkcje walidacyjne (Zod schemas)
+- Funkcje pomocnicze (utils)
+- Parsery CSV
+- Kalkulacje finansowe (konwersje walut, agregaty)
+- Formatery danych
+
+**Framework:** Vitest
+**Coverage target:** 80%
+
+**Przykładowe przypadki testowe:**
+
+#### 3.1.1. Walidacja importu CSV
+```typescript
+// src/lib/validation/import.validation.test.ts
+describe('validateColumnMapping', () => {
+  it('powinien zaakceptować poprawne mapowanie kolumn', () => {
+    const mapping = {
+      date_due: 'Data',
+      direction: 'Typ',
+      amount_book_cents: 'Kwota',
+      // ...
+    };
+    expect(() => validateColumnMapping(mapping)).not.toThrow();
+  });
+
+  it('powinien odrzucić mapowanie bez wymaganych pól', () => {
+    const mapping = { date_due: 'Data' };
+    expect(() => validateColumnMapping(mapping)).toThrow();
+  });
+});
+```
+
+#### 3.1.2. Parsowanie CSV
+```typescript
+// src/lib/utils/csv-import.test.ts
+describe('parseFullCSV', () => {
+  it('powinien poprawnie parsować plik CSV', async () => {
+    const file = new File(['Date,Amount\n2025-01-01,100'], 'test.csv');
+    const result = await parseFullCSV(file);
+    expect(result.headers).toEqual(['Date', 'Amount']);
+    expect(result.rows).toHaveLength(1);
+  });
+
+  it('powinien odfiltrować puste wiersze', async () => {
+    const file = new File(['Date,Amount\n2025-01-01,100\n,,'], 'test.csv');
+    const result = await parseFullCSV(file);
+    expect(result.rows).toHaveLength(1);
+  });
+});
+```
+
+#### 3.1.3. Kalkulacje finansowe
+```typescript
+// src/lib/utils/financial.test.ts
+describe('convertCurrency', () => {
+  it('powinien konwertować kwoty według podanego kursu', () => {
+    const amountCents = 10000; // 100 PLN
+    const rate = 0.25; // 1 PLN = 0.25 EUR
+    const result = convertCurrency(amountCents, rate);
+    expect(result).toBe(2500); // 25 EUR
+  });
+});
+```
+
+### 3.2. Testy Integracyjne (Integration Tests)
+
+**Zakres:**
+- Integracja warstwy serwisowej z bazą danych
+- Przepływ danych między komponentami
+- Walidacja RLS policies
+- API routes z warstwą serwisową
+
+**Framework:** Vitest + Supabase Test Client
+**Środowisko:** Lokalna instancja Supabase
+
+**Przykładowe przypadki testowe:**
+
+#### 3.2.1. Serwis scenariuszy
+```typescript
+// src/lib/services/scenario.service.test.ts
+describe('ScenarioService.createScenario', () => {
+  it('powinien utworzyć nowy scenariusz bazowy', async () => {
+    const scenario = await createScenario(supabase, companyId, {
+      import_id: importId,
+      dataset_code: 'Q1_2025',
+      name: 'Test Scenario',
+      start_date: '2025-01-01',
+      end_date: '2025-03-31',
+    });
+    
+    expect(scenario.id).toBeDefined();
+    expect(scenario.status).toBe('Draft');
+  });
+
+  it('powinien rzucić ForbiddenError dla użytkownika spoza firmy', async () => {
+    await expect(
+      createScenario(otherUserSupabase, companyId, validData)
+    ).rejects.toThrow(ForbiddenError);
+  });
+});
+```
+
+#### 3.2.2. Import CSV - end-to-end flow
+```typescript
+// src/lib/services/import.service.test.ts
+describe('Import CSV Flow', () => {
+  it('powinien zaimportować plik CSV i utworzyć transakcje', async () => {
+    // 1. Utwórz import
+    const importRecord = await createImport(supabase, companyId, 'Q1_2025');
+    
+    // 2. Dodaj wiersze
+    await saveImportRows(supabase, importRecord.id, parsedRows);
+    
+    // 3. Utwórz transakcje
+    const count = await createTransactionsFromImport(supabase, importRecord.id, companyId);
+    
+    expect(count).toBeGreaterThan(0);
+  });
+});
+```
+
+#### 3.2.3. RLS Policies
+```typescript
+// tests/integration/rls.test.ts
+describe('Row Level Security', () => {
+  it('użytkownik może odczytać tylko scenariusze swojej firmy', async () => {
+    const { data } = await user1Supabase
+      .from('scenarios')
+      .select('*')
+      .eq('company_id', company2Id);
+    
+    expect(data).toHaveLength(0);
+  });
+
+  it('użytkownik nie może modyfikować zablokowanego scenariusza', async () => {
+    const { error } = await userSupabase
+      .from('scenarios')
+      .update({ name: 'New Name' })
+      .eq('id', lockedScenarioId);
+    
+    expect(error).toBeDefined();
+  });
+});
+```
+
+### 3.3. Testy API (API Tests)
+
+**Zakres:**
+- Wszystkie endpointy REST API
+- Walidacja requestów i responses
+- Kody statusów HTTP
+- Obsługa błędów
+
+**Framework:** Vitest + supertest (lub Astro test utilities)
+
+**Przykładowe przypadki testowe:**
+
+#### 3.3.1. Authentication endpoints
+```typescript
+// tests/api/auth.test.ts
+describe('POST /api/auth/login', () => {
+  it('powinien zalogować użytkownika z poprawnymi danymi', async () => {
+    const response = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'user@example.com', password: 'password123' });
+    
+    expect(response.status).toBe(200);
+    expect(response.body.session.access_token).toBeDefined();
+  });
+
+  it('powinien zwrócić 401 dla błędnych danych', async () => {
+    const response = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'user@example.com', password: 'wrong' });
+    
+    expect(response.status).toBe(401);
+  });
+});
+```
+
+#### 3.3.2. Scenarios endpoints
+```typescript
+// tests/api/scenarios.test.ts
+describe('GET /api/companies/:companyId/scenarios', () => {
+  it('powinien zwrócić listę scenariuszy', async () => {
+    const response = await authenticatedRequest(app)
+      .get(`/api/companies/${companyId}/scenarios`);
+    
+    expect(response.status).toBe(200);
+    expect(response.body.scenarios).toBeInstanceOf(Array);
+    expect(response.body.pagination).toBeDefined();
+  });
+
+  it('powinien filtrować scenariusze po statusie', async () => {
+    const response = await authenticatedRequest(app)
+      .get(`/api/companies/${companyId}/scenarios?status=Draft`);
+    
+    expect(response.body.scenarios.every(s => s.status === 'Draft')).toBe(true);
+  });
+});
+
+describe('POST /api/companies/:companyId/scenarios', () => {
+  it('powinien utworzyć nowy scenariusz', async () => {
+    const response = await authenticatedRequest(app)
+      .post(`/api/companies/${companyId}/scenarios`)
+      .send({
+        import_id: importId,
+        dataset_code: 'Q1_2025',
+        name: 'New Scenario',
+        start_date: '2025-01-01',
+        end_date: '2025-03-31',
+      });
+    
+    expect(response.status).toBe(201);
+    expect(response.body.id).toBeDefined();
+  });
+
+  it('powinien odrzucić request z błędnymi datami', async () => {
+    const response = await authenticatedRequest(app)
+      .post(`/api/companies/${companyId}/scenarios`)
+      .send({
+        import_id: importId,
+        dataset_code: 'Q1_2025',
+        name: 'Invalid',
+        start_date: '2025-03-31',
+        end_date: '2025-01-01', // błędna kolejność
+      });
+    
+    expect(response.status).toBe(400);
+  });
+});
+```
+
+#### 3.3.3. Import endpoints
+```typescript
+// tests/api/imports.test.ts
+describe('POST /api/companies/:companyId/imports', () => {
+  it('powinien zaakceptować poprawny plik CSV', async () => {
+    const response = await authenticatedRequest(app)
+      .post(`/api/companies/${companyId}/imports`)
+      .send({
+        dataset_code: 'Q1_2025',
+        column_mapping: validMapping,
+        csv_data: validRows,
+        csv_headers: validHeaders,
+      });
+    
+    expect(response.status).toBe(201);
+    expect(response.body.import_id).toBeDefined();
+  });
+
+  it('powinien zwrócić błędy walidacji dla błędnych danych', async () => {
+    const response = await authenticatedRequest(app)
+      .post(`/api/companies/${companyId}/imports`)
+      .send({
+        dataset_code: 'Q1_2025',
+        column_mapping: validMapping,
+        csv_data: [['invalid-date', 'INFLOW', 'not-a-number']],
+        csv_headers: validHeaders,
+      });
+    
+    expect(response.body.errors).toBeDefined();
+    expect(response.body.errors.length).toBeGreaterThan(0);
+  });
+});
+```
+
+### 3.4. Testy E2E (End-to-End Tests)
+
+**Zakres:**
+- Kompletne scenariusze użytkownika
+- Interakcje UI
+- Przepływ danych od frontendu do bazy danych
+
+**Framework:** Playwright
+**Środowisko:** Lokalne + staging
+
+**Przykładowe scenariusze:**
+
+#### 3.4.1. Pełny przepływ importu CSV
+```typescript
+// tests/e2e/import-flow.spec.ts
+test('użytkownik może zaimportować CSV i utworzyć scenariusz', async ({ page }) => {
+  // 1. Zaloguj się
+  await page.goto('/auth/login');
+  await page.fill('[name="email"]', 'user@example.com');
+  await page.fill('[name="password"]', 'password123');
+  await page.click('button[type="submit"]');
+  
+  // 2. Przejdź do importu
+  await page.goto('/import');
+  
+  // 3. Wybierz plik
+  await page.setInputFiles('[type="file"]', 'test-data.csv');
+  await page.fill('[name="dataset_code"]', 'Q1_2025');
+  await page.click('text=Next');
+  
+  // 4. Mapuj kolumny
+  await page.selectOption('[name="date_due"]', 'Data');
+  await page.selectOption('[name="direction"]', 'Typ');
+  await page.selectOption('[name="amount_book_cents"]', 'Kwota');
+  await page.click('text=Next');
+  
+  // 5. Waliduj
+  await page.click('text=Validate');
+  await page.waitForSelector('text=Validation complete');
+  
+  // 6. Utwórz scenariusz
+  await page.click('text=Create Scenario');
+  await page.waitForURL(/scenarios\/\d+/);
+  
+  // 7. Sprawdź czy scenariusz został utworzony
+  await expect(page.locator('h1')).toContainText('Import Q1_2025');
+});
+```
+
+#### 3.4.2. Edycja transakcji w scenariuszu
+```typescript
+// tests/e2e/scenario-edit.spec.ts
+test('użytkownik może modyfikować transakcję w scenariuszu', async ({ page }) => {
+  await loginAs(page, 'user@example.com');
+  await page.goto(`/scenarios/${scenarioId}`);
+  
+  // Znajdź transakcję
+  const transaction = page.locator('[data-testid="transaction-card"]').first();
+  await transaction.click();
+  
+  // Edytuj kwotę
+  await page.fill('[name="amount"]', '500');
+  await page.fill('[name="date_due"]', '2025-02-15');
+  await page.click('text=Save');
+  
+  // Sprawdź czy zmiana została zapisana
+  await expect(transaction).toContainText('500');
+  await expect(transaction).toContainText('2025-02-15');
+});
+```
+
+#### 3.4.3. Eksport scenariusza do Excel
+```typescript
+// tests/e2e/export.spec.ts
+test('użytkownik może wyeksportować scenariusz do Excel', async ({ page }) => {
+  await loginAs(page, 'user@example.com');
+  await page.goto(`/scenarios/${scenarioId}`);
+  
+  // Kliknij eksport
+  const downloadPromise = page.waitForEvent('download');
+  await page.click('text=Export');
+  const download = await downloadPromise;
+  
+  // Sprawdź nazwę pliku
+  expect(download.suggestedFilename()).toMatch(/scenario_.*\.xlsx/);
+});
+```
+
+### 3.5. Testy Wydajnościowe (Performance Tests)
+
+**Zakres:**
+- Czas odpowiedzi API
+- Czas ładowania komponentów
+- Wydajność agregacji SQL
+- Czas importu dużych plików CSV
+
+**Framework:** k6, Lighthouse
+
+**Przykładowe przypadki:**
+
+#### 3.5.1. Import dużego pliku CSV
+```typescript
+// tests/performance/import.test.ts
+test('import 10,000 transakcji powinien zakończyć się w < 30s', async () => {
+  const startTime = Date.now();
+  
+  const response = await fetch(`/api/companies/${companyId}/imports`, {
+    method: 'POST',
+    body: JSON.stringify({
+      dataset_code: 'LARGE_Q1',
+      csv_data: generate10kRows(),
+      column_mapping: validMapping,
+    }),
+  });
+  
+  const duration = Date.now() - startTime;
+  expect(duration).toBeLessThan(30000);
+  expect(response.status).toBe(201);
+});
+```
+
+#### 3.5.2. Agregacje tygodniowe
+```javascript
+// tests/performance/aggregations.k6.js
+import http from 'k6/http';
+import { check } from 'k6';
+
+export let options = {
+  vus: 10,
+  duration: '30s',
+};
+
+export default function () {
+  const res = http.get(
+    `${BASE_URL}/api/companies/${COMPANY_ID}/scenarios/${SCENARIO_ID}/analytics/weekly`
+  );
+  
+  check(res, {
+    'status is 200': (r) => r.status === 200,
+    'response time < 500ms': (r) => r.timings.duration < 500,
+  });
+}
+```
+
+#### 3.5.3. Lighthouse - Performance audit
+```bash
+# Cel: Performance Score > 90
+lighthouse https://app.example.com/scenarios/123 \
+  --only-categories=performance \
+  --output=json \
+  --output-path=./lighthouse-results.json
+```
+
+### 3.6. Testy Bezpieczeństwa (Security Tests)
+
+**Zakres:**
+- Weryfikacja RLS policies
+- Injection attacks (SQL, XSS)
+- CSRF protection
+- Rate limiting
+- Session management
+
+**Przykładowe przypadki:**
+
+#### 3.6.1. SQL Injection
+```typescript
+// tests/security/sql-injection.test.ts
+test('endpoint powinien być odporny na SQL injection', async () => {
+  const maliciousInput = "'; DROP TABLE scenarios; --";
+  
+  const response = await request(app)
+    .post(`/api/companies/${companyId}/scenarios`)
+    .send({
+      name: maliciousInput,
+      dataset_code: 'Q1_2025',
+      // ...
+    });
+  
+  // Powinien odrzucić lub zesanityzować input
+  expect(response.status).not.toBe(500);
+  
+  // Sprawdź czy tabela nadal istnieje
+  const { data } = await supabase.from('scenarios').select('count');
+  expect(data).toBeDefined();
+});
+```
+
+#### 3.6.2. Unauthorized access
+```typescript
+// tests/security/authorization.test.ts
+test('użytkownik nie może uzyskać dostępu do scenariuszy innej firmy', async () => {
+  const response = await authenticatedRequest(app, user1Token)
+    .get(`/api/companies/${company2Id}/scenarios`);
+  
+  expect(response.status).toBe(403);
+});
+
+test('niezalogowany użytkownik nie może tworzyć scenariuszy', async () => {
+  const response = await request(app)
+    .post(`/api/companies/${companyId}/scenarios`)
+    .send(validScenarioData);
+  
+  expect(response.status).toBe(401);
+});
+```
+
+### 3.7. Testy Komponentów UI (Component Tests)
+
+**Zakres:**
+- Komponenty React
+- Komponenty Astro
+- Custom hooks
+
+**Framework:** Vitest + React Testing Library
+
+**Przykładowe przypadki:**
+
+#### 3.7.1. ImportWizard component
+```typescript
+// src/components/import/ImportWizard.test.tsx
+describe('ImportWizard', () => {
+  it('powinien przejść przez wszystkie kroki importu', async () => {
+    const { getByText, getByLabelText } = render(
+      <ImportWizard companyId="123" />
+    );
+    
+    // Krok 1: Upload
+    expect(getByText('Upload CSV File')).toBeInTheDocument();
+    
+    const fileInput = getByLabelText('File');
+    await userEvent.upload(fileInput, testFile);
+    await userEvent.click(getByText('Next'));
+    
+    // Krok 2: Mapping
+    expect(getByText('Map Columns')).toBeInTheDocument();
+    // ...
+  });
+});
+```
+
+#### 3.7.2. useScenarios hook
+```typescript
+// src/components/hooks/useScenarios.test.ts
+describe('useScenarios', () => {
+  it('powinien załadować scenariusze przy montowaniu', async () => {
+    const { result, waitForNextUpdate } = renderHook(() =>
+      useScenarios(companyId)
+    );
+    
+    expect(result.current.isLoading).toBe(true);
+    
+    await waitForNextUpdate();
+    
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.scenarios.length).toBeGreaterThan(0);
+  });
+});
+```
+
+### 3.8. Testy Regresji (Regression Tests)
+
+**Zakres:**
+- Weryfikacja poprawek bugów
+- Sprawdzenie, czy nowe zmiany nie złamały istniejącej funkcjonalności
+
+**Proces:**
+- Automatyczne uruchamianie pełnego zestawu testów przed każdym releasem
+- Testy smoke po deploymencie
+
+## 4. Scenariusze Testowe dla Kluczowych Funkcjonalności
+
+### 4.1. Autentykacja i Autoryzacja
+
+| ID | Scenariusz | Dane wejściowe | Oczekiwany rezultat |
+|----|------------|----------------|---------------------|
+| AUTH-001 | Rejestracja nowego użytkownika | Email: user@test.com, Password: Test123! | Utworzenie konta, wysłanie email weryfikacyjnego |
+| AUTH-002 | Logowanie z poprawnymi danymi | Email: user@test.com, Password: Test123! | Status 200, otrzymanie access_token |
+| AUTH-003 | Logowanie z błędnym hasłem | Email: user@test.com, Password: wrong | Status 401, komunikat błędu |
+| AUTH-004 | Wylogowanie | Access token | Usunięcie sesji, status 200 |
+| AUTH-005 | Reset hasła | Email: user@test.com | Wysłanie linku resetującego |
+| AUTH-006 | Dostęp bez tokenu | Brak Authorization header | Status 401 |
+| AUTH-007 | Dostęp z wygasłym tokenem | Wygasły token | Status 401, refresh lub redirect |
+
+### 4.2. Import CSV
+
+| ID | Scenariusz | Dane wejściowe | Oczekiwany rezultat |
+|----|------------|----------------|---------------------|
+| IMP-001 | Import poprawnego pliku CSV | Plik z 100 wierszami, poprawne mapowanie | Status 201, 100 transakcji, 0 błędów |
+| IMP-002 | Import z błędnymi datami | Wiersz z datą "32-01-2025" | Wiersz odrzucony, raport błędu |
+| IMP-003 | Import z pustymi polami wymaganymi | Wiersz bez kwoty | Wiersz odrzucony z informacją o błędzie |
+| IMP-004 | Import dużego pliku (10k wierszy) | CSV z 10,000 wierszami | Wszystkie wiersze przetworzone, < 30s |
+| IMP-005 | Import z duplikatami | Te same transakcje 2x | Wszystkie zaimportowane (brak constraint) |
+| IMP-006 | Import bez mapowania kolumn | Brak column_mapping | Status 400, błąd walidacji |
+| IMP-007 | Import z nieobsługiwaną walutą | Currency: "XXX" | Wiersz odrzucony lub używa domyślnej waluty |
+| IMP-008 | Import z ujemnymi kwotami INFLOW | Direction: INFLOW, Amount: -100 | Wiersz odrzucony, błąd walidacji |
+| IMP-009 | Przerwanie importu w trakcie | Anulowanie podczas processingu | Import oznaczony jako "failed" |
+
+### 4.3. Zarządzanie Scenariuszami
+
+| ID | Scenariusz | Dane wejściowe | Oczekiwany rezultat |
+|----|------------|----------------|---------------------|
+| SCN-001 | Utworzenie scenariusza bazowego | Import_id, nazwa, zakres dat | Status 201, nowy scenariusz w Draft |
+| SCN-002 | Utworzenie scenariusza pochodnego | Base_scenario_id, nowa nazwa | Scenariusz z referencją do base, Draft |
+| SCN-003 | Duplikacja scenariusza | Scenario_id, nowa nazwa | Kopia z wszystkimi override'ami |
+| SCN-004 | Edycja nazwy scenariusza Draft | Nowa nazwa | Zaktualizowana nazwa |
+| SCN-005 | Edycja scenariusza Locked | Nowa nazwa | Status 403 lub 409, brak zmian |
+| SCN-006 | Zablokowanie scenariusza | Scenario_id (Draft) | Status zmieniony na Locked |
+| SCN-007 | Zablokowanie już zablokowanego | Scenario_id (Locked) | Status 409, komunikat o konflikcie |
+| SCN-008 | Usunięcie scenariusza Draft | Scenario_id (Draft) | Soft delete, is_deleted = true |
+| SCN-009 | Usunięcie scenariusza Locked | Scenario_id (Locked) | Status 403, brak usunięcia |
+| SCN-010 | Filtrowanie po statusie | Status: "Draft" | Tylko scenariusze Draft |
+| SCN-011 | Filtrowanie po dataset_code | Dataset_code: "Q1_2025" | Tylko scenariusze z Q1_2025 |
+| SCN-012 | Paginacja listy scenariuszy | Page: 2, limit: 20 | Scenariusze 21-40 |
+| SCN-013 | Scenariusz z datami w złej kolejności | Start: 2025-03-31, End: 2025-01-01 | Status 400, błąd walidacji |
+
+### 4.4. Overrides Transakcji
+
+| ID | Scenariusz | Dane wejściowe | Oczekiwany rezultat |
+|----|------------|----------------|---------------------|
+| OVR-001 | Utworzenie override dla transakcji | Transaction_id, new_amount | Override utworzony, widoczny w scenario_transactions_v |
+| OVR-002 | Modyfikacja daty transakcji | Transaction_id, new_date_due | Data zmieniona w widoku |
+| OVR-003 | Usunięcie override | Override_id | Override usunięty, transakcja wraca do oryginału |
+| OVR-004 | Override w zablokowanym scenariuszu | Scenario_id (Locked), transaction_id | Status 403, brak zmian |
+| OVR-005 | Batch update overrides | Array[{transaction_id, new_amount}] | Wszystkie overrides zaktualizowane |
+| OVR-006 | Override kwoty na 0 | New_amount: 0 | Override zaakceptowany (0 jest poprawne) |
+| OVR-007 | Override z ujemną kwotą | New_amount: -100 | Status 400, błąd walidacji |
+
+### 4.5. Widoki Analityczne
+
+| ID | Scenariusz | Dane wejściowe | Oczekiwany rezultat |
+|----|------------|----------------|---------------------|
+| ANA-001 | Agregaty tygodniowe | Scenario_id | Lista tygodni z sumami inflow/outflow |
+| ANA-002 | Top-5 inflows | Scenario_id, week | 5 największych wpływów + Other |
+| ANA-003 | Top-5 outflows | Scenario_id, week | 5 największych wypływów + Other |
+| ANA-004 | Running balance | Scenario_id | Chronologiczna lista z running_balance |
+| ANA-005 | Porównanie scenariuszy | Array[scenario_ids] | Dane wszystkich scenariuszy |
+| ANA-006 | Porównanie > 5 scenariuszy | Array z 6+ ID | Status 400, limit exceeded |
+| ANA-007 | Filtrowanie po dacie | Date_from, date_to | Tylko transakcje w zakresie |
+| ANA-008 | Konwersja walut w agregacji | Multi-currency transactions | Wszystko w base_currency |
+
+### 4.6. Eksport
+
+| ID | Scenariusz | Dane wejściowe | Oczekiwany rezultat |
+|----|------------|----------------|---------------------|
+| EXP-001 | Eksport scenariusza do Excel | Scenario_id | Plik .xlsx z transakcjami |
+| EXP-002 | Eksport z grupowaniem po tygodniach | Group_by: "week" | Arkusz z agregacjami tygodniowymi |
+| EXP-003 | Eksport z wykresem | Include_chart: true | Plik z arkuszem wykresu |
+| EXP-004 | Eksport dużego scenariusza (10k+) | Scenario_id z 10k transakcji | Plik wygenerowany w < 10s |
+| EXP-005 | Eksport z filtrami dat | Date_from, date_to | Tylko transakcje w zakresie |
+
+### 4.7. Multi-tenancy
+
+| ID | Scenariusz | Dane wejściowe | Oczekiwany rezultat |
+|----|------------|----------------|---------------------|
+| TEN-001 | Użytkownik widzi tylko swoje firmy | User_id | Lista firm, do których należy |
+| TEN-002 | Dostęp do scenariusza innej firmy | Company_id (nie należy) | Status 403 |
+| TEN-003 | Dodanie członka do firmy | User_id, company_id | Nowy rekord w company_members |
+| TEN-004 | Usunięcie członka | User_id, company_id | Usunięcie rekordu |
+| TEN-005 | Izolacja danych między firmami | 2 firmy, te same dataset_code | Brak przeciekania danych |
+
+## 5. Środowisko Testowe
+
+### 5.1. Środowiska
+
+| Środowisko | Cel | URL | Database |
+|------------|-----|-----|----------|
+| **Local** | Development & unit tests | http://localhost:4321 | Supabase local |
+| **Staging** | Integration & E2E tests | https://staging.example.com | Supabase staging |
+| **Production** | Smoke tests | https://app.example.com | Supabase production |
+
+### 5.2. Konfiguracja środowiska testowego
+
+#### 5.2.1. Lokalne środowisko
+```bash
+# Uruchomienie Supabase lokalnie
+supabase start
+
+# Migracje
+supabase db reset
+
+# Seeding danych testowych
+psql -h localhost -p 54322 -U postgres -d postgres -f supabase/seed.sql
+
+# Uruchomienie aplikacji
+npm run dev
+```
+
+#### 5.2.2. Dane testowe
+- **Firmy:** 3 testowe firmy z różnymi walutami bazowymi
+- **Użytkownicy:** 5 użytkowników z różnymi rolami
+- **Importy:** 2 ukończone importy na firmę
+- **Scenariusze:** 5 scenariuszy (3 Draft, 2 Locked) na import
+- **Transakcje:** ~1000 transakcji na import
+- **Overrides:** 50 override'ów w różnych scenariuszach
+
+### 5.3. Konfiguracja bazy danych testowej
+
+```sql
+-- Reset before each test suite
+TRUNCATE TABLE 
+  scenario_overrides,
+  scenarios,
+  transactions,
+  import_rows,
+  imports,
+  accounts,
+  company_members,
+  companies,
+  user_profiles
+CASCADE;
+
+-- Seed test data
+INSERT INTO companies (id, name, base_currency) VALUES
+  ('11111111-1111-1111-1111-111111111111', 'Test Company A', 'PLN'),
+  ('22222222-2222-2222-2222-222222222222', 'Test Company B', 'EUR'),
+  ('33333333-3333-3333-3333-333333333333', 'Test Company C', 'USD');
+```
+
+## 6. Narzędzia do Testowania
+
+### 6.1. Framework'i testowe
+
+| Narzędzie | Wersja | Zastosowanie |
+|-----------|--------|--------------|
+| **Vitest** | ^2.0.0 | Testy jednostkowe, integracyjne |
+| **React Testing Library** | ^16.0.0 | Testy komponentów React |
+| **Playwright** | ^1.48.0 | Testy E2E |
+| **k6** | latest | Testy wydajnościowe |
+| **Lighthouse** | latest | Audyt performance/accessibility |
+| **Zod** | ^3.23.0 | Walidacja schematów (używane w testach) |
+
+### 6.2. Narzędzia pomocnicze
+
+- **Supabase CLI** - zarządzanie lokalną bazą danych
+- **MSW (Mock Service Worker)** - mockowanie API w testach
+- **Faker.js** - generowanie danych testowych
+- **Supertest** - testowanie HTTP endpoints
+- **Istanbul/c8** - code coverage
+
+### 6.3. CI/CD Integration
+
+```yaml
+# .github/workflows/test.yml
+name: Test Suite
+
+on: [push, pull_request]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run test:unit
+      - run: npm run test:coverage
+  
+  integration-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: supabase/postgres
+    steps:
+      - uses: actions/checkout@v3
+      - run: supabase start
+      - run: npm run test:integration
+  
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npx playwright install
+      - run: npm run test:e2e
+```
+
+## 7. Harmonogram Testów
+
+### 7.1. Fazy testowania
+
+| Faza | Typy testów | Czas trwania | Odpowiedzialny |
+|------|-------------|--------------|----------------|
+| **Faza 1: Unit Tests** | Testy jednostkowe walidacji, utils, parsery | 1 tydzień | Deweloperzy |
+| **Faza 2: Integration** | Serwisy, RLS, API routes | 1 tydzień | QA + Deweloperzy |
+| **Faza 3: API Tests** | Wszystkie endpointy REST | 3 dni | QA |
+| **Faza 4: UI Components** | Komponenty React/Astro | 3 dni | Frontend Dev |
+| **Faza 5: E2E** | Kompletne scenariusze użytkownika | 1 tydzień | QA |
+| **Faza 6: Performance** | Load testing, optimalizacja | 3 dni | DevOps + QA |
+| **Faza 7: Security** | RLS, injection, auth | 3 dni | Security specialist |
+| **Faza 8: UAT** | User Acceptance Testing | 1 tydzień | Klient + PM |
+
+### 7.2. Harmonogram wdrożenia
+
+```
+Tydzień 1-2: Setup + Unit Tests
+│
+├─ Dzień 1-2: Konfiguracja środowiska testowego
+├─ Dzień 3-5: Testy walidacji i utils
+└─ Dzień 6-10: Testy serwisów i parsery
+
+Tydzień 3-4: Integration + API Tests
+│
+├─ Dzień 11-15: Testy integracyjne (RLS, serwisy)
+└─ Dzień 16-18: Testy API endpoints
+
+Tydzień 5-6: UI + E2E Tests
+│
+├─ Dzień 19-21: Testy komponentów
+└─ Dzień 22-28: Testy E2E
+
+Tydzień 7: Performance + Security
+│
+├─ Dzień 29-31: Testy wydajnościowe
+└─ Dzień 32-34: Testy bezpieczeństwa
+
+Tydzień 8: UAT + Bug Fixing
+│
+├─ Dzień 35-38: User Acceptance Testing
+└─ Dzień 39-40: Poprawki bugów i retesting
+```
+
+### 7.3. Częstotliwość uruchamiania testów
+
+| Typ testów | Częstotliwość | Trigger |
+|------------|---------------|---------|
+| Unit Tests | Przy każdym commit | Pre-commit hook |
+| Integration Tests | Przy każdym push | GitHub Actions |
+| API Tests | Przy każdym push | GitHub Actions |
+| E2E Tests | Przed merge do main | GitHub Actions (PR) |
+| Performance Tests | Tygodniowo | Scheduled CI job |
+| Security Tests | Przed releasem | Manual trigger |
+| Regression Tests | Przed każdym releasem | Manual + CI |
+
+## 8. Kryteria Akceptacji Testów
+
+### 8.1. Kryteria wyjścia (Exit Criteria)
+
+Testy uznaje się za zakończone pomyślnie, gdy:
+
+1. **Code Coverage:**
+   - ✅ Unit tests: ≥ 80% coverage
+   - ✅ Integration tests: ≥ 70% coverage kluczowych serwisów
+   - ✅ API tests: 100% endpointów przetestowanych
+
+2. **Przejścia testów:**
+   - ✅ 100% testów jednostkowych przechodzi
+   - ✅ ≥ 95% testów integracyjnych przechodzi
+   - ✅ ≥ 90% testów E2E przechodzi
+   - ✅ 0 błędów krytycznych (P0)
+   - ✅ ≤ 5 błędów wysokiego priorytetu (P1)
+
+3. **Wydajność:**
+   - ✅ Import 1000 transakcji: < 5s
+   - ✅ Import 10,000 transakcji: < 30s
+   - ✅ Czas odpowiedzi API (P95): < 500ms
+   - ✅ Lighthouse Performance Score: ≥ 90
+   - ✅ Time to Interactive (TTI): < 3s
+
+4. **Bezpieczeństwo:**
+   - ✅ Wszystkie RLS policies działają poprawnie
+   - ✅ Brak luk SQL injection
+   - ✅ Brak luk XSS
+   - ✅ Proper session management
+   - ✅ HTTPS enforced w production
+
+5. **Funkcjonalność:**
+   - ✅ Wszystkie kluczowe scenariusze użytkownika działają
+   - ✅ Import CSV działa dla różnych formatów
+   - ✅ Eksport Excel generuje poprawne pliki
+   - ✅ RLS zapewnia izolację danych między firmami
+   - ✅ Overrides poprawnie modyfikują transakcje
+
+### 8.2. Priorytety błędów
+
+| Priorytet | Opis | SLA naprawy | Przykład |
+|-----------|------|-------------|----------|
+| **P0 - Krytyczny** | Blokuje release, utrata danych | 24h | Utrata transakcji po imporcie |
+| **P1 - Wysoki** | Główna funkcjonalność nie działa | 3 dni | Import CSV zawsze failuje |
+| **P2 - Średni** | Funkcjonalność działa częściowo | 1 tydzień | Eksport Excel bez wykresów |
+| **P3 - Niski** | Drobne problemy UI/UX | 2 tygodnie | Błędne formatowanie dat |
+| **P4 - Kosmetyczny** | Nie wpływa na funkcjonalność | Backlog | Literówka w tooltipie |
+
+### 8.3. Metryki jakości
+
+**Defect Density:**
+- Target: < 5 defektów na 1000 linii kodu
+
+**Test Execution Rate:**
+- Target: ≥ 95% zaplanowanych testów wykonanych
+
+**Defect Detection Percentage (DDP):**
+- Target: ≥ 85% defektów wykrytych przed UAT
+
+**Mean Time To Repair (MTTR):**
+- P0: < 24h
+- P1: < 72h
+- P2: < 7 dni
+
+## 9. Role i Odpowiedzialności w Procesie Testowania
+
+### 9.1. Zespół testowy
+
+| Rola | Odpowiedzialności | Liczba osób |
+|------|-------------------|-------------|
+| **QA Lead** | Koordynacja testów, strategia, raportowanie | 1 |
+| **QA Engineer** | Wykonywanie testów, automatyzacja | 2 |
+| **Developer** | Testy jednostkowe, code reviews, bug fixing | 3 |
+| **DevOps Engineer** | CI/CD, środowiska testowe, performance | 1 |
+| **Security Specialist** | Testy bezpieczeństwa, RLS, audyt | 1 (konsultant) |
+| **Product Owner** | UAT, akceptacja funkcjonalności | 1 |
+
+### 9.2. Podział odpowiedzialności
+
+#### QA Lead
+- ✅ Tworzenie i utrzymanie planu testów
+- ✅ Definiowanie strategii testowania
+- ✅ Raportowanie statusu testów do stakeholderów
+- ✅ Zarządzanie błędami i priorytetami
+- ✅ Koordynacja z zespołem deweloperskim
+- ✅ Finalna akceptacja release'u
+
+#### QA Engineer
+- ✅ Projektowanie przypadków testowych
+- ✅ Automatyzacja testów (API, E2E)
+- ✅ Wykonywanie testów manualnych
+- ✅ Raportowanie błędów
+- ✅ Retesting po naprawach
+- ✅ Utrzymanie test data
+
+#### Developer
+- ✅ Pisanie testów jednostkowych
+- ✅ Testy integracyjne dla serwisów
+- ✅ Naprawianie błędów
+- ✅ Code reviews z perspektywą testability
+- ✅ Wsparcie QA w debugowaniu
+- ✅ Dokumentacja techniczna
+
+#### DevOps Engineer
+- ✅ Konfiguracja CI/CD pipeline
+- ✅ Utrzymanie środowisk testowych
+- ✅ Testy wydajnościowe (k6)
+- ✅ Monitoring i logi
+- ✅ Automatyzacja deploymentów
+- ✅ Infrastruktura as Code
+
+#### Security Specialist
+- ✅ Audyt RLS policies
+- ✅ Testy penetracyjne
+- ✅ Analiza podatności
+- ✅ Review kodu z perspektywy bezpieczeństwa
+- ✅ Rekomendacje security best practices
+
+#### Product Owner
+- ✅ Definiowanie kryteriów akceptacji
+- ✅ User Acceptance Testing
+- ✅ Priorytetyzacja błędów
+- ✅ Akceptacja funkcjonalności
+- ✅ Feedback użytkowników końcowych
+
+### 9.3. RACI Matrix
+
+| Aktywność | QA Lead | QA Eng | Dev | DevOps | Security | PO |
+|-----------|---------|--------|-----|--------|----------|-----|
+| Plan testów | A | C | C | C | C | R |
+| Testy jednostkowe | I | C | A/R | I | - | - |
+| Testy API | C | A/R | C | I | - | I |
+| Testy E2E | A | R | C | C | - | I |
+| Testy wydajności | C | C | I | A/R | - | I |
+| Testy bezpieczeństwa | C | C | C | C | A/R | I |
+| Bug fixing | A | I | R | C | C | C |
+| UAT | C | C | I | - | - | A/R |
+| Release decision | C | C | I | I | C | A/R |
+
+**Legenda:**
+- R = Responsible (wykonuje)
+- A = Accountable (odpowiedzialny)
+- C = Consulted (konsultowany)
+- I = Informed (informowany)
+
+## 10. Procedury Raportowania Błędów
+
+### 10.1. Proces zgłaszania błędów
+
+```
+┌─────────────────────┐
+│ 1. Wykrycie błędu   │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│ 2. Weryfikacja      │
+│   - Czy to bug?     │
+│   - Reprodukcja     │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│ 3. Utworzenie ticket│
+│   w GitHub Issues   │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│ 4. Przypisanie      │
+│   priorytetu i dev  │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│ 5. Naprawa + PR     │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│ 6. Retesting        │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│ 7. Zamknięcie lub   │
+│    Reopening        │
+└─────────────────────┘
+```
+
+### 10.2. Template zgłoszenia błędu
+
+```markdown
+## 🐛 Bug Report
+
+**Tytuł:** [Komponent] Krótki opis problemu
+
+**Priorytet:** P0 / P1 / P2 / P3 / P4
+
+**Środowisko:**
+- Wersja: v1.2.3
+- Przeglądarka: Chrome 120
+- System: Ubuntu 22.04
+
+**Kroki reprodukcji:**
+1. Zaloguj się jako user@test.com
+2. Przejdź do /import
+3. Wgraj plik test.csv
+4. Kliknij "Next"
+
+**Oczekiwane zachowanie:**
+Plik powinien zostać przesłany i pokazany podgląd.
+
+**Aktualne zachowanie:**
+Błąd 500, komunikat "Internal Server Error".
+
+**Logi/Screenshots:**
+```
+Error: Failed to parse CSV
+  at parseFullCSV (csv-import.ts:12)
+  ...
+```
+
+**Dodatkowe informacje:**
+- Występuje tylko dla plików > 5MB
+- Nie występuje w środowisku lokalnym
+```
+
+### 10.3. Narzędzia do śledzenia błędów
+
+**Primary:** GitHub Issues
+- Labels: `bug`, `P0`, `P1`, `P2`, `P3`, `frontend`, `backend`, `database`
+- Milestones: v1.0, v1.1, etc.
+- Projects: Kanban board (To Do, In Progress, Review, Done)
+
+**Secondary:** Notion/Confluence
+- Test execution reports
+- Test plans
+- Release notes
+
+### 10.4. Workflow w GitHub
+
+```yaml
+# Labels
+bug: Defekt wymagający naprawy
+enhancement: Nowa funkcjonalność
+documentation: Aktualizacja dokumentacji
+P0: Krytyczny
+P1: Wysoki priorytet
+P2: Średni priorytet
+P3: Niski priorytet
+frontend: Problem UI/UX
+backend: Problem API/serwisów
+database: Problem SQL/migracji
+security: Podatność bezpieczeństwa
+performance: Problem wydajnościowy
+
+# Workflow
+1. Issue created → `To Do`
+2. Developer assigned → `In Progress`
+3. PR created → `In Review`
+4. PR merged → `Testing`
+5. QA verified → `Done`
+```
+
+### 10.5. Raporty testowe
+
+**Dzienny raport:**
+```markdown
+# Daily Test Report - 2025-01-12
+
+## Test Execution
+- ✅ Executed: 156 tests
+- ✅ Passed: 148 tests (94.9%)
+- ❌ Failed: 8 tests (5.1%)
+- ⏭️ Skipped: 0 tests
+
+## New Bugs
+- #234 [P1] Import fails for files > 5MB
+- #235 [P2] Export button disabled after scenario lock
+
+## Resolved Bugs
+- #220 [P1] Scenario duplication creates empty overrides ✅
+- #228 [P3] Date formatting incorrect in timeline ✅
+
+## Blockers
+- Staging environment down (11:00-12:30)
+
+## Next Steps
+- Complete E2E suite for exports
+- Retest #220, #228
+```
+
+**Tygodniowy raport:**
+```markdown
+# Weekly Test Report - Week 2, 2025
+
+## Summary
+- Total tests executed: 1,240
+- Pass rate: 94.2%
+- Bugs filed: 12
+- Bugs resolved: 15
+- Code coverage: 82%
+
+## Test Progress
+- Unit Tests: ✅ 100% complete
+- Integration Tests: ✅ 100% complete
+- API Tests: ✅ 100% complete
+- E2E Tests: 🟡 75% complete
+- Performance Tests: 🔴 50% complete
+
+## Key Metrics
+- Defect Density: 3.2 per 1000 LOC
+- MTTR (P1): 48h average
+- Test Automation: 87%
+
+## Risks & Concerns
+- Performance tests show degradation for 10k+ imports
+- E2E tests flaky in CI environment
+
+## Action Items
+- [ ] Optimize import service (performance)
+- [ ] Stabilize E2E tests in CI
+- [ ] Complete remaining E2E scenarios
+```
+
+---
+
+## 11. Podsumowanie
+
+Niniejszy plan testów zapewnia kompleksowe pokrycie testowe dla projektu CashFlow Scenarios MVP, uwzględniając:
+
+✅ **Wielowarstwową strategię testowania** - od testów jednostkowych po E2E
+✅ **Bezpieczeństwo** - RLS policies, injection attacks, autoryzację
+✅ **Wydajność** - testy dla dużych zbiorów danych
+✅ **Jakość** - wysokie pokrycie kodu i automatyzację
+✅ **Proces** - jasny workflow i odpowiedzialności
+
+**Kluczowe wskaźniki sukcesu:**
+- Code coverage ≥ 80%
+- Pass rate ≥ 95%
+- Performance: API < 500ms, Import 10k < 30s
+- 0 błędów krytycznych przed release
+- Lighthouse score ≥ 90
+
+**Następne kroki:**
+1. Konfiguracja środowiska testowego (Vitest, Playwright)
+2. Implementacja testów jednostkowych dla utils i walidacji
+3. Testy integracyjne dla serwisów
+4. Automatyzacja testów API
+5. Testy E2E dla kluczowych user flows
+6. Continuous testing w CI/CD pipeline
+
+Ten plan testów będzie aktualizowany wraz z rozwojem projektu i pojawianiem się nowych funkcjonalności.
+
+---
+
+**Wersja:** 1.0  
+**Data utworzenia:** 2025-01-12  
+**Autor:** QA Team  
+**Status:** Draft → Do zatwierdzenia przez Product Owner
