@@ -23,6 +23,54 @@ interface UseScenarioDataResult {
   isDemoMode: boolean;
 }
 
+// Helper function to recalculate running balance from weekly aggregates
+function recalculateRunningBalance(
+  weeklyAggregates: WeeklyAggregateVM[],
+  initialBalance: number = 100000
+): RunningBalancePoint[] {
+  const balancePoints: RunningBalancePoint[] = [];
+  let currentBalance = initialBalance;
+
+  // Sort weeks by week_index to ensure proper order
+  const sortedWeeks = [...weeklyAggregates].sort((a, b) => a.week_index - b.week_index);
+
+  for (const week of sortedWeeks) {
+    // Group transactions by date
+    const transactionsByDate = new Map<string, TransactionVM[]>();
+    
+    for (const tx of week.transactions) {
+      const date = tx.date_due;
+      if (!transactionsByDate.has(date)) {
+        transactionsByDate.set(date, []);
+      }
+      transactionsByDate.get(date)!.push(tx);
+    }
+
+    // Sort dates chronologically
+    const sortedDates = Array.from(transactionsByDate.keys()).sort();
+
+    // Add balance points for each date with transactions
+    for (const date of sortedDates) {
+      const transactions = transactionsByDate.get(date)!;
+      
+      for (const tx of transactions) {
+        if (tx.direction === "INFLOW") {
+          currentBalance += tx.amount_book_cents / 100;
+        } else {
+          currentBalance -= tx.amount_book_cents / 100;
+        }
+      }
+
+      balancePoints.push({
+        date,
+        balance: currentBalance,
+      });
+    }
+  }
+
+  return balancePoints;
+}
+
 // Helper function to transform WeekAggregateDTO to WeeklyAggregateVM
 function transformWeekAggregate(week: WeekAggregateDTO): WeeklyAggregateVM {
   const transactions: TransactionVM[] = [];
@@ -190,8 +238,12 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
             }),
           }));
 
+          // Recalculate running balance based on updated transactions
+          const updatedBalance = recalculateRunningBalance(updatedWeeks);
+
           setWeeklyAggregates(updatedWeeks);
-          saveDemoData(updatedWeeks, runningBalance);
+          setRunningBalance(updatedBalance);
+          saveDemoData(updatedWeeks, updatedBalance);
         } catch (err) {
           setError(err instanceof Error ? err : new Error("Failed to update demo transaction"));
           throw err;
@@ -219,7 +271,7 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
         throw err;
       }
     },
-    [scenarioId, companyId, refetch, isDemoMode, weeklyAggregates, runningBalance]
+    [scenarioId, companyId, refetch, isDemoMode, weeklyAggregates]
   );
 
   const moveTransaction = useCallback(
@@ -255,8 +307,12 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
               return week;
             });
 
+            // Recalculate running balance based on moved transactions
+            const updatedBalance = recalculateRunningBalance(finalWeeks);
+
             setWeeklyAggregates(finalWeeks);
-            saveDemoData(finalWeeks, runningBalance);
+            setRunningBalance(updatedBalance);
+            saveDemoData(finalWeeks, updatedBalance);
           }
         } catch (err) {
           setError(err instanceof Error ? err : new Error("Failed to move demo transaction"));
@@ -294,7 +350,7 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
         throw err;
       }
     },
-    [scenarioId, companyId, refetch, isDemoMode, weeklyAggregates, runningBalance]
+    [scenarioId, companyId, refetch, isDemoMode, weeklyAggregates]
   );
 
   return {
