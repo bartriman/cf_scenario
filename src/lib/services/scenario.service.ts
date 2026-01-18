@@ -75,7 +75,7 @@ export async function getScenarios(
     // Check company membership
     const { data: membership, error: membershipError } = await supabase
       .from("company_members")
-      .select("role")
+      .select("company_id")
       .eq("company_id", companyId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -180,7 +180,7 @@ export async function getScenarioDetails(
 
     const { data: membership, error: membershipError } = await supabase
       .from("company_members")
-      .select("role")
+      .select("company_id")
       .eq("company_id", companyId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -283,7 +283,7 @@ export async function createScenario(
 
     const { data: membership, error: membershipError } = await supabase
       .from("company_members")
-      .select("role")
+      .select("company_id")
       .eq("company_id", companyId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -445,7 +445,7 @@ export async function updateScenario(
 
     const { data: membership, error: membershipError } = await supabase
       .from("company_members")
-      .select("role")
+      .select("company_id")
       .eq("company_id", companyId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -587,18 +587,23 @@ export async function deleteScenario(
   scenarioId: number
 ): Promise<void> {
   try {
+    console.log(`[deleteScenario] Starting deletion for scenario ${scenarioId} in company ${companyId}`);
+    
     // Step 1: Verify user has access to this company
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
+      console.error("[deleteScenario] No authenticated user");
       throw new ForbiddenError("User not authenticated");
     }
 
+    console.log(`[deleteScenario] User authenticated: ${user.id}`);
+
     const { data: membership, error: membershipError } = await supabase
       .from("company_members")
-      .select("role")
+      .select("company_id")
       .eq("company_id", companyId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -609,8 +614,11 @@ export async function deleteScenario(
     }
 
     if (!membership) {
+      console.error("[deleteScenario] User is not a member of company");
       throw new ForbiddenError("User is not a member of this company");
     }
+
+    console.log("[deleteScenario] Membership verified");
 
     // Step 2: Check if scenario exists
     const { data: scenario, error: scenarioError } = await supabase
@@ -627,8 +635,11 @@ export async function deleteScenario(
     }
 
     if (!scenario) {
+      console.error(`[deleteScenario] Scenario ${scenarioId} not found`);
       throw new ScenarioNotFoundError(`Scenario with ID ${scenarioId} not found`);
     }
+
+    console.log(`[deleteScenario] Scenario ${scenarioId} found`);
 
     // Step 3: Check for dependent scenarios (scenarios that use this as base)
     const { data: dependentScenarios, error: dependentError } = await supabase
@@ -644,22 +655,32 @@ export async function deleteScenario(
     }
 
     if (dependentScenarios && dependentScenarios.length > 0) {
+      console.error(`[deleteScenario] Found dependent scenario: ${dependentScenarios[0].name}`);
       throw new ConflictError(
         `Cannot delete scenario: it has dependent scenarios (e.g., "${dependentScenarios[0].name}")`
       );
     }
 
-    // Step 4: Soft delete the scenario
-    const { error: deleteError } = await supabase
-      .from("scenarios")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", scenarioId)
-      .eq("company_id", companyId);
+    console.log("[deleteScenario] No dependent scenarios found");
+
+    // Step 4: Soft delete the scenario using RPC function to bypass RLS issues
+    const { data: deleted, error: deleteError } = await supabase
+      .rpc("soft_delete_scenario", {
+        p_scenario_id: scenarioId,
+        p_user_id: user.id,
+      });
 
     if (deleteError) {
       console.error("[deleteScenario] Delete error:", deleteError);
       throw new DatabaseError("Failed to delete scenario");
     }
+
+    if (!deleted) {
+      console.error("[deleteScenario] Scenario was not deleted");
+      throw new DatabaseError("Failed to delete scenario");
+    }
+
+    console.log(`[deleteScenario] Successfully deleted scenario ${scenarioId}`);
   } catch (error) {
     if (
       error instanceof ForbiddenError ||
@@ -695,7 +716,7 @@ export async function duplicateScenario(
 
     const { data: membership, error: membershipError } = await supabase
       .from("company_members")
-      .select("role")
+      .select("company_id")
       .eq("company_id", companyId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -882,7 +903,7 @@ export async function createScenarioFromImport(
 
     const { data: membership, error: membershipError } = await supabase
       .from("company_members")
-      .select("role")
+      .select("company_id")
       .eq("company_id", companyId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -1101,7 +1122,7 @@ export async function upsertOverride(
     // Step 2: Verify company membership
     const { data: membership, error: membershipError } = await supabase
       .from("company_members")
-      .select("role")
+      .select("company_id")
       .eq("company_id", companyId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -1246,7 +1267,7 @@ export async function batchUpdateOverrides(
     // Step 2: Verify company membership
     const { data: membership, error: membershipError } = await supabase
       .from("company_members")
-      .select("role")
+      .select("company_id")
       .eq("company_id", companyId)
       .eq("user_id", user.id)
       .maybeSingle();

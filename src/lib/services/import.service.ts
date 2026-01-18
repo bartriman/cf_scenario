@@ -237,7 +237,14 @@ export function mapCSVRows(csvData: string[][], headers: string[], mapping: Colu
       if (csvColumn) {
         const columnIndex = headers.indexOf(csvColumn);
         if (columnIndex !== -1) {
-          mappedRow[systemField] = row[columnIndex]?.trim() || null;
+          let value = row[columnIndex]?.trim() || null;
+          
+          // Normalize direction field to uppercase
+          if (systemField === "direction" && value) {
+            value = value.toUpperCase();
+          }
+          
+          mappedRow[systemField] = value;
         }
       }
     });
@@ -413,10 +420,30 @@ export async function createTransactionsFromImport(
   for (const row of validRows) {
     const data = row.raw_data as Record<string, any>;
 
-    // Parse amount (remove commas, convert to cents)
-    const amountStr = String(data.amount || "0").replace(/,/g, "");
+    // Parse amount (handle Polish format with spaces, commas, and parentheses for negatives)
+    let amountStr = String(data.amount || "0").trim();
+    
+    // Handle negative amounts in parentheses: (123.45) -> -123.45
+    const isNegativeParentheses = amountStr.startsWith("(") && amountStr.endsWith(")");
+    if (isNegativeParentheses) {
+      amountStr = "-" + amountStr.slice(1, -1).trim();
+    }
+    
+    // Remove spaces (thousand separators)
+    amountStr = amountStr.replace(/\s/g, "");
+    
+    // Replace comma with dot for decimal separator (Polish format)
+    // Only if there's one comma and it's followed by 1-2 digits
+    if ((amountStr.match(/,/g) || []).length === 1 && /,\d{1,2}$/.test(amountStr)) {
+      amountStr = amountStr.replace(",", ".");
+    } else {
+      // Remove commas as thousand separators
+      amountStr = amountStr.replace(/,/g, "");
+    }
+    
     const amountFloat = parseFloat(amountStr);
-    const amountTxCents = Math.round(amountFloat * 100);
+    // Amounts are always positive in the system - direction field determines inflow/outflow
+    const amountTxCents = Math.round(Math.abs(amountFloat) * 100);
 
     // Determine if currency conversion is needed
     const currencyTx = data.currency || baseCurrency;

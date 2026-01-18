@@ -11,6 +11,11 @@ export function RunningBalanceChart({ data, baseCurrency }: RunningBalanceChartP
     return <div className="flex h-64 items-center justify-center text-muted-foreground">No balance data available</div>;
   }
 
+  // Get computed color values from CSS variables
+  const primaryColor = "rgb(37, 37, 37)"; // fallback for light mode --primary
+  const mutedColor = "rgb(235, 235, 235)"; // fallback for --muted
+  const mutedForegroundColor = "rgb(115, 115, 115)"; // fallback for --muted-foreground
+
   // Custom tooltip
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: RunningBalancePoint }[] }) => {
     if (!active || !payload || !payload.length) return null;
@@ -42,11 +47,11 @@ export function RunningBalanceChart({ data, baseCurrency }: RunningBalanceChartP
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+        <CartesianGrid strokeDasharray="3 3" stroke={mutedColor} />
         <XAxis
           dataKey="date"
           className="text-xs"
-          tick={{ fill: "hsl(var(--muted-foreground))" }}
+          tick={{ fill: mutedForegroundColor }}
           tickFormatter={(value) => {
             const date = new Date(value);
             return date.toLocaleDateString("en-US", {
@@ -55,15 +60,15 @@ export function RunningBalanceChart({ data, baseCurrency }: RunningBalanceChartP
             });
           }}
         />
-        <YAxis className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} tickFormatter={formatYAxis} />
+        <YAxis className="text-xs" tick={{ fill: mutedForegroundColor }} tickFormatter={formatYAxis} />
         <Tooltip content={<CustomTooltip />} />
         <Line
           type="monotone"
           dataKey="balance"
-          stroke="hsl(var(--primary))"
+          stroke={primaryColor}
           strokeWidth={2}
           dot={false}
-          activeDot={{ r: 6 }}
+          activeDot={{ r: 6, fill: primaryColor }}
         />
       </LineChart>
     </ResponsiveContainer>

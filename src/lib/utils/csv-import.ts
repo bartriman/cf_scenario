@@ -7,6 +7,7 @@ import type { ColumnMapping } from "@/types";
 export async function parseFullCSV(file: File): Promise<{ headers: string[]; rows: string[][] }> {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
+      delimiter: ";",
       complete: (results) => {
         if (results.errors.length > 0) {
           reject(new Error(`CSV parsing error: ${results.errors[0].message}`));

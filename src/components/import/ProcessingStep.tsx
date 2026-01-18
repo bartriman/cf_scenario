@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 interface ProcessingStepProps {
   importId: number;
   companyId: string;
+  scenarioId?: number | null;
   onComplete: (scenarioId: number) => void;
   onError: (error: string) => void;
 }
 
-export function ProcessingStep({ importId, companyId, onComplete, onError }: ProcessingStepProps) {
+export function ProcessingStep({ importId, companyId, scenarioId, onComplete, onError }: ProcessingStepProps) {
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("Inicjalizacja importu...");
-  const [scenarioId, setScenarioId] = useState<number | null>(null);
 
   useEffect(() => {
     let polling = true;

@@ -52,11 +52,35 @@ export const csvRowSchema = z.object({
   }, "Nieprawidłowy format daty"),
 
   amount: z.string().refine((val) => {
-    // Allow formats: 1234.56, 1,234.56, -1234.56
-    const cleaned = val.replace(/,/g, "");
+    // Allow formats:
+    // - 1234.56, 1,234.56 (English)
+    // - 1234,56, 1 234,56 (Polish)
+    // - (1234.56), (1 234,56) (Negative in parentheses)
+    // - -1234.56 (Negative with minus)
+    
+    let cleaned = val.trim();
+    
+    // Handle negative amounts in parentheses: (123.45) -> -123.45
+    const isNegativeParentheses = cleaned.startsWith("(") && cleaned.endsWith(")");
+    if (isNegativeParentheses) {
+      cleaned = "-" + cleaned.slice(1, -1).trim();
+    }
+    
+    // Remove spaces (thousand separators)
+    cleaned = cleaned.replace(/\s/g, "");
+    
+    // Replace comma with dot for decimal separator (Polish format)
+    // Only if there's one comma and it's followed by 1-2 digits
+    if ((cleaned.match(/,/g) || []).length === 1 && /,\d{1,2}$/.test(cleaned)) {
+      cleaned = cleaned.replace(",", ".");
+    } else {
+      // Remove commas as thousand separators
+      cleaned = cleaned.replace(/,/g, "");
+    }
+    
     const num = parseFloat(cleaned);
-    return !isNaN(num) && num >= 0;
-  }, "Nieprawidłowa kwota - musi być liczbą nieujemną"),
+    return !isNaN(num);
+  }, "Nieprawidłowa kwota - musi być liczbą"),
 
   direction: z.enum(["INFLOW", "OUTFLOW"], {
     errorMap: () => ({ message: "Kierunek musi być INFLOW lub OUTFLOW" }),
@@ -67,12 +91,12 @@ export const csvRowSchema = z.object({
     .length(3, "Kod waluty musi mieć 3 znaki")
     .regex(/^[A-Z]{3}$/, "Kod waluty musi składać się z wielkich liter (np. PLN, USD)"),
 
-  flow_id: z.string().optional(),
-  counterparty: z.string().optional(),
-  description: z.string().optional(),
-  project: z.string().optional(),
-  document: z.string().optional(),
-  payment_source: z.string().optional(),
+  flow_id: z.string().optional().nullable().transform(val => val || undefined),
+  counterparty: z.string().optional().nullable().transform(val => val || undefined),
+  description: z.string().optional().nullable().transform(val => val || undefined),
+  project: z.string().optional().nullable().transform(val => val || undefined),
+  document: z.string().optional().nullable().transform(val => val || undefined),
+  payment_source: z.string().optional().nullable().transform(val => val || undefined),
 });
 
 /**

@@ -31,15 +31,12 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
 
   // Initial fetch
   useEffect(() => {
-    // Jeśli mamy initial scenarios (SSR), użyj ich
-    if (initialScenarios.length === 0) {
-      fetchScenarios();
-    }
-  }, [fetchScenarios, initialScenarios.length]);
+    fetchScenarios();
+  }, [fetchScenarios]);
 
   // Filtrowanie scenariuszy (client-side)
   const filteredScenarios = useMemo(() => {
-    let filtered = scenarios.length > 0 ? scenarios : initialScenarios;
+    let filtered = scenarios;
 
     // Filtrowanie po statusie
     if (statusFilter !== "all") {

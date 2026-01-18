@@ -17,6 +17,7 @@ export function useCSVParser(): UseCSVParserReturn {
 
     return new Promise((resolve, reject) => {
       Papa.parse(file, {
+        delimiter: ";",
         complete: (results) => {
           setIsLoading(false);
 

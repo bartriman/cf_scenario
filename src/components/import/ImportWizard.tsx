@@ -171,6 +171,8 @@ export default function ImportWizard({ companyId, onCancel }: ImportWizardProps)
         return (
           <ProcessingStep
             importId={state.importId || 1}
+            companyId={companyId}
+            scenarioId={state.scenarioId}
             onComplete={handleCompleteImport}
             onError={() => {
               // Error handling to be implemented
@@ -183,21 +185,12 @@ export default function ImportWizard({ companyId, onCancel }: ImportWizardProps)
     }
   };
 
-  returnif (!state.importId) {
-          return (
-            <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-red-800 dark:text-red-200 font-medium">Błąd: Brak ID importu</p>
-            </div>
-          );
-        }
-
-        return (
-          <ProcessingStep
-            importId={state.importId}
-            companyId={companyId}
-            onComplete={handleCompleteImport}
-            onError={(errorMsg) => {
-              setError(errorMsg);portuj dane finansowe z pliku CSV i utwórz nowy scenariusz bazowy</p>
+  return (
+    <div className="w-full max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Importuj dane</h1>
+        <p className="text-muted-foreground">Importuj dane finansowe z pliku CSV i utwórz nowy scenariusz bazowy</p>
       </div>
 
       {/* Progress indicator */}
