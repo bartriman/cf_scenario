@@ -98,9 +98,9 @@ export default function ScenarioView({ scenarioId, companyId, baseCurrency }: Sc
   const isLocked = scenario.status === "Locked";
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col">
       {/* Header */}
-      <header className="border-b bg-background px-6 py-4">
+      <header className="border-b bg-background px-6 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">{scenario.name}</h1>
@@ -126,7 +126,7 @@ export default function ScenarioView({ scenarioId, companyId, baseCurrency }: Sc
       </header>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-col">
         {/* Running Balance Chart */}
         <div className="border-b bg-card p-6">
           <h2 className="mb-4 text-lg font-semibold">Running Balance</h2>
@@ -134,7 +134,7 @@ export default function ScenarioView({ scenarioId, companyId, baseCurrency }: Sc
         </div>
 
         {/* Timeline */}
-        <div className="flex-1 overflow-hidden bg-muted/30">
+        <div className="bg-muted/30">
           <div className="p-6 pb-2">
             <h2 className="text-lg font-semibold">Weekly Cash Flow</h2>
           </div>

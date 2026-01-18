@@ -126,8 +126,8 @@ export function Timeline({ weeklyAggregates, onTransactionDrop, onTransactionCli
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="h-full overflow-x-auto overflow-y-hidden">
-        <div className="inline-flex h-full min-w-full gap-4 pl-6 pr-8 py-4 after:content-[''] after:w-4 after:flex-shrink-0">
+      <div className="overflow-x-auto">
+        <div className="inline-flex min-w-full gap-4 pl-6 pr-8 py-4 after:content-[''] after:w-4 after:flex-shrink-0">
           {weeklyAggregates.map((week) => (
             <WeekCard key={week.week_index} week={week} onTransactionClick={onTransactionClick} isLocked={isLocked} />
           ))}

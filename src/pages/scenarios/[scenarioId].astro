@@ -57,7 +57,7 @@ const baseCurrency = (scenario.companies as unknown as { base_currency: string }
 ---
 
 <Layout title={`${scenario.name} - Scenario View`}>
-  <main class="h-screen w-full overflow-hidden bg-background">
+  <main class="min-h-screen w-full bg-background">
     <ScenarioView client:load scenarioId={scenarioId} companyId={companyId} baseCurrency={baseCurrency} />
   </main>
 </Layout>
