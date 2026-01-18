@@ -316,6 +316,7 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
           });
 
           // Add the transaction to target week
+          // In demo mode, newWeekStartDate might be either week_start_date or a transaction's date_due
           let targetWeekFound = false;
           const weeksAfterAdd = weeksAfterRemove.map((week) => {
             console.log('[moveTransaction] Checking week:', {
@@ -323,17 +324,26 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
               week_label: week.week_label,
               week_start_date: week.week_start_date,
               newWeekStartDate,
-              matches: week.week_start_date === newWeekStartDate,
-              startDateType: typeof week.week_start_date,
-              newDateType: typeof newWeekStartDate,
+              matchesStartDate: week.week_start_date === newWeekStartDate,
+              matchesTransactionDate: week.transactions.some(t => t.date_due === newWeekStartDate),
             });
             
-            if (week.week_start_date === newWeekStartDate) {
+            // Check if newWeekStartDate matches either week_start_date or any transaction's date_due in this week
+            const isTargetWeek = week.week_start_date === newWeekStartDate || 
+                                week.transactions.some(t => t.date_due === newWeekStartDate);
+            
+            if (isTargetWeek) {
               targetWeekFound = true;
               console.log('[moveTransaction] Found target week! Adding transaction to week:', week.week_index);
+              
+              // Use the date from existing transactions in this week, or fall back to newWeekStartDate
+              const targetDate = week.transactions.length > 0 
+                ? week.transactions[0].date_due 
+                : newWeekStartDate;
+              
               return {
                 ...week,
-                transactions: [...week.transactions, movedTransaction!],
+                transactions: [...week.transactions, { ...movedTransaction!, date_due: targetDate }],
               };
             }
             return week;
