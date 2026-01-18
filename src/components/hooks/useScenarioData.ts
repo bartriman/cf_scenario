@@ -170,11 +170,15 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
     setError(null);
 
     try {
+      // Add cache-busting timestamp to force fresh data
+      const timestamp = Date.now();
+      console.log('[fetchData] Fetching with timestamp:', timestamp);
+      
       // Fetch all data in parallel
       const [scenarioRes, weeklyRes, balanceRes] = await Promise.all([
-        fetch(`/api/companies/${companyId}/scenarios/${scenarioId}`),
-        fetch(`/api/companies/${companyId}/scenarios/${scenarioId}/weekly-aggregates`),
-        fetch(`/api/companies/${companyId}/scenarios/${scenarioId}/running-balance`),
+        fetch(`/api/companies/${companyId}/scenarios/${scenarioId}?_t=${timestamp}`),
+        fetch(`/api/companies/${companyId}/scenarios/${scenarioId}/weekly-aggregates?_t=${timestamp}`),
+        fetch(`/api/companies/${companyId}/scenarios/${scenarioId}/running-balance?_t=${timestamp}`),
       ]);
 
       // Check for errors
@@ -192,6 +196,12 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
       const scenarioData: Scenario = await scenarioRes.json();
       const weeklyData: WeeklyAggregatesResponseDTO = await weeklyRes.json();
       const balanceData: RunningBalanceResponseDTO = await balanceRes.json();
+
+      console.log('[fetchData] Received data:', {
+        scenarioId,
+        weeksCount: weeklyData.weeks.length,
+        lastWeek: weeklyData.weeks[weeklyData.weeks.length - 1],
+      });
 
       // Transform data
       const transformedWeeks = weeklyData.weeks.map(transformWeekAggregate);
@@ -279,11 +289,10 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
       // Demo mode - move transaction locally
       if (isDemoMode) {
         try {
-          // Find the transaction and move it to the target week
+          // Find and remove the transaction from source week
           let movedTransaction: TransactionVM | null = null;
-
-          // Remove transaction from current week
-          const updatedWeeks = weeklyAggregates.map((week) => {
+          
+          const weeksAfterRemove = weeklyAggregates.map((week) => {
             const txIndex = week.transactions.findIndex((tx) => tx.id === flowId);
             if (txIndex !== -1) {
               movedTransaction = { ...week.transactions[txIndex], date_due: newWeekStartDate };
@@ -295,25 +304,59 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
             return week;
           });
 
-          // Add transaction to target week
-          if (movedTransaction) {
-            const finalWeeks = updatedWeeks.map((week) => {
-              if (week.week_start_date === newWeekStartDate) {
-                return {
-                  ...week,
-                  transactions: [...week.transactions, movedTransaction!],
-                };
-              }
-              return week;
-            });
-
-            // Recalculate running balance based on moved transactions
-            const updatedBalance = recalculateRunningBalance(finalWeeks);
-
-            setWeeklyAggregates(finalWeeks);
-            setRunningBalance(updatedBalance);
-            saveDemoData(finalWeeks, updatedBalance);
+          if (!movedTransaction) {
+            console.error('[moveTransaction] Transaction not found:', flowId);
+            throw new Error(`Transaction ${flowId} not found`);
           }
+
+          console.log('[moveTransaction] Transaction found and removed:', {
+            transactionId: flowId,
+            newWeekStartDate,
+            transaction: movedTransaction
+          });
+
+          // Add the transaction to target week
+          let targetWeekFound = false;
+          const weeksAfterAdd = weeksAfterRemove.map((week) => {
+            console.log('[moveTransaction] Checking week:', {
+              week_index: week.week_index,
+              week_label: week.week_label,
+              week_start_date: week.week_start_date,
+              newWeekStartDate,
+              matches: week.week_start_date === newWeekStartDate,
+              startDateType: typeof week.week_start_date,
+              newDateType: typeof newWeekStartDate,
+            });
+            
+            if (week.week_start_date === newWeekStartDate) {
+              targetWeekFound = true;
+              console.log('[moveTransaction] Found target week! Adding transaction to week:', week.week_index);
+              return {
+                ...week,
+                transactions: [...week.transactions, movedTransaction!],
+              };
+            }
+            return week;
+          });
+
+          if (!targetWeekFound) {
+            console.error('[moveTransaction] Target week not found:', {
+              newWeekStartDate,
+              availableWeeks: weeklyAggregates.map(w => ({ 
+                index: w.week_index, 
+                label: w.week_label,
+                date: w.week_start_date 
+              }))
+            });
+            throw new Error(`Target week with date ${newWeekStartDate} not found`);
+          }
+
+          // Recalculate running balance based on moved transactions
+          const updatedBalance = recalculateRunningBalance(weeksAfterAdd);
+
+          setWeeklyAggregates(weeksAfterAdd);
+          setRunningBalance(updatedBalance);
+          saveDemoData(weeksAfterAdd, updatedBalance);
         } catch (err) {
           setError(err instanceof Error ? err : new Error("Failed to move demo transaction"));
           throw err;
@@ -322,6 +365,13 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
       }
 
       try {
+        console.log('[moveTransaction] API mode - sending batch update:', {
+          flowId,
+          newWeekStartDate,
+          scenarioId,
+          companyId
+        });
+
         const batchData: BatchUpdateOverridesRequestDTO = {
           overrides: [
             {
@@ -339,10 +389,21 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
           body: JSON.stringify(batchData),
         });
 
+        console.log('[moveTransaction] API response:', {
+          status: response.status,
+          ok: response.ok
+        });
+
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[moveTransaction] API error:', {
+            status: response.status,
+            errorText
+          });
           throw new Error(`Failed to move transaction: ${response.status}`);
         }
 
+        console.log('[moveTransaction] API call successful, refetching data...');
         // Refetch data after successful move
         await refetch();
       } catch (err) {

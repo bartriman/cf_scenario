@@ -20,6 +20,23 @@ export function WeekCard({ week, onTransactionClick, isLocked }: WeekCardProps) 
   const inflowTransactions = week.transactions.filter((tx) => tx.direction === "INFLOW");
   const outflowTransactions = week.transactions.filter((tx) => tx.direction === "OUTFLOW");
 
+  // Debug logging for last week
+  if (week.week_index >= 4) {
+    console.log(`[WeekCard] Week ${week.week_index}:`, {
+      label: week.week_label,
+      start_date: week.week_start_date,
+      total_transactions: week.transactions.length,
+      inflows: inflowTransactions.length,
+      outflows: outflowTransactions.length,
+      transactions: week.transactions.map(t => ({
+        id: t.id,
+        direction: t.direction,
+        counterparty: t.counterparty,
+        amount: t.amount_book_cents / 100
+      }))
+    });
+  }
+
   // Format currency
   const formatCurrency = (cents: number) => {
     return (cents / 100).toLocaleString("en-US", {
@@ -31,7 +48,8 @@ export function WeekCard({ week, onTransactionClick, isLocked }: WeekCardProps) 
   return (
     <Card
       ref={setNodeRef}
-      className={`w-80 flex-shrink-0 snap-center transition-colors ${isOver ? "ring-2 ring-primary" : ""}`}
+      data-week-index={week.week_index}
+      className={`w-80 flex-shrink-0 snap-center transition-colors min-h-[400px] ${isOver ? "ring-2 ring-primary" : ""}`}
     >
       <CardHeader className="pb-3">
         <CardTitle className="text-base">{week.week_label}</CardTitle>

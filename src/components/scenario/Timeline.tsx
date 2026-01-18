@@ -7,7 +7,7 @@ import {
   KeyboardSensor,
   useSensor,
   useSensors,
-  closestCenter,
+  closestCorners,
 } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core";
 import { useState } from "react";
@@ -59,7 +59,29 @@ export function Timeline({ weeklyAggregates, onTransactionDrop, onTransactionCli
     const weekIndex = parseInt(weekDroppableId.replace("week-", ""), 10);
     const targetWeek = weeklyAggregates.find((w) => w.week_index === weekIndex);
 
-    if (!targetWeek || !targetWeek.week_start_date) return;
+    console.log('[Timeline] handleDragEnd:', {
+      transactionId,
+      weekDroppableId,
+      weekIndex,
+      targetWeek: targetWeek ? {
+        index: targetWeek.week_index,
+        label: targetWeek.week_label,
+        start_date: targetWeek.week_start_date
+      } : null
+    });
+
+    if (!targetWeek || !targetWeek.week_start_date) {
+      console.error('[Timeline] Target week not found or missing start_date:', {
+        targetWeek,
+        weekIndex,
+        availableWeeks: weeklyAggregates.map(w => ({
+          index: w.week_index,
+          label: w.week_label,
+          start_date: w.week_start_date
+        }))
+      });
+      return;
+    }
 
     // Find source week
     let sourceWeekStartDate: string | null = null;
@@ -73,7 +95,22 @@ export function Timeline({ weeklyAggregates, onTransactionDrop, onTransactionCli
 
     // Only trigger drop if moving to a different week
     if (sourceWeekStartDate !== targetWeek.week_start_date) {
-      onTransactionDrop(transactionId, targetWeek.week_start_date);
+      // Use the date from the first transaction in the target week instead of week_start_date
+      // This ensures the transaction goes to the correct week based on how weekly_aggregates_v calculates week_index
+      const targetDate = targetWeek.transactions.length > 0 
+        ? targetWeek.transactions[0].date_due 
+        : targetWeek.week_start_date;
+      
+      console.log('[Timeline] Moving transaction:', {
+        transactionId,
+        from: sourceWeekStartDate,
+        to: targetDate,
+        targetWeekStartDate: targetWeek.week_start_date,
+        usingTransactionDate: targetWeek.transactions.length > 0
+      });
+      onTransactionDrop(transactionId, targetDate);
+    } else {
+      console.log('[Timeline] Same week - no move needed');
     }
   };
 
@@ -84,13 +121,13 @@ export function Timeline({ weeklyAggregates, onTransactionDrop, onTransactionCli
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={closestCorners}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
       <div className="h-full overflow-x-auto overflow-y-hidden">
-        <div className="inline-flex h-full min-w-full gap-4 px-6 py-4">
+        <div className="inline-flex h-full min-w-full gap-4 pl-6 pr-8 py-4 after:content-[''] after:w-4 after:flex-shrink-0">
           {weeklyAggregates.map((week) => (
             <WeekCard key={week.week_index} week={week} onTransactionClick={onTransactionClick} isLocked={isLocked} />
           ))}

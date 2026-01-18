@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Upload } from "lucide-react";
 import type { ScenarioFilterStatus } from "@/types";
 
 interface ScenarioListHeaderProps {
@@ -19,10 +19,19 @@ export function ScenarioListHeader({ onCreateClick, onFilterChange, onSearchChan
           <p className="text-muted-foreground mt-1">Zarządzaj scenariuszami przepływów pieniężnych</p>
         </div>
 
-        <Button onClick={onCreateClick}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nowy scenariusz
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button asChild variant="outline">
+            <a href="/import">
+              <Upload className="mr-2 h-4 w-4" />
+              Importuj dane
+            </a>
+          </Button>
+          
+          <Button onClick={onCreateClick}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nowy scenariusz
+          </Button>
+        </div>
       </div>
 
       {(onFilterChange || onSearchChange) && (

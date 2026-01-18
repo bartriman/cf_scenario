@@ -64,6 +64,32 @@ export const GET: APIRoute = async ({ params, locals }) => {
     // Step 3: Call service layer
     const result = await getWeeklyAggregates(supabase, validatedParams.companyId, validatedParams.scenarioId);
 
+    // Debug logging for scenario and weeks
+    console.log('[weekly-aggregates] Scenario weeks:', {
+      scenarioId: validatedParams.scenarioId,
+      totalWeeks: result.weeks.length,
+      weeks: result.weeks.map(w => ({
+        index: w.week_index,
+        label: w.week_label,
+        start: w.week_start_date,
+        inflowCount: w.inflow_top5.length,
+        outflowCount: w.outflow_top5.length,
+      }))
+    });
+
+    // Debug logging for last week
+    const lastWeek = result.weeks[result.weeks.length - 1];
+    console.log('[weekly-aggregates] Last week data:', {
+      scenarioId: validatedParams.scenarioId,
+      lastWeekIndex: lastWeek?.week_index,
+      lastWeekLabel: lastWeek?.week_label,
+      lastWeekStartDate: lastWeek?.week_start_date,
+      inflowTop5Count: lastWeek?.inflow_top5?.length || 0,
+      outflowTop5Count: lastWeek?.outflow_top5?.length || 0,
+      inflowTop5: lastWeek?.inflow_top5,
+      outflowTop5: lastWeek?.outflow_top5,
+    });
+
     // Step 4: Return success response
     return new Response(JSON.stringify(result), {
       status: 200,

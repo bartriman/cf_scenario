@@ -1371,6 +1371,15 @@ export async function batchUpdateOverrides(
       throw new DatabaseError("Failed to save overrides");
     }
 
+    console.log("[batchUpdateOverrides] Successfully saved overrides:", {
+      scenarioId,
+      count: upsertedOverrides?.length || 0,
+      overrides: upsertedOverrides?.map(o => ({
+        flow_id: o.flow_id,
+        new_date_due: o.new_date_due,
+      }))
+    });
+
     // Step 8: Return response
     return {
       updated_count: upsertedOverrides?.length || 0,
