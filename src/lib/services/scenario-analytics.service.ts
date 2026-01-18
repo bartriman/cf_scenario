@@ -38,8 +38,8 @@ export class DatabaseError extends Error {
 const Top5ItemSchema = z.object({
   flow_id: z.string(),
   amount_book_cents: z.number(),
-  counterparty: z.string(),
-  description: z.string(),
+  counterparty: z.string().nullable(),
+  description: z.string().nullable(),
   date_due: z.string(),
   project: z.string().nullable().optional(),
 });

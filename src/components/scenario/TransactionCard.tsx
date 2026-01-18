@@ -66,8 +66,10 @@ export function TransactionCard({ transaction, onClick, isLocked }: TransactionC
           </button>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{transaction.counterparty || transaction.description}</p>
-          {transaction.counterparty && transaction.description !== "Other" && (
+          <p className="truncate text-sm font-medium">
+            {transaction.counterparty || transaction.description || "(bez opisu)"}
+          </p>
+          {transaction.counterparty && transaction.description && transaction.description !== "Other" && (
             <p className="truncate text-xs text-muted-foreground">{transaction.description}</p>
           )}
           <p

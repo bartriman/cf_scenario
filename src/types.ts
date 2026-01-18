@@ -538,8 +538,8 @@ export interface ScenarioTransactionListResponseDTO {
 export interface TopTransactionItemDTO {
   flow_id: string;
   amount_book_cents: number;
-  counterparty: string;
-  description: string;
+  counterparty: string | null;
+  description: string | null;
   date_due: string;
 }
 
@@ -939,7 +939,7 @@ export interface TransactionVM {
   direction: "INFLOW" | "OUTFLOW";
   amount_book_cents: number;
   counterparty: string | null; // null dla "Other"
-  description: string; // "Other" dla grupy
+  description: string | null; // null gdy brak opisu, "Other" dla grupy
   date_due: string;
 }
 
