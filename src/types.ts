@@ -1149,6 +1149,7 @@ export interface ExportTransactionDTO {
   description: string | null;
   project: string | null;
   document: string | null;
+  payment_source: string | null;
   is_overridden: boolean;
 }
 

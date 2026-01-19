@@ -1,1 +1,1 @@
-select * from import_rows where import_id = '2';
+select * from import_rows ;

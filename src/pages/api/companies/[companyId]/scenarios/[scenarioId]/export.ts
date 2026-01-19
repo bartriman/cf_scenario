@@ -369,6 +369,7 @@ async function addTransactionsSheet(workbook: ExcelJS.Workbook, transactions: Ex
     { key: "description", width: 40 },
     { key: "project", width: 20 },
     { key: "document", width: 20 },
+    { key: "payment_source", width: 20 },
     { key: "is_overridden", width: 12 },
   ];
 
@@ -381,6 +382,7 @@ async function addTransactionsSheet(workbook: ExcelJS.Workbook, transactions: Ex
     description: "Description",
     project: "Project",
     document: "Document",
+    payment_source: "Payment Source",
     is_overridden: "Modified",
   });
 
@@ -406,6 +408,7 @@ async function addTransactionsSheet(workbook: ExcelJS.Workbook, transactions: Ex
       description: transaction.description || "",
       project: transaction.project || "",
       document: transaction.document || "",
+      payment_source: transaction.payment_source || "",
       is_overridden: transaction.is_overridden ? "Yes" : "No",
     });
   });
