@@ -414,7 +414,21 @@ export async function createTransactionsFromImport(
     return 0;
   }
 
-  // Step 3: Transform rows into transactions
+  // Step 3: Soft-delete previous transactions with same dataset_code
+  // This prevents duplication when re-importing with the same dataset_code
+  const { error: deactivateError } = await supabase
+    .from("transactions")
+    .update({ is_active: false })
+    .eq("company_id", companyId)
+    .eq("dataset_code", importRecord.dataset_code)
+    .eq("is_active", true);
+
+  if (deactivateError) {
+    console.error("Database error deactivating previous transactions:", deactivateError);
+    throw new DatabaseError("Failed to deactivate previous transactions", deactivateError);
+  }
+
+  // Step 4: Transform rows into transactions
   const transactions: TransactionInsert[] = [];
 
   for (const row of validRows) {
@@ -492,7 +506,7 @@ export async function createTransactionsFromImport(
     });
   }
 
-  // Step 4: Insert transactions in batches
+  // Step 5: Insert transactions in batches
   let insertedCount = 0;
   const batchSize = 1000;
 
@@ -509,7 +523,7 @@ export async function createTransactionsFromImport(
     insertedCount += batch.length;
   }
 
-  // Step 5: Update import record with transaction count
+  // Step 6: Update import record with transaction count
   await updateImportStatus(supabase, importId, {
     inserted_transactions_count: insertedCount,
   });
