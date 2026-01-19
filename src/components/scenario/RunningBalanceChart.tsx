@@ -1,5 +1,5 @@
 import type { RunningBalancePoint } from "@/types";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 interface RunningBalanceChartProps {
   data: RunningBalancePoint[];
@@ -13,7 +13,6 @@ export function RunningBalanceChart({ data, baseCurrency }: RunningBalanceChartP
 
   // Get computed color values from CSS variables
   const primaryColor = "rgb(37, 37, 37)"; // fallback for light mode --primary
-  const mutedColor = "rgb(235, 235, 235)"; // fallback for --muted
   const mutedForegroundColor = "rgb(115, 115, 115)"; // fallback for --muted-foreground
 
   // Custom tooltip
@@ -34,11 +33,9 @@ export function RunningBalanceChart({ data, baseCurrency }: RunningBalanceChartP
     );
   };
 
-  // Format Y-axis
+  // Format Y-axis (without currency symbol)
   const formatYAxis = (value: number) => {
     return value.toLocaleString("en-US", {
-      style: "currency",
-      currency: baseCurrency,
       notation: "compact",
       maximumFractionDigits: 1,
     });
@@ -47,7 +44,6 @@ export function RunningBalanceChart({ data, baseCurrency }: RunningBalanceChartP
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={mutedColor} />
         <XAxis
           dataKey="date"
           className="text-xs"
@@ -60,7 +56,12 @@ export function RunningBalanceChart({ data, baseCurrency }: RunningBalanceChartP
             });
           }}
         />
-        <YAxis className="text-xs" tick={{ fill: mutedForegroundColor }} tickFormatter={formatYAxis} />
+        <YAxis 
+          className="text-xs" 
+          tick={{ fill: mutedForegroundColor }} 
+          tickFormatter={formatYAxis}
+          label={{ value: "(w wal. ks.)", angle: -90, position: "insideLeft", style: { textAnchor: "middle", fill: mutedForegroundColor } }}
+        />
         <Tooltip content={<CustomTooltip />} />
         <Line
           type="monotone"

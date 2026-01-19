@@ -47,7 +47,7 @@ const Top5ItemSchema = z.object({
 /**
  * Calculate week label from week_index and start_date
  * Week 0 = "Initial Balance"
- * Week 1+ = "W{week} {year}"
+ * Week 1+ = "YYWW" (e.g., "2603" for week 3 of 2026)
  *
  * @param weekIndex - Week index (0 for IB, 1+ for actual weeks)
  * @param startDate - Scenario start date
@@ -62,8 +62,17 @@ function calculateWeekLabel(weekIndex: number, startDate: string): string {
   const weekStartDate = new Date(start);
   weekStartDate.setDate(start.getDate() + (weekIndex - 1) * 7);
 
+  // Calculate ISO week number
   const year = weekStartDate.getFullYear();
-  return `W${weekIndex} ${year}`;
+  const startOfYear = new Date(year, 0, 1);
+  const dayOfYear = Math.floor((weekStartDate.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+  const isoWeek = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
+  
+  // Format as YYWW
+  const yy = year.toString().slice(-2);
+  const ww = isoWeek.toString().padStart(2, "0");
+  
+  return `${yy}${ww}`;
 }
 
 /**
