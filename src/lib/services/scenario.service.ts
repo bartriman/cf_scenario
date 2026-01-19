@@ -1043,10 +1043,10 @@ export async function lockScenario(
     // Step 2: Verify scenario exists and belongs to this company
     const { data: scenario, error: scenarioError } = await supabase
       .from("scenarios")
-      .select("id, company_id, status, is_active")
+      .select("id, company_id, status")
       .eq("id", scenarioId)
       .eq("company_id", companyId)
-      .eq("is_active", true)
+      .is("deleted_at", null)
       .single();
 
     if (scenarioError || !scenario) {
@@ -1158,10 +1158,10 @@ export async function upsertOverride(
       throw new ConflictError("Cannot modify overrides for a Locked scenario");
     }
 
-    // Step 5: Get the original transaction to freeze original values
+    // Step 5: Get the original transaction to freeze original values and check if it's IB
     const { data: transaction, error: transactionError } = await supabase
       .from("transactions")
-      .select("flow_id, date_due, amount_book_cents")
+      .select("flow_id, date_due, amount_book_cents, time_slot")
       .eq("company_id", companyId)
       .eq("flow_id", flowId)
       .maybeSingle();
@@ -1173,6 +1173,11 @@ export async function upsertOverride(
 
     if (!transaction) {
       throw new ValidationError(`Transaction with flow_id '${flowId}' not found`);
+    }
+
+    // Step 5a: Prevent overrides for Initial Balance transactions
+    if (transaction.time_slot === 'IB' || transaction.date_due?.toString() === 'IB') {
+      throw new ValidationError('Cannot create override for Initial Balance (IB) transaction. IB transactions are read-only.');
     }
 
     // Step 6: Check if override already exists
@@ -1302,11 +1307,11 @@ export async function batchUpdateOverrides(
       throw new ConflictError("Cannot modify overrides for a Locked scenario");
     }
 
-    // Step 4: Validate that all flow_ids exist
+    // Step 4: Validate that all flow_ids exist and check for IB transactions
     const flowIds = data.overrides.map((o) => o.flow_id);
     const { data: transactions, error: transactionsError } = await supabase
       .from("transactions")
-      .select("flow_id, date_due, amount_book_cents")
+      .select("flow_id, date_due, amount_book_cents, time_slot")
       .eq("company_id", companyId)
       .in("flow_id", flowIds);
 
@@ -1319,6 +1324,17 @@ export async function batchUpdateOverrides(
       const foundFlowIds = transactions?.map((t) => t.flow_id) || [];
       const missingFlowIds = flowIds.filter((id) => !foundFlowIds.includes(id));
       throw new ValidationError(`Transactions not found for flow_ids: ${missingFlowIds.join(", ")}`);
+    }
+
+    // Step 4a: Prevent overrides for Initial Balance transactions
+    const ibTransactions = transactions.filter(
+      (t) => t.time_slot === 'IB' || t.date_due?.toString() === 'IB'
+    );
+    if (ibTransactions.length > 0) {
+      const ibFlowIds = ibTransactions.map((t) => t.flow_id).join(', ');
+      throw new ValidationError(
+        `Cannot create overrides for Initial Balance (IB) transactions. IB transactions are read-only. Affected flow_ids: ${ibFlowIds}`
+      );
     }
 
     // Step 5: Get existing overrides for these flow_ids
