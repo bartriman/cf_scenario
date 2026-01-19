@@ -82,8 +82,8 @@ export const csvRowSchema = z.object({
     return !isNaN(num);
   }, "Nieprawidłowa kwota - musi być liczbą"),
 
-  direction: z.enum(["INFLOW", "OUTFLOW"], {
-    errorMap: () => ({ message: "Kierunek musi być INFLOW lub OUTFLOW" }),
+  direction: z.enum(["INFLOW", "OUTFLOW", "IB"], {
+    errorMap: () => ({ message: "Kierunek musi być INFLOW, OUTFLOW lub IB (saldo początkowe)" }),
   }),
 
   currency: z

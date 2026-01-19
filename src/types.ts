@@ -941,6 +941,7 @@ export interface TransactionVM {
   counterparty: string | null; // null dla "Other"
   description: string | null; // null gdy brak opisu, "Other" dla grupy
   date_due: string;
+  is_initial_balance?: boolean; // true dla transakcji IB (week_index = 0)
 }
 
 // Reprezentuje pojedynczy tydzień w komponencie Timeline

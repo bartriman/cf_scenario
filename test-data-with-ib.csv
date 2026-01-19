@@ -1,0 +1,9 @@
+date_due;amount;direction;currency;counterparty;description;project;document;payment_source;flow_id
+2026-01-01;50000.00;IB;PLN;Initial Capital;Kapitał początkowy firmy;;;CAPITAL;IB-001
+2026-01-01;-10000.00;IB;PLN;Setup Costs;Koszty założenia firmy;;;SETUP;IB-002
+2026-01-01;25000.00;IB;PLN;Bank Balance;Saldo na koncie bankowym;;;BANK;IB-003
+2026-01-20;15000.00;INFLOW;PLN;Klient ABC Sp. z o.o.;Faktura 001/2026;Projekt Alpha;FV-001;BANK;TX-001
+2026-01-22;-8500.50;OUTFLOW;PLN;Dostawca XYZ;Zakup sprzętu;Projekt Alpha;ZAK-045;BANK;TX-002
+2026-01-25;22000.00;INFLOW;PLN;Klient DEF S.A.;Faktura 002/2026;Projekt Beta;FV-002;BANK;TX-003
+2026-01-28;-4200.00;OUTFLOW;PLN;Biuro Rachunkowe;Usługi księgowe - styczeń;;FS-123;BANK;TX-004
+2026-02-01;18500.00;INFLOW;PLN;Klient GHI Ltd.;Faktura 003/2026;Projekt Gamma;FV-003;BANK;TX-005

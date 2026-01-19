@@ -11,9 +11,11 @@ interface WeekCardProps {
 }
 
 export function WeekCard({ week, onTransactionClick, isLocked }: WeekCardProps) {
+  const isInitialBalance = week.week_index === 0;
+  
   const { setNodeRef, isOver } = useDroppable({
     id: `week-${week.week_index}`,
-    disabled: isLocked,
+    disabled: isLocked || isInitialBalance, // Disable drop for IB week
   });
 
   // Separate transactions by direction
@@ -49,10 +51,19 @@ export function WeekCard({ week, onTransactionClick, isLocked }: WeekCardProps) 
     <Card
       ref={setNodeRef}
       data-week-index={week.week_index}
-      className={`w-80 flex-shrink-0 snap-center transition-colors ${isOver ? "ring-2 ring-primary" : ""}`}
+      className={`w-80 flex-shrink-0 snap-center transition-colors ${
+        isInitialBalance 
+          ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/20" 
+          : ""
+      } ${isOver ? "ring-2 ring-primary" : ""}`}
     >
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">{week.week_label}</CardTitle>
+        <CardTitle className="text-base flex items-center gap-2">
+          {week.week_label}
+          {isInitialBalance && (
+            <span className="text-xs font-normal text-blue-600 dark:text-blue-400">(Read-only)</span>
+          )}
+        </CardTitle>
         {week.week_start_date && (
           <p className="text-xs text-muted-foreground">
             {new Date(week.week_start_date).toLocaleDateString("en-US", {

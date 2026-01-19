@@ -1,0 +1,1 @@
+SELECT id, name, company_id FROM scenarios WHERE id = 4 AND company_id = 'caf76dd4-e467-4d0b-847d-cbcc2ce044ff';

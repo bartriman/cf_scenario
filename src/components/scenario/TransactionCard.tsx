@@ -12,8 +12,9 @@ interface TransactionCardProps {
 
 export function TransactionCard({ transaction, onClick, isLocked }: TransactionCardProps) {
   const isOther = transaction.type === "other";
-  const isClickable = !isOther && !isLocked;
-  const isDraggable = !isOther && !isLocked;
+  const isInitialBalance = transaction.is_initial_balance === true;
+  const isClickable = !isOther && !isLocked && !isInitialBalance;
+  const isDraggable = !isOther && !isLocked && !isInitialBalance;
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: transaction.id,
@@ -48,7 +49,9 @@ export function TransactionCard({ transaction, onClick, isLocked }: TransactionC
           ? "cursor-pointer transition-colors hover:bg-accent"
           : isOther
             ? "cursor-default bg-muted/50"
-            : "cursor-not-allowed opacity-60"
+            : isInitialBalance
+              ? "cursor-not-allowed bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800"
+              : "cursor-not-allowed opacity-60"
       }`}
       onClick={handleClick}
     >

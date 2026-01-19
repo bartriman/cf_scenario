@@ -26,7 +26,7 @@ interface UseScenarioDataResult {
 // Helper function to recalculate running balance from weekly aggregates
 function recalculateRunningBalance(
   weeklyAggregates: WeeklyAggregateVM[],
-  initialBalance: number = 100000
+  initialBalance = 100000
 ): RunningBalancePoint[] {
   const balancePoints: RunningBalancePoint[] = [];
   let currentBalance = initialBalance;
@@ -37,7 +37,7 @@ function recalculateRunningBalance(
   for (const week of sortedWeeks) {
     // Group transactions by date
     const transactionsByDate = new Map<string, TransactionVM[]>();
-    
+
     for (const tx of week.transactions) {
       const date = tx.date_due;
       if (!transactionsByDate.has(date)) {
@@ -52,7 +52,7 @@ function recalculateRunningBalance(
     // Add balance points for each date with transactions
     for (const date of sortedDates) {
       const transactions = transactionsByDate.get(date)!;
-      
+
       for (const tx of transactions) {
         if (tx.direction === "INFLOW") {
           currentBalance += tx.amount_book_cents / 100;
@@ -74,6 +74,7 @@ function recalculateRunningBalance(
 // Helper function to transform WeekAggregateDTO to WeeklyAggregateVM
 function transformWeekAggregate(week: WeekAggregateDTO): WeeklyAggregateVM {
   const transactions: TransactionVM[] = [];
+  const isInitialBalance = week.week_index === 0;
 
   // Add Top 5 inflows
   week.inflow_top5.forEach((tx: TopTransactionItemDTO) => {
@@ -85,6 +86,7 @@ function transformWeekAggregate(week: WeekAggregateDTO): WeeklyAggregateVM {
       counterparty: tx.counterparty,
       description: tx.description,
       date_due: tx.date_due,
+      is_initial_balance: isInitialBalance,
     });
   });
 
@@ -98,6 +100,7 @@ function transformWeekAggregate(week: WeekAggregateDTO): WeeklyAggregateVM {
       counterparty: null,
       description: "Other",
       date_due: week.week_start_date || "",
+      is_initial_balance: isInitialBalance,
     });
   }
 
@@ -111,6 +114,7 @@ function transformWeekAggregate(week: WeekAggregateDTO): WeeklyAggregateVM {
       counterparty: tx.counterparty,
       description: tx.description,
       date_due: tx.date_due,
+      is_initial_balance: isInitialBalance,
     });
   });
 
@@ -124,6 +128,7 @@ function transformWeekAggregate(week: WeekAggregateDTO): WeeklyAggregateVM {
       counterparty: null,
       description: "Other",
       date_due: week.week_start_date || "",
+      is_initial_balance: isInitialBalance,
     });
   }
 
@@ -172,8 +177,8 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
     try {
       // Add cache-busting timestamp to force fresh data
       const timestamp = Date.now();
-      console.log('[fetchData] Fetching with timestamp:', timestamp);
-      
+      console.log("[fetchData] Fetching with timestamp:", timestamp);
+
       // Fetch all data in parallel
       const [scenarioRes, weeklyRes, balanceRes] = await Promise.all([
         fetch(`/api/companies/${companyId}/scenarios/${scenarioId}?_t=${timestamp}`),
@@ -197,7 +202,7 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
       const weeklyData: WeeklyAggregatesResponseDTO = await weeklyRes.json();
       const balanceData: RunningBalanceResponseDTO = await balanceRes.json();
 
-      console.log('[fetchData] Received data:', {
+      console.log("[fetchData] Received data:", {
         scenarioId,
         weeksCount: weeklyData.weeks.length,
         lastWeek: weeklyData.weeks[weeklyData.weeks.length - 1],
@@ -286,12 +291,22 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
 
   const moveTransaction = useCallback(
     async (flowId: string, newWeekStartDate: string) => {
+      // Check if transaction is Initial Balance (IB) - should not be moved
+      const isIBTransaction = weeklyAggregates.some((week) =>
+        week.transactions.some((tx) => tx.id === flowId && tx.is_initial_balance === true)
+      );
+
+      if (isIBTransaction) {
+        console.error("[moveTransaction] Cannot move Initial Balance transaction:", flowId);
+        throw new Error("Cannot move Initial Balance (IB) transaction. IB transactions are read-only.");
+      }
+
       // Demo mode - move transaction locally
       if (isDemoMode) {
         try {
           // Find and remove the transaction from source week
           let movedTransaction: TransactionVM | null = null;
-          
+
           const weeksAfterRemove = weeklyAggregates.map((week) => {
             const txIndex = week.transactions.findIndex((tx) => tx.id === flowId);
             if (txIndex !== -1) {
@@ -305,42 +320,41 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
           });
 
           if (!movedTransaction) {
-            console.error('[moveTransaction] Transaction not found:', flowId);
+            console.error("[moveTransaction] Transaction not found:", flowId);
             throw new Error(`Transaction ${flowId} not found`);
           }
 
-          console.log('[moveTransaction] Transaction found and removed:', {
+          console.log("[moveTransaction] Transaction found and removed:", {
             transactionId: flowId,
             newWeekStartDate,
-            transaction: movedTransaction
+            transaction: movedTransaction,
           });
 
           // Add the transaction to target week
           // In demo mode, newWeekStartDate might be either week_start_date or a transaction's date_due
           let targetWeekFound = false;
           const weeksAfterAdd = weeksAfterRemove.map((week) => {
-            console.log('[moveTransaction] Checking week:', {
+            console.log("[moveTransaction] Checking week:", {
               week_index: week.week_index,
               week_label: week.week_label,
               week_start_date: week.week_start_date,
               newWeekStartDate,
               matchesStartDate: week.week_start_date === newWeekStartDate,
-              matchesTransactionDate: week.transactions.some(t => t.date_due === newWeekStartDate),
+              matchesTransactionDate: week.transactions.some((t) => t.date_due === newWeekStartDate),
             });
-            
+
             // Check if newWeekStartDate matches either week_start_date or any transaction's date_due in this week
-            const isTargetWeek = week.week_start_date === newWeekStartDate || 
-                                week.transactions.some(t => t.date_due === newWeekStartDate);
-            
+            const isTargetWeek =
+              week.week_start_date === newWeekStartDate ||
+              week.transactions.some((t) => t.date_due === newWeekStartDate);
+
             if (isTargetWeek) {
               targetWeekFound = true;
-              console.log('[moveTransaction] Found target week! Adding transaction to week:', week.week_index);
-              
+              console.log("[moveTransaction] Found target week! Adding transaction to week:", week.week_index);
+
               // Use the date from existing transactions in this week, or fall back to newWeekStartDate
-              const targetDate = week.transactions.length > 0 
-                ? week.transactions[0].date_due 
-                : newWeekStartDate;
-              
+              const targetDate = week.transactions.length > 0 ? week.transactions[0].date_due : newWeekStartDate;
+
               return {
                 ...week,
                 transactions: [...week.transactions, { ...movedTransaction!, date_due: targetDate }],
@@ -350,13 +364,13 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
           });
 
           if (!targetWeekFound) {
-            console.error('[moveTransaction] Target week not found:', {
+            console.error("[moveTransaction] Target week not found:", {
               newWeekStartDate,
-              availableWeeks: weeklyAggregates.map(w => ({ 
-                index: w.week_index, 
+              availableWeeks: weeklyAggregates.map((w) => ({
+                index: w.week_index,
                 label: w.week_label,
-                date: w.week_start_date 
-              }))
+                date: w.week_start_date,
+              })),
             });
             throw new Error(`Target week with date ${newWeekStartDate} not found`);
           }
@@ -375,11 +389,11 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
       }
 
       try {
-        console.log('[moveTransaction] API mode - sending batch update:', {
+        console.log("[moveTransaction] API mode - sending batch update:", {
           flowId,
           newWeekStartDate,
           scenarioId,
-          companyId
+          companyId,
         });
 
         const batchData: BatchUpdateOverridesRequestDTO = {
@@ -399,21 +413,21 @@ export function useScenarioData(scenarioId?: string, companyId?: string): UseSce
           body: JSON.stringify(batchData),
         });
 
-        console.log('[moveTransaction] API response:', {
+        console.log("[moveTransaction] API response:", {
           status: response.status,
-          ok: response.ok
+          ok: response.ok,
         });
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('[moveTransaction] API error:', {
+          console.error("[moveTransaction] API error:", {
             status: response.status,
-            errorText
+            errorText,
           });
           throw new Error(`Failed to move transaction: ${response.status}`);
         }
 
-        console.log('[moveTransaction] API call successful, refetching data...');
+        console.log("[moveTransaction] API call successful, refetching data...");
         // Refetch data after successful move
         await refetch();
       } catch (err) {

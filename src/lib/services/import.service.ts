@@ -453,11 +453,22 @@ export async function createTransactionsFromImport(
     // Generate flow_id if not provided
     const flowId = data.flow_id || `import-${importId}-row-${row.row_number}`;
 
+    // Handle Initial Balance (IB) transactions
+    let actualDirection = data.direction;
+    let timeSlot: string;
+    
+    if (data.direction === 'IB') {
+      // For IB, determine direction from amount sign
+      // Positive amount = INFLOW, Negative amount = OUTFLOW
+      actualDirection = amountFloat >= 0 ? 'INFLOW' : 'OUTFLOW';
+      timeSlot = 'IB';
+    } else {
+      // Regular transaction - calculate time_slot from date
+      timeSlot = calculateTimeSlot(new Date(data.date_due));
+    }
+
     // Parse date
     const dateDue = new Date(data.date_due).toISOString().split("T")[0];
-
-    // Calculate time_slot (YYWW format or IB for initial balance)
-    const timeSlot = calculateTimeSlot(new Date(data.date_due));
 
     transactions.push({
       company_id: companyId,
@@ -471,7 +482,7 @@ export async function createTransactionsFromImport(
       fx_rate: fxRate,
       amount_book_cents: amountBookCents,
       date_due: dateDue,
-      direction: data.direction,
+      direction: actualDirection,
       time_slot: timeSlot,
       project: data.project || null,
       counterparty: data.counterparty || null,
