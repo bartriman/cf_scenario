@@ -355,6 +355,23 @@ async function addWeeklySummarySheet(workbook: ExcelJS.Workbook, weeklyData: Exp
 }
 
 /**
+ * Calculate week number in YYWW format from date
+ */
+function calculateWeekNumber(dateString: string): string {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const startOfYear = new Date(year, 0, 1);
+  const dayOfYear = Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+  const isoWeek = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
+  
+  // Format as YYWW
+  const yy = year.toString().slice(-2);
+  const ww = isoWeek.toString().padStart(2, "0");
+  
+  return `${yy}${ww}`;
+}
+
+/**
  * Add transactions detail sheet to workbook
  */
 async function addTransactionsSheet(workbook: ExcelJS.Workbook, transactions: ExportTransactionDTO[]): Promise<void> {
@@ -362,6 +379,7 @@ async function addTransactionsSheet(workbook: ExcelJS.Workbook, transactions: Ex
 
   // Set column widths
   sheet.columns = [
+    { key: "week", width: 10 },
     { key: "date", width: 12 },
     { key: "direction", width: 10 },
     { key: "amount", width: 15 },
@@ -375,6 +393,7 @@ async function addTransactionsSheet(workbook: ExcelJS.Workbook, transactions: Ex
 
   // Add header
   sheet.addRow({
+    week: "Week",
     date: "Date",
     direction: "Type",
     amount: "Amount (PLN)",
@@ -399,8 +418,10 @@ async function addTransactionsSheet(workbook: ExcelJS.Workbook, transactions: Ex
   // Add data rows
   transactions.forEach((transaction) => {
     const amount = (transaction.amount_book_cents_effective || 0) / 100;
+    const weekNumber = calculateWeekNumber(transaction.date_due_effective);
 
     sheet.addRow({
+      week: weekNumber,
       date: transaction.date_due_effective,
       direction: transaction.direction,
       amount: amount,
