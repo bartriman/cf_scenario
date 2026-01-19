@@ -24,8 +24,8 @@ const PathParamsSchema = z.object({
  * Query parameters schema
  */
 const QueryParamsSchema = z.object({
-  format: z.enum(["xlsx"]).optional().default("xlsx"),
-  includeCharts: z.enum(["true", "false"]).optional().default("true"),
+  format: z.enum(["xlsx"]).default("xlsx"),
+  includeCharts: z.enum(["true", "false"]).default("true"),
 });
 
 /**
@@ -89,8 +89,8 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
     let validatedQuery;
     try {
       validatedQuery = QueryParamsSchema.parse({
-        format: url.searchParams.get("format"),
-        includeCharts: url.searchParams.get("includeCharts"),
+        format: url.searchParams.get("format") || undefined,
+        includeCharts: url.searchParams.get("includeCharts") || undefined,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -211,7 +211,14 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
     const buffer = await workbook.xlsx.writeBuffer();
 
     // Step 14: Return Excel file
-    const filename = `scenario_${scenario.name.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().split("T")[0]}.xlsx`;
+    // Clean scenario name: remove .xlsx if present, replace special chars, remove duplicate underscores
+    const cleanName = scenario.name
+      .replace(/\.xlsx$/i, "") // Remove .xlsx extension if present
+      .replace(/[^a-zA-Z0-9]/g, "_") // Replace special chars with underscore
+      .replace(/_+/g, "_") // Replace multiple underscores with single one
+      .replace(/^_+|_+$/g, ""); // Trim underscores from start and end
+    const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "_");
+    const filename = `scenario_${cleanName}_${dateStr}.xlsx`;
 
     return new Response(buffer, {
       status: 200,

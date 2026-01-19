@@ -3,9 +3,10 @@ import { useScenarioData } from "@/components/hooks/useScenarioData";
 import { Timeline } from "./Timeline.tsx";
 import { RunningBalanceChart } from "./RunningBalanceChart.tsx";
 import { EditTransactionModal } from "./EditTransactionModal.tsx";
+import { ExportDialog } from "./ExportDialog.tsx";
 import type { TransactionVM, UpsertOverrideRequestDTO } from "@/types";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw, Download } from "lucide-react";
 
 interface ScenarioViewProps {
   scenarioId?: string;
@@ -19,6 +20,7 @@ export default function ScenarioView({ scenarioId, companyId, baseCurrency }: Sc
 
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionVM | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
 
   // Handle transaction click - open edit modal
   const handleTransactionClick = (transaction: TransactionVM) => {
@@ -117,6 +119,12 @@ export default function ScenarioView({ scenarioId, companyId, baseCurrency }: Sc
           </div>
           <div className="flex items-center gap-2">
             {!isDemoMode && isLocked && <span className="rounded-md bg-muted px-3 py-1 text-sm font-medium">Locked</span>}
+            {!isDemoMode && isLocked && (
+              <Button onClick={() => setIsExportDialogOpen(true)} variant="default" size="sm">
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            )}
             <Button onClick={refetch} variant="outline" size="sm">
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
@@ -155,6 +163,16 @@ export default function ScenarioView({ scenarioId, companyId, baseCurrency }: Sc
         onClose={handleCloseModal}
         isLocked={!isDemoMode && isLocked}
       />
+
+      {/* Export Dialog */}
+      {!isDemoMode && companyId && (
+        <ExportDialog
+          companyId={companyId}
+          scenario={scenario}
+          open={isExportDialogOpen}
+          onOpenChange={setIsExportDialogOpen}
+        />
+      )}
     </div>
   );
 }

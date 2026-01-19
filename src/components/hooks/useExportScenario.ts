@@ -56,9 +56,10 @@ export function useExportScenario(companyId: string): UseExportScenarioResult {
       let filename = "scenario_export.xlsx";
 
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
-        if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1];
+        // Match filename with or without quotes, non-greedy
+        const filenameMatch = contentDisposition.match(/filename="([^"]+)"|filename=([^\s;]+)/);
+        if (filenameMatch) {
+          filename = filenameMatch[1] || filenameMatch[2];
         }
       }
 
