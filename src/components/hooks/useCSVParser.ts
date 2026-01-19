@@ -18,6 +18,7 @@ export function useCSVParser(): UseCSVParserReturn {
     return new Promise((resolve, reject) => {
       Papa.parse(file, {
         delimiter: ";",
+        encoding: "UTF-8", // Force UTF-8 encoding
         complete: (results) => {
           setIsLoading(false);
 

@@ -8,6 +8,7 @@ export async function parseFullCSV(file: File): Promise<{ headers: string[]; row
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
       delimiter: ";",
+      encoding: "UTF-8", // Force UTF-8 encoding
       complete: (results) => {
         if (results.errors.length > 0) {
           reject(new Error(`CSV parsing error: ${results.errors[0].message}`));
