@@ -36,22 +36,22 @@ export function DuplicateScenarioDialog({
       if (!response.ok) {
         if (response.status === 409) {
           const errorData = await response.json();
-          throw new Error(errorData.error?.message || "Scenariusz o tej nazwie już istnieje");
+          throw new Error(errorData.error?.message || "A scenario with this name already exists");
         }
-        throw new Error("Nie udało się zduplikować scenariusza");
+        throw new Error("Failed to duplicate scenario");
       }
 
       const duplicatedScenario: DuplicateScenarioResponseDTO = await response.json();
 
-      toast.success("Scenariusz zduplikowany", {
-        description: `Skopiowano ${duplicatedScenario.overrides_count} modyfikacji`,
+      toast.success("Scenario duplicated", {
+        description: `Copied ${duplicatedScenario.overrides_count} modifications`,
       });
 
       onSuccess(duplicatedScenario);
       onOpenChange(false);
     } catch (error) {
-      toast.error("Błąd", {
-        description: error instanceof Error ? error.message : "Nie udało się zduplikować scenariusza",
+      toast.error("Error", {
+        description: error instanceof Error ? error.message : "Failed to duplicate scenario",
       });
     } finally {
       setIsSubmitting(false);
@@ -64,8 +64,8 @@ export function DuplicateScenarioDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Duplikuj scenariusz: {sourceScenario.name}</DialogTitle>
-          <DialogDescription>Utwórz kopię scenariusza wraz ze wszystkimi modyfikacjami</DialogDescription>
+          <DialogTitle>Duplicate scenario: {sourceScenario.name}</DialogTitle>
+          <DialogDescription>Create a copy of the scenario with all modifications</DialogDescription>
         </DialogHeader>
 
         <DuplicateScenarioForm

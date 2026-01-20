@@ -96,21 +96,21 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
       const scenario = filteredScenarios.find((s) => s.id === scenarioId);
       if (!scenario) return;
 
-      // Potwierdzenie
+      // Confirmation
       const confirmed = window.confirm(
-        `Czy na pewno chcesz zablokować scenariusz "${scenario.name}"?\n\nPo zablokowaniu nie będzie można go edytować.`
+        `Are you sure you want to lock scenario "${scenario.name}"?\n\nOnce locked, it cannot be edited.`
       );
 
       if (!confirmed) return;
 
       try {
         await lockScenario(scenarioId);
-        toast.success("Scenariusz zablokowany", {
-          description: "Scenariusz został pomyślnie zablokowany",
+        toast.success("Scenario locked", {
+          description: "Scenario has been successfully locked",
         });
       } catch (error) {
-        toast.error("Błąd", {
-          description: error instanceof Error ? error.message : "Nie udało się zablokować scenariusza",
+        toast.error("Error", {
+          description: error instanceof Error ? error.message : "Failed to lock scenario",
         });
       }
     },
@@ -123,27 +123,27 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
       const scenario = filteredScenarios.find((s) => s.id === scenarioId);
       if (!scenario) return;
 
-      // Potwierdzenie
+      // Confirmation
       const confirmed = window.confirm(
-        `Czy na pewno chcesz usunąć scenariusz "${scenario.name}"?\n\nTa operacja jest nieodwracalna.`
+        `Are you sure you want to delete scenario "${scenario.name}"?\n\nThis operation is irreversible.`
       );
 
       if (!confirmed) return;
 
       try {
         await deleteScenario(scenarioId);
-        toast.success("Scenariusz usunięty", {
-          description: "Scenariusz został pomyślnie usunięty",
+        toast.success("Scenario deleted", {
+          description: "Scenario has been successfully deleted",
         });
       } catch (error) {
-        // Błąd 409 - scenariusz ma potomków
+        // Error 409 - scenario has descendants
         if (error instanceof Error && error.message.includes("pochodne")) {
-          toast.error("Nie można usunąć scenariusza", {
-            description: "Scenariusz ma scenariusze pochodne. Usuń najpierw scenariusze zależne.",
+          toast.error("Cannot delete scenario", {
+            description: "Scenario has derived scenarios. Delete dependent scenarios first.",
           });
         } else {
-          toast.error("Błąd", {
-            description: error instanceof Error ? error.message : "Nie udało się usunąć scenariusza",
+          toast.error("Error", {
+            description: error instanceof Error ? error.message : "Failed to delete scenario",
           });
         }
       }
@@ -176,9 +176,9 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
               />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold mb-2">Nie udało się załadować scenariuszy</h3>
+          <h3 className="text-xl font-semibold mb-2">Failed to load scenarios</h3>
           <p className="text-muted-foreground text-center mb-8 max-w-md">{error}</p>
-          <Button onClick={() => fetchScenarios()}>Spróbuj ponownie</Button>
+          <Button onClick={() => fetchScenarios()}>Try again</Button>
         </div>
       </div>
     );

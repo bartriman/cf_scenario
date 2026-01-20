@@ -109,7 +109,7 @@ export default function ImportWizard({ companyId, onCancel }: ImportWizardProps)
       nextStep();
     } catch (error) {
       console.error("Import submission error:", error);
-      setError(error instanceof Error ? error.message : "Wystąpił błąd podczas importu");
+      setError(error instanceof Error ? error.message : "An error occurred during import");
     } finally {
       setIsSubmitting(false);
     }
@@ -147,9 +147,9 @@ export default function ImportWizard({ companyId, onCancel }: ImportWizardProps)
         if (!state.validationResult) {
           return (
             <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-red-800 dark:text-red-200 font-medium">Błąd: Brak danych walidacji</p>
-              <p className="text-sm text-red-600 dark:text-red-300 mt-2">
-                Wróć do poprzedniego kroku i spróbuj ponownie.
+              <p className="text-red-800 dark:text-red-200 font-medium">Error: No validation data</p>
+              <p className="text-sm text-red-700 dark:text-red-300 mt-2">
+                Go back to the previous step and try again.
               </p>
             </div>
           );
@@ -189,8 +189,8 @@ export default function ImportWizard({ companyId, onCancel }: ImportWizardProps)
     <div className="w-full max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Importuj dane</h1>
-        <p className="text-muted-foreground">Importuj dane finansowe z pliku CSV i utwórz nowy scenariusz bazowy</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Import data</h1>
+        <p className="text-muted-foreground">Import financial data from CSV file and create a new base scenario</p>
       </div>
 
       {/* Progress indicator */}

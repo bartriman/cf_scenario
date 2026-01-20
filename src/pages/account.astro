@@ -1,0 +1,16 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import AccountView from "@/components/account/AccountView";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+
+if (!user) {
+  return Astro.redirect("/auth/login?redirect=/account");
+}
+---
+
+<Layout title="Moje konto - CashFlow Scenarios">
+  <AccountView client:load />
+</Layout>

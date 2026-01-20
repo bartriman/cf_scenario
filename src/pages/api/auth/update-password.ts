@@ -6,10 +6,10 @@ export const prerender = false;
 const updatePasswordSchema = z.object({
   password: z
     .string()
-    .min(8, "Hasło musi zawierać co najmniej 8 znaków")
-    .regex(/[A-Z]/, "Hasło musi zawierać co najmniej jedną wielką literę")
-    .regex(/[a-z]/, "Hasło musi zawierać co najmniej jedną małą literę")
-    .regex(/[0-9]/, "Hasło musi zawierać co najmniej jedną cyfrę"),
+    .min(8, "Password must contain at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one digit"),
 });
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -37,7 +37,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (error) {
       return new Response(
         JSON.stringify({
-          error: "Link do resetowania hasła wygasł lub jest nieprawidłowy. Spróbuj ponownie.",
+          error: "The password reset link has expired or is invalid. Please try again.",
         }),
         { status: 401, headers: { "Content-Type": "application/json" } }
       );
@@ -45,7 +45,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     return new Response(
       JSON.stringify({
-        message: "Hasło zostało zmienione pomyślnie",
+        message: "Password has been changed successfully",
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
@@ -53,7 +53,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.error("Update password error:", error);
     return new Response(
       JSON.stringify({
-        error: "Wystąpił błąd podczas zmiany hasła",
+        error: "An error occurred while changing the password",
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

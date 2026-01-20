@@ -28,13 +28,13 @@ export function ProcessingStep({ importId, companyId, scenarioId, onComplete, on
         // Update progress based on status
         if (data.status === "pending") {
           setProgress(10);
-          setMessage("Oczekiwanie na przetwarzanie...");
+          setMessage("Waiting for processing...");
         } else if (data.status === "processing") {
           setProgress(data.progress || 50);
-          setMessage("Przetwarzanie danych CSV...");
+          setMessage("Processing CSV data...");
         } else if (data.status === "completed") {
           setProgress(100);
-          setMessage("Import zakończony pomyślnie!");
+          setMessage("Import completed successfully!");
 
           // Find scenario ID from response (if created automatically)
           // Note: The endpoint returns scenario_id in the POST response, not GET status
@@ -53,7 +53,7 @@ export function ProcessingStep({ importId, companyId, scenarioId, onComplete, on
           }
         } else if (data.status === "failed") {
           setProgress(100);
-          setMessage("Import zakończony z błędami");
+          setMessage("Import completed with errors");
           polling = false;
           onError(
             data.error_report_json
@@ -90,7 +90,7 @@ export function ProcessingStep({ importId, companyId, scenarioId, onComplete, on
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-2">Przetwarzanie importu</h2>
-        <p className="text-muted-foreground">Proszę czekać, trwa importowanie danych do systemu...</p>
+        <p className="text-muted-foreground">Please wait, importing data into the system...</p>
       </div>
 
       {/* Progress indicator */}
@@ -136,7 +136,7 @@ export function ProcessingStep({ importId, companyId, scenarioId, onComplete, on
       <div className="max-w-md mx-auto p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
         <p className="text-sm text-blue-800 dark:text-blue-200">
           <strong>Uwaga:</strong> Nie zamykaj tej strony podczas przetwarzania. Zostaniesz automatycznie przekierowany
-          po zakończeniu.
+          after completion.
         </p>
       </div>
     </div>

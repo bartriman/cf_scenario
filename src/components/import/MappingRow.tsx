@@ -44,12 +44,12 @@ export function MappingRow({
           onChange={(e) => onChange(e.target.value || null)}
           className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input"
         >
-          <option value="">-- Wybierz kolumnę CSV --</option>
+          <option value="">-- Select CSV column --</option>
           {csvHeaders.map((header, index) => {
             const isUsed = usedColumns.has(header) && header !== selectedColumn;
             return (
               <option key={index} value={header} disabled={isUsed}>
-                {header} {isUsed ? "(już zmapowana)" : ""}
+                {header} {isUsed ? "(already mapped)" : ""}
               </option>
             );
           })}

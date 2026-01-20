@@ -15,12 +15,12 @@ export function ValidationStep({ validationResult, onContinueWithErrors, onBack 
   if (!validationResult) {
     return (
       <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md" role="alert">
-        <p className="text-red-800 dark:text-red-200 font-medium">Błąd: Brak danych walidacji</p>
-        <p className="text-sm text-red-600 dark:text-red-300 mt-2">
-          Nie można wyświetlić wyników walidacji. Spróbuj ponownie lub skontaktuj się z administratorem.
+        <p className="text-red-800 dark:text-red-200 font-medium">Error: No validation data</p>
+        <p className="text-sm text-red-700 dark:text-red-300 mt-2">
+          Cannot display validation results. Please try again or contact the administrator.
         </p>
-        <Button onClick={onBack} className="mt-4" variant="outline">
-          Wróć
+        <Button onClick={onBack} variant="outline">
+          Back
         </Button>
       </div>
     );
@@ -33,8 +33,8 @@ export function ValidationStep({ validationResult, onContinueWithErrors, onBack 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Walidacja danych</h2>
-        <p className="text-muted-foreground">Sprawdzenie poprawności danych z pliku CSV przed importem</p>
+        <h2 className="text-2xl font-bold mb-2">Data validation</h2>
+        <p className="text-muted-foreground">Checking data correctness from CSV file before import</p>
       </div>
 
       {/* Validation Summary */}
@@ -44,7 +44,7 @@ export function ValidationStep({ validationResult, onContinueWithErrors, onBack 
       {hasErrors && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Szczegóły błędów</h3>
+            <h3 className="text-lg font-semibold">Error Details</h3>
             <DownloadErrorReportButton errors={errors} />
           </div>
           <ValidationErrorTable errors={errors} itemsPerPage={10} />
@@ -60,8 +60,8 @@ export function ValidationStep({ validationResult, onContinueWithErrors, onBack 
           aria-atomic="true"
         >
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            <strong>Uwaga:</strong> Możesz kontynuować import pomijając błędne wiersze. Tylko poprawne wiersze (
-            {valid_rows}) zostaną zaimportowane.
+            <strong>Note:</strong> You can continue the import by skipping invalid rows. Only valid rows (
+            {valid_rows}) will be imported.
           </p>
         </div>
       )}
@@ -75,8 +75,8 @@ export function ValidationStep({ validationResult, onContinueWithErrors, onBack 
           aria-atomic="true"
         >
           <p className="text-sm text-red-800 dark:text-red-200">
-            <strong>Nie można kontynuować:</strong> Wszystkie wiersze zawierają błędy. Popraw plik CSV i spróbuj
-            ponownie.
+            <strong>Cannot continue:</strong> All rows contain errors. Fix the CSV file and try
+            again.
           </p>
         </div>
       )}

@@ -29,26 +29,26 @@ export function CreateScenarioDialog({ companyId, open, onOpenChange, onSuccess 
       if (!response.ok) {
         if (response.status === 409) {
           const errorData = await response.json();
-          throw new Error(errorData.error?.message || "Scenariusz o tej nazwie już istnieje");
+          throw new Error(errorData.error?.message || "A scenario with this name already exists");
         }
         if (response.status === 400) {
           const errorData = await response.json();
-          throw new Error(errorData.error?.message || "Nieprawidłowe dane formularza");
+          throw new Error(errorData.error?.message || "Invalid form data");
         }
-        throw new Error("Nie udało się utworzyć scenariusza");
+        throw new Error("Failed to create scenario");
       }
 
       const newScenario: CreateScenarioResponseDTO = await response.json();
 
-      toast.success("Scenariusz utworzony", {
-        description: `Scenariusz "${newScenario.name}" został pomyślnie utworzony`,
+      toast.success("Scenario created", {
+        description: `Scenario "${newScenario.name}" has been successfully created`,
       });
 
       onSuccess(newScenario);
       onOpenChange(false);
     } catch (error) {
-      toast.error("Błąd", {
-        description: error instanceof Error ? error.message : "Nie udało się utworzyć scenariusza",
+      toast.error("Error", {
+        description: error instanceof Error ? error.message : "Failed to create scenario",
       });
     } finally {
       setIsSubmitting(false);
@@ -59,13 +59,13 @@ export function CreateScenarioDialog({ companyId, open, onOpenChange, onSuccess 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Nowy scenariusz</DialogTitle>
-          <DialogDescription>Utwórz pusty scenariusz lub na podstawie istniejącego importu</DialogDescription>
+          <DialogTitle>Create New Scenario</DialogTitle>
+          <DialogDescription>Create an empty scenario or based on an existing import</DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="blank" className="mt-4">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="blank">Pusty scenariusz</TabsTrigger>
+            <TabsTrigger value="blank">Blank scenario</TabsTrigger>
             <TabsTrigger value="import">Z importu</TabsTrigger>
           </TabsList>
 

@@ -4,7 +4,7 @@ interface WizardProgressProps {
 
 export function WizardProgress({ steps }: WizardProgressProps) {
   return (
-    <nav aria-label="Postęp kreatora importu" className="mb-8">
+    <nav aria-label="Import wizard progress" className="mb-8">
       <ol className="flex items-center justify-between w-full max-w-3xl mx-auto">
         {steps.map((step, index) => {
           const stepNumber = index + 1;

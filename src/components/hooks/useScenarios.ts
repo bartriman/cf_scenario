@@ -58,7 +58,7 @@ export function useScenarios(companyId: string): UseScenariosResult {
         const data: ScenarioListResponseDTO = await response.json();
         setScenarios(data.scenarios);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Nie udało się załadować scenariuszy";
+        const errorMessage = err instanceof Error ? err.message : "Failed to load scenarios";
         setError(errorMessage);
         console.error("[useScenarios] fetchScenarios error:", err);
       } finally {
@@ -111,7 +111,7 @@ export function useScenarios(companyId: string): UseScenariosResult {
         }
 
         if (response.status === 404) {
-          throw new Error("Scenariusz źródłowy nie istnieje");
+          throw new Error("Source scenario does not exist");
         }
 
         const errorData = await response.json();
@@ -170,7 +170,7 @@ export function useScenarios(companyId: string): UseScenariosResult {
         }
 
         if (response.status === 409) {
-          throw new Error("Nie można usunąć scenariusza, który ma scenariusze pochodne");
+          throw new Error("Cannot delete a scenario that has derived scenarios");
         }
 
         const errorData = await response.json();

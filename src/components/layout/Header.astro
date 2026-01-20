@@ -46,13 +46,13 @@ const { isAuthenticated = false, userEmail } = Astro.props;
                 href="/auth/login"
                 class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
               >
-                Zaloguj się
+                Log in
               </a>
               <a
                 href="/auth/register"
                 class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors shadow-sm"
               >
-                Zarejestruj się
+                Register
               </a>
             </div>
           ) : (
@@ -96,7 +96,7 @@ const { isAuthenticated = false, userEmail } = Astro.props;
               >
                 <div class="py-1">
                   <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b dark:border-gray-700">
-                    <p class="font-medium">Zalogowany jako</p>
+                    <p class="font-medium">Logged in as</p>
                     <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
                       {userEmail}
                     </p>
@@ -121,7 +121,7 @@ const { isAuthenticated = false, userEmail } = Astro.props;
                           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                         />
                       </svg>
-                      Moje konto
+                      My Account
                     </div>
                   </a>
                   <button
@@ -144,7 +144,7 @@ const { isAuthenticated = false, userEmail } = Astro.props;
                           d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                         />
                       </svg>
-                      <span id="logout-text">Wyloguj się</span>
+                      <span id="logout-text">Log out</span>
                     </div>
                   </button>
                 </div>
@@ -200,7 +200,7 @@ const { isAuthenticated = false, userEmail } = Astro.props;
           // Disable button and update text
           logoutButton.setAttribute("disabled", "true");
           const originalText = logoutText.textContent;
-          logoutText.textContent = "Wylogowywanie...";
+          logoutText.textContent = "Logging out...";
           
           try {
             const response = await fetch("/api/auth/logout", {
@@ -216,13 +216,13 @@ const { isAuthenticated = false, userEmail } = Astro.props;
             } else {
               // Re-enable button and restore text if logout failed
               logoutButton.removeAttribute("disabled");
-              logoutText.textContent = originalText || "Wyloguj się";
+              logoutText.textContent = originalText || "Log out";
               console.error("Logout failed");
             }
           } catch (error) {
             // Re-enable button and restore text on error
             logoutButton.removeAttribute("disabled");
-            logoutText.textContent = originalText || "Wyloguj się";
+            logoutText.textContent = originalText || "Log out";
             console.error("Logout error:", error);
           }
         });

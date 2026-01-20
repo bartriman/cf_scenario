@@ -154,16 +154,16 @@ export const GET: APIRoute = async ({ params, locals }) => {
  */
 const UpdateScenarioBodySchema = z
   .object({
-    name: z.string().min(1, "Nazwa jest wymagana").max(255, "Nazwa nie może przekraczać 255 znaków").optional(),
+    name: z.string().min(1, "Name is required").max(255, "Name cannot exceed 255 characters").optional(),
     start_date: z
       .string()
-      .min(1, "Data rozpoczęcia jest wymagana")
-      .refine((val) => !isNaN(Date.parse(val)), "Nieprawidłowa data rozpoczęcia")
+      .min(1, "Start date is required")
+      .refine((val) => !isNaN(Date.parse(val)), "Invalid start date")
       .optional(),
     end_date: z
       .string()
-      .min(1, "Data zakończenia jest wymagana")
-      .refine((val) => !isNaN(Date.parse(val)), "Nieprawidłowa data zakończenia")
+      .min(1, "End date is required")
+      .refine((val) => !isNaN(Date.parse(val)), "Invalid end date")
       .optional(),
   })
   .refine(
@@ -177,7 +177,7 @@ const UpdateScenarioBodySchema = z
       return true;
     },
     {
-      message: "Data zakończenia musi być późniejsza niż data rozpoczęcia",
+      message: "End date must be later than start date",
       path: ["end_date"],
     }
   );

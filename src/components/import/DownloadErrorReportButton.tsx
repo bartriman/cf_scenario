@@ -10,12 +10,12 @@ export function DownloadErrorReportButton({ errors, fileName = "import-errors.cs
   const handleDownload = () => {
     try {
       // Generowanie CSV z błędami
-      const headers = ["Nr wiersza", "Kolumna", "Wartość", "Komunikat błędu", "Kod błędu"];
+      const headers = ["Row Number", "Column", "Value", "Error Message", "Error Code"];
       const rows = errors.map((error) => [
         error.row_number || 'N/A',
         error.field_name || 'Unknown',
-        `"${(error.invalid_value || '').replace(/"/g, '""')}"`, // Escapowanie cudzysłowów
-        `"${(error.error_message || 'Nieznany błąd').replace(/"/g, '""')}"`,
+        `"${(error.invalid_value || '').replace(/"/g, '""')}"`, // Escape quotes
+        `"${(error.error_message || 'Unknown error').replace(/"/g, '""')}"`,
         error.error_code || "",
       ]);
 
@@ -36,8 +36,8 @@ export function DownloadErrorReportButton({ errors, fileName = "import-errors.cs
 
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Błąd podczas generowania raportu CSV:', error);
-      alert('Nie udało się wygenerować raportu błędów. Spróbuj ponownie.');
+      console.error('Error generating CSV report:', error);
+      alert('Failed to generate error report. Please try again.');
     }
   };
 
@@ -46,7 +46,7 @@ export function DownloadErrorReportButton({ errors, fileName = "import-errors.cs
       variant="outline"
       onClick={handleDownload}
       disabled={errors.length === 0}
-      aria-label={`Pobierz raport błędów w formacie CSV (${errors.length} błędów)`}
+      aria-label={`Download error report in CSV format (${errors.length} errors)`}
     >
       <svg
         className="w-4 h-4 mr-2"
@@ -63,7 +63,7 @@ export function DownloadErrorReportButton({ errors, fileName = "import-errors.cs
           d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
         />
       </svg>
-      Pobierz raport błędów (CSV)
+      Download Error Report (CSV)
     </Button>
   );
 }

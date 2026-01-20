@@ -22,14 +22,14 @@ export function ExportDialog({ companyId, scenario, open, onOpenChange }: Export
     try {
       await exportScenario(scenario.id, { includeCharts: true });
 
-      toast.success("Scenariusz wyeksportowany", {
-        description: "Plik Excel został pobrany",
+      toast.success("Scenario exported", {
+        description: "Excel file has been downloaded",
       });
 
       onOpenChange(false);
     } catch (error) {
-      toast.error("Błąd eksportu", {
-        description: error instanceof Error ? error.message : "Nie udało się wyeksportować scenariusza",
+      toast.error("Export error", {
+        description: error instanceof Error ? error.message : "Failed to export scenario",
       });
     }
   };
@@ -45,44 +45,44 @@ export function ExportDialog({ companyId, scenario, open, onOpenChange }: Export
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" />
-            Eksportuj scenariusz: {scenario.name}
+            Export scenario: {scenario.name}
           </DialogTitle>
           <DialogDescription>
             {isLocked
-              ? "Pobierz dane scenariusza w formacie Excel (.xlsx)"
-              : "Tylko zablokowane scenariusze mogą być eksportowane"}
+              ? "Download scenario data in Excel format (.xlsx)"
+              : "Only locked scenarios can be exported"}
           </DialogDescription>
         </DialogHeader>
 
         {!isLocked ? (
           <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4">
             <p className="text-sm text-yellow-800">
-              Ten scenariusz ma status <strong>Draft</strong>. Aby wyeksportować scenariusz, najpierw zablokuj go
-              używając opcji <strong>Lock</strong> w menu akcji.
+              This scenario has <strong>Draft</strong> status. To export the scenario, first lock it
+              using the <strong>Lock</strong> option in the actions menu.
             </p>
           </div>
         ) : (
           <>
             <div className="space-y-4 py-4">
               <div className="space-y-3">
-                <Label className="text-base font-semibold">Zawartość eksportu</Label>
+                <Label className="text-base font-semibold">Export contents</Label>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-start gap-2">
                     <div className="mt-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
                     <span>
-                      <strong>Weekly Summary</strong> - podsumowanie wpływów i wypływów na tygodnie
+                      <strong>Weekly Summary</strong> - summary of inflows and outflows by week
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="mt-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
                     <span>
-                      <strong>Transactions</strong> - pełna lista transakcji z detalami
+                      <strong>Transactions</strong> - complete list of transactions with details
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="mt-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
                     <span>
-                      <strong>Running Balance</strong> - saldo kroczące dzień po dniu
+                      <strong>Running Balance</strong> - rolling balance day by day
                     </span>
                   </div>
                 </div>
@@ -90,25 +90,25 @@ export function ExportDialog({ companyId, scenario, open, onOpenChange }: Export
 
               <div className="rounded-md border bg-muted/50 p-3">
                 <p className="text-xs text-muted-foreground">
-                  💡 <strong>Wskazówka:</strong> Eksport uwzględnia wszystkie modyfikacje wprowadzone w scenariuszu.
+                  💡 <strong>Tip:</strong> Export includes all modifications made to the scenario.
                 </p>
               </div>
             </div>
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isExporting}>
-                Anuluj
+                Cancel
               </Button>
               <Button onClick={handleExport} disabled={isExporting}>
                 {isExporting ? (
                   <>
                     <Download className="mr-2 h-4 w-4 animate-bounce" />
-                    Eksportowanie...
+                    Exporting...
                   </>
                 ) : (
                   <>
                     <Download className="mr-2 h-4 w-4" />
-                    Pobierz Excel
+                    Download Excel
                   </>
                 )}
               </Button>
@@ -119,7 +119,7 @@ export function ExportDialog({ companyId, scenario, open, onOpenChange }: Export
         {!isLocked && (
           <div className="flex justify-end">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Zamknij
+              Close
             </Button>
           </div>
         )}

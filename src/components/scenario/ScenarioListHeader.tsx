@@ -15,21 +15,21 @@ export function ScenarioListHeader({ onCreateClick, onFilterChange, onSearchChan
     <div className="flex flex-col gap-4 mb-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Moje scenariusze</h1>
-          <p className="text-muted-foreground mt-1">Zarządzaj scenariuszami przepływów pieniężnych</p>
+          <h1 className="text-3xl font-bold tracking-tight">My Scenarios</h1>
+          <p className="text-muted-foreground mt-1">Manage your cash flow scenarios</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
           <Button asChild variant="outline">
             <a href="/import">
               <Upload className="mr-2 h-4 w-4" />
-              Importuj dane
+              Import data
             </a>
           </Button>
           
           <Button onClick={onCreateClick}>
             <Plus className="mr-2 h-4 w-4" />
-            Nowy scenariusz
+            New scenario
           </Button>
         </div>
       </div>
@@ -40,7 +40,7 @@ export function ScenarioListHeader({ onCreateClick, onFilterChange, onSearchChan
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Szukaj scenariuszy..."
+                placeholder="Search scenarios..."
                 className="pl-9"
                 onChange={(e) => onSearchChange(e.target.value)}
               />
@@ -50,10 +50,10 @@ export function ScenarioListHeader({ onCreateClick, onFilterChange, onSearchChan
           {onFilterChange && (
             <Select defaultValue="all" onValueChange={(value) => onFilterChange(value as ScenarioFilterStatus)}>
               <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filtruj po statusie" />
+                <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Wszystkie</SelectItem>
+                <SelectItem value="all">All</SelectItem>
                 <SelectItem value="Draft">Draft</SelectItem>
                 <SelectItem value="Locked">Locked</SelectItem>
               </SelectContent>

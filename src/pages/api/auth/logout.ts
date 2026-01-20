@@ -9,7 +9,7 @@ export const POST: APIRoute = async ({ locals }) => {
     if (error) {
       return new Response(
         JSON.stringify({
-          error: "Wystąpił błąd podczas wylogowywania",
+          error: "An error occurred while logging out",
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ locals }) => {
 
     return new Response(
       JSON.stringify({
-        message: "Wylogowano pomyślnie",
+        message: "Logged out successfully",
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
@@ -25,7 +25,7 @@ export const POST: APIRoute = async ({ locals }) => {
     console.error("Logout error:", error);
     return new Response(
       JSON.stringify({
-        error: "Wystąpił błąd podczas wylogowywania",
+        error: "An error occurred while logging out",
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

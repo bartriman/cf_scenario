@@ -35,12 +35,12 @@ function formatRelativeTime(dateString: string): string {
   const diffInMs = now.getTime() - date.getTime();
   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-  if (diffInDays === 0) return "Dziś";
-  if (diffInDays === 1) return "Wczoraj";
-  if (diffInDays < 7) return `${diffInDays} dni temu`;
-  if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} tyg. temu`;
-  if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} mies. temu`;
-  return `${Math.floor(diffInDays / 365)} lat temu`;
+  if (diffInDays === 0) return "Today";
+  if (diffInDays === 1) return "Yesterday";
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+  if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+  if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
+  return `${Math.floor(diffInDays / 365)} years ago`;
 }
 
 export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete, onExport }: ScenarioCardProps) {
@@ -68,7 +68,7 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete,
           <DropdownMenuTrigger asChild data-dropdown-trigger>
             <Button variant="ghost" size="icon" className="h-8 w-8 ml-2" onClick={(e) => e.stopPropagation()}>
               <MoreVertical className="h-4 w-4" />
-              <span className="sr-only">Otwórz menu</span>
+              <span className="sr-only">Open menu</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -79,7 +79,7 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete,
               }}
             >
               <Eye className="mr-2 h-4 w-4" />
-              Podgląd
+              Preview
             </DropdownMenuItem>
 
             <DropdownMenuItem
@@ -89,7 +89,7 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete,
               }}
             >
               <Copy className="mr-2 h-4 w-4" />
-              Duplikuj
+              Duplicate
             </DropdownMenuItem>
 
             {isLocked && (
@@ -100,7 +100,7 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete,
                 }}
               >
                 <Download className="mr-2 h-4 w-4" />
-                Eksportuj do Excel
+                Export to Excel
               </DropdownMenuItem>
             )}
 
@@ -114,7 +114,7 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete,
                   }}
                 >
                   <Lock className="mr-2 h-4 w-4" />
-                  Zablokuj
+                  Lock
                 </DropdownMenuItem>
               </>
             )}
@@ -128,7 +128,7 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete,
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Usuń
+              Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -136,7 +136,7 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete,
 
       <CardContent className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Kod datasetu:</span>
+          <span className="text-muted-foreground">Dataset code:</span>
           <span className="font-medium">{scenario.dataset_code}</span>
         </div>
 
@@ -150,7 +150,7 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete,
         {scenario.base_scenario_id && (
           <div className="flex justify-between">
             <span className="text-muted-foreground">Bazuje na:</span>
-            <span className="font-medium">Scenariusz #{scenario.base_scenario_id}</span>
+            <span className="font-medium">Scenario #{scenario.base_scenario_id}</span>
           </div>
         )}
       </CardContent>

@@ -36,7 +36,7 @@ export function FileUploadStep({ onNext, onCancel }: FileUploadStepProps) {
     }
 
     if (value.length > DATASET_CODE_MAX_LENGTH) {
-      return `Maksymalna długość to ${DATASET_CODE_MAX_LENGTH} znaków`;
+      return `Maximum length is ${DATASET_CODE_MAX_LENGTH} characters`;
     }
 
     if (!DATASET_CODE_REGEX.test(value)) {
@@ -95,7 +95,7 @@ export function FileUploadStep({ onNext, onCancel }: FileUploadStepProps) {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold mb-2">Wybierz plik CSV</h2>
-        <p className="text-muted-foreground">Prześlij plik CSV z danymi finansowymi, aby rozpocząć proces importu</p>
+        <p className="text-muted-foreground">Upload CSV file with financial data to start the import process</p>
       </div>
 
       {/* Error message */}
@@ -131,14 +131,14 @@ export function FileUploadStep({ onNext, onCancel }: FileUploadStepProps) {
         />
         {datasetCodeError && <p className="text-sm text-destructive mt-1">{datasetCodeError}</p>}
         <p className="text-xs text-muted-foreground mt-1">
-          {datasetCode.length}/{DATASET_CODE_MAX_LENGTH} znaków
+          {datasetCode.length}/{DATASET_CODE_MAX_LENGTH} characters
         </p>
       </div>
 
       {/* Action buttons */}
       <div className="flex gap-3 pt-4">
         <Button variant="outline" onClick={onCancel} disabled={isProcessing || isParsing}>
-          Anuluj
+          Cancel
         </Button>
         <Button onClick={handleNext} disabled={!canProceed || isProcessing || isParsing} className="ml-auto">
           {isProcessing || isParsing ? (

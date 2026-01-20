@@ -5,10 +5,10 @@ import { z } from "zod";
  * Defines which CSV columns map to system fields
  */
 export const columnMappingSchema = z.object({
-  date_due: z.string().min(1, "Data transakcji jest wymagana"),
-  amount: z.string().min(1, "Kwota jest wymagana"),
-  direction: z.string().min(1, "Kierunek transakcji jest wymagany"),
-  currency: z.string().min(1, "Waluta jest wymagana"),
+  date_due: z.string().min(1, "Transaction date is required"),
+  amount: z.string().min(1, "Amount is required"),
+  direction: z.string().min(1, "Transaction direction is required"),
+  currency: z.string().min(1, "Currency is required"),
   flow_id: z.string().optional().nullable(),
   counterparty: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
@@ -24,9 +24,9 @@ export const columnMappingSchema = z.object({
 export const initiateImportSchema = z.object({
   dataset_code: z
     .string()
-    .min(1, "Kod datasetu jest wymagany")
-    .max(100, "Kod datasetu nie może przekraczać 100 znaków")
-    .regex(/^[a-zA-Z0-9_-]+$/, "Kod może zawierać tylko litery, cyfry, myślniki i podkreślenia"),
+    .min(1, "Dataset code is required")
+    .max(100, "Dataset code cannot exceed 100 characters")
+    .regex(/^[a-zA-Z0-9_-]+$/, "Code can only contain letters, numbers, hyphens and underscores"),
   column_mapping: columnMappingSchema,
   skip_invalid_rows: z.boolean().default(false),
   file_name: z.string().optional(),
@@ -36,8 +36,8 @@ export const initiateImportSchema = z.object({
  * Schema for path parameters
  */
 export const importParamsSchema = z.object({
-  companyId: z.string().uuid("Nieprawidłowy ID firmy"),
-  importId: z.string().regex(/^\d+$/, "Nieprawidłowy ID importu").transform(Number),
+  companyId: z.string().uuid("Invalid company ID"),
+  importId: z.string().regex(/^\d+$/, "Invalid import ID").transform(Number),
 });
 
 /**
@@ -49,7 +49,7 @@ export const csvRowSchema = z.object({
     // Check if date is in valid format (YYYY-MM-DD, DD/MM/YYYY, etc.)
     const parsed = Date.parse(val);
     return !isNaN(parsed);
-  }, "Nieprawidłowy format daty"),
+  }, "Invalid date format"),
 
   amount: z.string().refine((val) => {
     // Allow formats:
@@ -80,16 +80,16 @@ export const csvRowSchema = z.object({
     
     const num = parseFloat(cleaned);
     return !isNaN(num);
-  }, "Nieprawidłowa kwota - musi być liczbą"),
+  }, "Invalid amount - must be a number"),
 
   direction: z.enum(["INFLOW", "OUTFLOW", "IB"], {
-    errorMap: () => ({ message: "Kierunek musi być INFLOW, OUTFLOW lub IB (saldo początkowe)" }),
+    errorMap: () => ({ message: "Direction must be INFLOW, OUTFLOW or IB (initial balance)" }),
   }),
 
   currency: z
     .string()
-    .length(3, "Kod waluty musi mieć 3 znaki")
-    .regex(/^[A-Z]{3}$/, "Kod waluty musi składać się z wielkich liter (np. PLN, USD)"),
+    .length(3, "Currency code must be 3 characters")
+    .regex(/^[A-Z]{3}$/, "Currency code must consist of capital letters (e.g. PLN, USD)"),
 
   flow_id: z.string().optional().nullable().transform(val => val || undefined),
   counterparty: z.string().optional().nullable().transform(val => val || undefined),

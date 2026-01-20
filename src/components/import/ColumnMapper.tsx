@@ -30,7 +30,7 @@ export function ColumnMapper({ csvHeaders, mapping, onChange }: ColumnMapperProp
     <div className="space-y-2">
       <div className="mb-4">
         <h3 className="text-sm font-medium mb-1">Mapowanie kolumn</h3>
-        <p className="text-sm text-muted-foreground">Przypisz kolumny z pliku CSV do odpowiednich pól systemowych</p>
+        <p className="text-sm text-muted-foreground">Map CSV columns to corresponding system fields</p>
       </div>
 
       <div className="border rounded-lg bg-card">
@@ -51,7 +51,7 @@ export function ColumnMapper({ csvHeaders, mapping, onChange }: ColumnMapperProp
 
       {/* Informacja o wymaganych polach */}
       <p className="text-xs text-muted-foreground mt-3">
-        * Pola oznaczone jako &quot;Wymagane&quot; muszą być zmapowane, aby przejść dalej
+        * Fields marked as &quot;Required&quot; must be mapped to proceed
       </p>
     </div>
   );

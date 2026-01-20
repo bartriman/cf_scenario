@@ -24,7 +24,7 @@ const PathParamsSchema = z.object({
  * Request body schema for duplicating scenario
  */
 const DuplicateScenarioBodySchema = z.object({
-  name: z.string().min(1, "Nazwa jest wymagana").max(255, "Nazwa nie może przekraczać 255 znaków"),
+  name: z.string().min(1, "Name is required").max(255, "Name cannot exceed 255 characters"),
 });
 
 /**

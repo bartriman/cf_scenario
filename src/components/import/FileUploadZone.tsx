@@ -47,7 +47,7 @@ export function FileUploadZone({
       const files = Array.from(e.dataTransfer.files);
 
       if (files.length > 1) {
-        alert("Można przesłać tylko jeden plik");
+        alert("You can only upload one file");
         return;
       }
 
@@ -132,7 +132,7 @@ export function FileUploadZone({
               <p className="font-medium text-foreground">{selectedFile.name}</p>
               <p className="text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
             </div>
-            <p className="text-xs text-muted-foreground">Kliknij lub przeciągnij inny plik, aby zmienić</p>
+            <p className="text-xs text-muted-foreground">Click or drag another file to change</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -150,11 +150,11 @@ export function FileUploadZone({
               />
             </svg>
             <div className="text-sm">
-              <p className="font-medium text-foreground">Przeciągnij i upuść plik CSV tutaj</p>
-              <p className="text-muted-foreground">lub kliknij, aby wybrać plik</p>
+              <p className="font-medium text-foreground">Drag and drop CSV file here</p>
+              <p className="text-muted-foreground">or click to select file</p>
             </div>
             <p className="text-xs text-muted-foreground">
-              Maksymalny rozmiar: {formatFileSize(maxSize)} • Format: {acceptedFormats.join(", ")}
+              Maximum size: {formatFileSize(maxSize)} • Format: {acceptedFormats.join(", ")}
             </p>
           </div>
         )}

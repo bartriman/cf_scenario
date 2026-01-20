@@ -70,7 +70,7 @@ export function useCSVParser(): UseCSVParserReturn {
             setIsLoading(false);
 
             if (results.errors.length > 0) {
-              const errorMsg = `Błąd parsowania CSV: ${results.errors[0].message}`;
+              const errorMsg = `CSV parsing error: ${results.errors[0].message}`;
               setError(errorMsg);
               reject(new Error(errorMsg));
               return;
@@ -89,7 +89,7 @@ export function useCSVParser(): UseCSVParserReturn {
             const rows = data.slice(1, 6); // First 5 data rows for preview
 
             if (data.length === 1) {
-              const errorMsg = "Plik CSV zawiera tylko nagłówki, brak danych";
+              const errorMsg = "CSV file contains only headers, no data";
               setError(errorMsg);
               reject(new Error(errorMsg));
               return;
@@ -99,7 +99,7 @@ export function useCSVParser(): UseCSVParserReturn {
           },
           error: (error) => {
             setIsLoading(false);
-            const errorMsg = `Nie można odczytać pliku: ${error.message}`;
+            const errorMsg = `Cannot read file: ${error.message}`;
             setError(errorMsg);
             reject(new Error(errorMsg));
           },
@@ -108,7 +108,7 @@ export function useCSVParser(): UseCSVParserReturn {
       });
     } catch (err) {
       setIsLoading(false);
-      const errorMsg = err instanceof Error ? err.message : "Nie można odczytać pliku";
+      const errorMsg = err instanceof Error ? err.message : "Cannot read file";
       setError(errorMsg);
       throw err;
     }

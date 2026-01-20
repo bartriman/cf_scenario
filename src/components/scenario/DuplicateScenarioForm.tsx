@@ -26,7 +26,7 @@ export function DuplicateScenarioForm({
   } = useForm<DuplicateScenarioFormValues>({
     resolver: zodResolver(duplicateScenarioSchema),
     defaultValues: {
-      name: `${sourceScenarioName} (kopia)`,
+      name: `${sourceScenarioName} (copy)`,
     },
   });
 
@@ -37,28 +37,28 @@ export function DuplicateScenarioForm({
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="duplicate-name">Nazwa nowego scenariusza</Label>
+        <Label htmlFor="duplicate-name">New scenario name</Label>
         <Input
           id="duplicate-name"
           {...register("name")}
           disabled={isSubmitting}
-          placeholder="Wprowadź nazwę scenariusza"
+          placeholder="Enter scenario name"
         />
         {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
       </div>
 
       <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
-        Nowy scenariusz będzie zawierał wszystkie transakcje i modyfikacje z oryginału
+        New scenario will contain all transactions and modifications from the original
       </div>
 
       <div className="flex justify-end gap-3">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-            Anuluj
+            Cancel
           </Button>
         )}
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Duplikowanie..." : "Duplikuj"}
+          {isSubmitting ? "Duplicating..." : "Duplicate"}
         </Button>
       </div>
     </form>

@@ -28,20 +28,20 @@ export function ValidationErrorTable({ errors, itemsPerPage = 10 }: ValidationEr
     <div className="space-y-4">
       <div className="border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm" aria-label="Tabela błędów walidacji">
+          <table className="w-full text-sm" aria-label="Validation errors table">
             <thead className="bg-muted">
               <tr role="row">
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b" scope="col">
-                  Nr wiersza
+                  Row number
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b" scope="col">
-                  Kolumna
+                  Column
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b" scope="col">
-                  Wartość
+                  Value
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground border-b" scope="col">
-                  Komunikat błędu
+                  Error message
                 </th>
               </tr>
             </thead>
@@ -56,10 +56,10 @@ export function ValidationErrorTable({ errors, itemsPerPage = 10 }: ValidationEr
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between" role="navigation" aria-label="Paginacja błędów">
+        <div className="flex items-center justify-between" role="navigation" aria-label="Error pagination">
           <p className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
-            Strona {currentPage} z {totalPages} (wyświetlanie {startIndex + 1}-{Math.min(endIndex, errors.length)} z{" "}
-            {errors.length} błędów)
+            Page {currentPage} of {totalPages} (displaying {startIndex + 1}-{Math.min(endIndex, errors.length)} of{" "}
+            {errors.length} errors)
           </p>
           <div className="flex gap-2">
             <Button
@@ -67,18 +67,18 @@ export function ValidationErrorTable({ errors, itemsPerPage = 10 }: ValidationEr
               size="sm"
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
-              aria-label="Poprzednia strona błędów"
+              aria-label="Previous error page"
             >
-              Poprzednia
+              Previous
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              aria-label="Następna strona błędów"
+              aria-label="Next error page"
             >
-              Następna
+              Next
             </Button>
           </div>
         </div>

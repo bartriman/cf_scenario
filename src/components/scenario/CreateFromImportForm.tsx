@@ -63,7 +63,7 @@ export function CreateFromImportForm({ companyId, onSubmit, isSubmitting, onCanc
 
     // Auto-fill nazwy i kodu datasetu
     if (!selectedImport) {
-      setValue("name", `Scenariusz ${selected.dataset_code}`);
+      setValue("name", `Scenario ${selected.dataset_code}`);
     }
   };
 
@@ -84,7 +84,7 @@ export function CreateFromImportForm({ companyId, onSubmit, isSubmitting, onCanc
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="import-select">
-          Wybierz import <span className="text-destructive">*</span>
+          Select import <span className="text-destructive">*</span>
         </Label>
         {isLoadingImports ? (
           <div className="flex items-center justify-center py-4">
@@ -93,12 +93,12 @@ export function CreateFromImportForm({ companyId, onSubmit, isSubmitting, onCanc
         ) : (
           <Select onValueChange={handleImportSelect} disabled={isSubmitting || imports.length === 0}>
             <SelectTrigger id="import-select">
-              <SelectValue placeholder={imports.length === 0 ? "Brak dostępnych importów" : "Wybierz import..."} />
+              <SelectValue placeholder={imports.length === 0 ? "No imports available" : "Select import..."} />
             </SelectTrigger>
             <SelectContent>
               {imports.map((imp) => (
                 <SelectItem key={imp.id} value={imp.id.toString()}>
-                  {imp.dataset_code} - {imp.file_name} ({imp.valid_rows} wierszy)
+                  {imp.dataset_code} - {imp.file_name} ({imp.valid_rows} rows)
                 </SelectItem>
               ))}
             </SelectContent>
@@ -111,28 +111,28 @@ export function CreateFromImportForm({ companyId, onSubmit, isSubmitting, onCanc
         <>
           <div className="rounded-md bg-muted p-3 space-y-1 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Kod datasetu:</span>
+              <span className="text-muted-foreground">Dataset code:</span>
               <span className="font-medium">{selectedImport.dataset_code}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Prawidłowych wierszy:</span>
+              <span className="text-muted-foreground">Valid rows:</span>
               <span className="font-medium">{selectedImport.valid_rows}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Utworzonych transakcji:</span>
+              <span className="text-muted-foreground">Created transactions:</span>
               <span className="font-medium">{selectedImport.inserted_transactions_count}</span>
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="import-name">
-              Nazwa scenariusza <span className="text-destructive">*</span>
+              Scenario name <span className="text-destructive">*</span>
             </Label>
             <Input
               id="import-name"
               {...register("name")}
               disabled={isSubmitting}
-              placeholder="np. Scenariusz z importu Q1"
+              placeholder="e.g. Scenario from Q1 import"
             />
             {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
@@ -140,7 +140,7 @@ export function CreateFromImportForm({ companyId, onSubmit, isSubmitting, onCanc
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="import-start-date">
-                Data rozpoczęcia <span className="text-destructive">*</span>
+                Start date <span className="text-destructive">*</span>
               </Label>
               <Input id="import-start-date" type="date" {...register("start_date")} disabled={isSubmitting} />
               {errors.start_date && <p className="text-sm text-destructive">{errors.start_date.message}</p>}
@@ -148,7 +148,7 @@ export function CreateFromImportForm({ companyId, onSubmit, isSubmitting, onCanc
 
             <div className="space-y-2">
               <Label htmlFor="import-end-date">
-                Data zakończenia <span className="text-destructive">*</span>
+                End date <span className="text-destructive">*</span>
               </Label>
               <Input id="import-end-date" type="date" {...register("end_date")} disabled={isSubmitting} />
               {errors.end_date && <p className="text-sm text-destructive">{errors.end_date.message}</p>}
@@ -160,11 +160,11 @@ export function CreateFromImportForm({ companyId, onSubmit, isSubmitting, onCanc
       <div className="flex justify-end gap-3">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-            Anuluj
+            Cancel
           </Button>
         )}
         <Button type="submit" disabled={isSubmitting || !selectedImport}>
-          {isSubmitting ? "Tworzenie..." : "Utwórz scenariusz"}
+          {isSubmitting ? "Creating..." : "Create scenario"}
         </Button>
       </div>
     </form>

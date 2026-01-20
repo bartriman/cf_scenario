@@ -22,7 +22,7 @@ export function ValidationSummary({ totalRows, validRows, invalidRows }: Validat
           />
         </svg>
       ),
-      title: "Walidacja zakończona sukcesem",
+      title: "Validation completed successfully",
       color: "text-green-600",
       bgColor: "bg-green-50 dark:bg-green-950/20",
       borderColor: "border-green-200 dark:border-green-800",
@@ -38,7 +38,7 @@ export function ValidationSummary({ totalRows, validRows, invalidRows }: Validat
           />
         </svg>
       ),
-      title: "Wykryto błędy walidacji",
+      title: "Validation errors detected",
       color: "text-amber-600",
       bgColor: "bg-amber-50 dark:bg-amber-950/20",
       borderColor: "border-amber-200 dark:border-amber-800",
@@ -54,7 +54,7 @@ export function ValidationSummary({ totalRows, validRows, invalidRows }: Validat
           />
         </svg>
       ),
-      title: "Wszystkie wiersze zawierają błędy",
+      title: "All rows contain errors",
       color: "text-red-600",
       bgColor: "bg-red-50 dark:bg-red-950/20",
       borderColor: "border-red-200 dark:border-red-800",
@@ -72,26 +72,26 @@ export function ValidationSummary({ totalRows, validRows, invalidRows }: Validat
         {/* Statistics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-6 w-full max-w-md">
           <div>
-            <div className="text-2xl font-bold" aria-label={`Wszystkich wierszy: ${totalRows}`}>{totalRows}</div>
-            <div className="text-sm text-muted-foreground">Wszystkich</div>
+            <div className="text-2xl font-bold" aria-label={`Total rows: ${totalRows}`}>{totalRows}</div>
+            <div className="text-sm text-muted-foreground">Total</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-green-600" aria-label={`Prawidłowych wierszy: ${validRows}`}>{validRows}</div>
-            <div className="text-sm text-muted-foreground">Prawidłowych</div>
+            <div className="text-2xl font-bold text-green-600" aria-label={`Valid rows: ${validRows}`}>{validRows}</div>
+            <div className="text-sm text-muted-foreground">Valid</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-red-600" aria-label={`Błędnych wierszy: ${invalidRows}`}>{invalidRows}</div>
-            <div className="text-sm text-muted-foreground">Błędnych</div>
+            <div className="text-2xl font-bold text-red-600" aria-label={`Invalid rows: ${invalidRows}`}>{invalidRows}</div>
+            <div className="text-sm text-muted-foreground">Invalid</div>
           </div>
         </div>
 
         {/* Percentage indicator */}
         <div className="mt-6 w-full max-w-md">
           <div className="flex justify-between text-sm mb-2">
-            <span>Poprawność danych</span>
-            <span className="font-medium" aria-label={`Procent poprawności: ${validPercentage}%`}>{validPercentage}%</span>
+            <span>Data correctness</span>
+            <span className="font-medium" aria-label={`Correctness percentage: ${validPercentage}%`}>{validPercentage}%</span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" role="progressbar" aria-valuenow={validPercentage} aria-valuemin={0} aria-valuemax={100} aria-label="Pasek poprawności danych">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" role="progressbar" aria-valuenow={validPercentage} aria-valuemin={0} aria-valuemax={100} aria-label="Data correctness bar">
             <div
               className={`h-2 rounded-full transition-all duration-500 ${
                 validPercentage === 100 ? "bg-green-600" : validPercentage > 50 ? "bg-amber-600" : "bg-red-600"

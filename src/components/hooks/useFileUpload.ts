@@ -30,13 +30,13 @@ export function useFileUpload(options: UseFileUploadOptions = {}): UseFileUpload
       );
 
       if (!hasValidExtension) {
-        return `Obsługiwane są tylko pliki ${acceptedFormats.join(", ")}`;
+        return `Only files of type ${acceptedFormats.join(", ")} are supported`;
       }
 
       // Sprawdzenie rozmiaru
       if (file.size > maxSize) {
         const maxSizeMB = Math.floor(maxSize / (1024 * 1024));
-        return `Plik nie może być większy niż ${maxSizeMB}MB`;
+        return `File size cannot exceed ${maxSizeMB}MB`;
       }
 
       return null;

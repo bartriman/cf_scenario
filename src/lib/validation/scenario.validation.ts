@@ -3,20 +3,20 @@ import { z } from "zod";
 // Schemat walidacji dla tworzenia scenariusza
 export const createScenarioSchema = z
   .object({
-    name: z.string().min(1, "Nazwa jest wymagana").max(255, "Nazwa nie może przekraczać 255 znaków"),
-    import_id: z.number().int().positive("Import ID jest wymagany"),
+    name: z.string().min(1, "Name is required").max(255, "Name cannot exceed 255 characters"),
+    import_id: z.number().int().positive("Import ID is required"),
     dataset_code: z
       .string()
-      .min(1, "Kod datasetu jest wymagany")
-      .regex(/^[a-zA-Z0-9_-]+$/, "Kod może zawierać tylko litery, cyfry, myślniki i podkreślenia"),
+      .min(1, "Dataset code is required")
+      .regex(/^[a-zA-Z0-9_-]+$/, "Code can only contain letters, numbers, hyphens and underscores"),
     start_date: z
       .string()
-      .min(1, "Data rozpoczęcia jest wymagana")
-      .refine((val) => !isNaN(Date.parse(val)), "Nieprawidłowa data rozpoczęcia"),
+      .min(1, "Start date is required")
+      .refine((val) => !isNaN(Date.parse(val)), "Invalid start date"),
     end_date: z
       .string()
-      .min(1, "Data zakończenia jest wymagana")
-      .refine((val) => !isNaN(Date.parse(val)), "Nieprawidłowa data zakończenia"),
+      .min(1, "End date is required")
+      .refine((val) => !isNaN(Date.parse(val)), "Invalid end date"),
     base_scenario_id: z.number().optional(),
   })
   .refine(
@@ -26,29 +26,29 @@ export const createScenarioSchema = z
       return start < end;
     },
     {
-      message: "Data zakończenia musi być późniejsza niż data rozpoczęcia",
+      message: "End date must be later than start date",
       path: ["end_date"],
     }
   );
 
 // Schemat walidacji dla duplikacji scenariusza
 export const duplicateScenarioSchema = z.object({
-  name: z.string().min(1, "Nazwa jest wymagana").max(255, "Nazwa nie może przekraczać 255 znaków"),
+  name: z.string().min(1, "Name is required").max(255, "Name cannot exceed 255 characters"),
 });
 
 // Schemat walidacji dla tworzenia scenariusza z importu
 export const createFromImportSchema = z
   .object({
-    import_id: z.number().min(1, "Wybierz import"),
-    name: z.string().min(1, "Nazwa jest wymagana").max(255, "Nazwa nie może przekraczać 255 znaków"),
+    import_id: z.number().min(1, "Select import"),
+    name: z.string().min(1, "Name is required").max(255, "Name cannot exceed 255 characters"),
     start_date: z
       .string()
-      .min(1, "Data rozpoczęcia jest wymagana")
-      .refine((val) => !isNaN(Date.parse(val)), "Nieprawidłowa data rozpoczęcia"),
+      .min(1, "Start date is required")
+      .refine((val) => !isNaN(Date.parse(val)), "Invalid start date"),
     end_date: z
       .string()
-      .min(1, "Data zakończenia jest wymagana")
-      .refine((val) => !isNaN(Date.parse(val)), "Nieprawidłowa data zakończenia"),
+      .min(1, "End date is required")
+      .refine((val) => !isNaN(Date.parse(val)), "Invalid end date"),
   })
   .refine(
     (data) => {
@@ -57,7 +57,7 @@ export const createFromImportSchema = z
       return start < end;
     },
     {
-      message: "Data zakończenia musi być późniejsza niż data rozpoczęcia",
+      message: "End date must be later than start date",
       path: ["end_date"],
     }
   );
@@ -75,47 +75,47 @@ export const upsertOverrideSchema = z
       .nullable()
       .optional()
       .refine((val) => val === null || val === undefined || !isNaN(Date.parse(val)), {
-        message: "Nieprawidłowa data",
+        message: "Invalid date",
       }),
     new_amount_book_cents: z
       .number()
-      .int("Kwota musi być liczbą całkowitą")
-      .nonnegative("Kwota nie może być ujemna")
+      .int("Amount must be an integer")
+      .nonnegative("Amount cannot be negative")
       .nullable()
       .optional(),
   })
   .refine((data) => data.new_date_due !== undefined || data.new_amount_book_cents !== undefined, {
-    message: "Musisz podać przynajmniej jedną wartość do zmiany (datę lub kwotę)",
+    message: "You must provide at least one value to change (date or amount)",
   });
 
 // Schemat walidacji dla pojedynczego override w batch
 export const batchOverrideItemSchema = z
   .object({
-    flow_id: z.string().min(1, "flow_id jest wymagany"),
+    flow_id: z.string().min(1, "flow_id is required"),
     new_date_due: z
       .string()
       .nullable()
       .optional()
       .refine((val) => val === null || val === undefined || !isNaN(Date.parse(val)), {
-        message: "Nieprawidłowa data",
+        message: "Invalid date",
       }),
     new_amount_book_cents: z
       .number()
-      .int("Kwota musi być liczbą całkowitą")
-      .nonnegative("Kwota nie może być ujemna")
+      .int("Amount must be an integer")
+      .nonnegative("Amount cannot be negative")
       .nullable()
       .optional(),
   })
   .refine((data) => data.new_date_due !== undefined || data.new_amount_book_cents !== undefined, {
-    message: "Musisz podać przynajmniej jedną wartość do zmiany (datę lub kwotę)",
+    message: "You must provide at least one value to change (date or amount)",
   });
 
-// Schemat walidacji dla batch update overrides (POST endpoint)
+// Schema validation for batch update overrides (POST endpoint)
 export const batchUpdateOverridesSchema = z.object({
   overrides: z
     .array(batchOverrideItemSchema)
-    .min(1, "Lista override'ów nie może być pusta")
-    .max(100, "Maksymalna liczba override'ów w jednym batchu to 100"),
+    .min(1, "Override list cannot be empty")
+    .max(100, "Maximum number of overrides in one batch is 100"),
 });
 
 // Typy inferred dla walidacji override'ów

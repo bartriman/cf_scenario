@@ -4,8 +4,8 @@ import { z } from "zod";
 export const prerender = false;
 
 const loginSchema = z.object({
-  email: z.string().email("Nieprawidłowy adres email"),
-  password: z.string().min(1, "Hasło jest wymagane"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -34,7 +34,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (error) {
       return new Response(
         JSON.stringify({
-          error: "Nieprawidłowy email lub hasło",
+          error: "Invalid email or password",
         }),
         { status: 401, headers: { "Content-Type": "application/json" } }
       );
@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.error("Login error:", error);
     return new Response(
       JSON.stringify({
-        error: "Wystąpił błąd podczas logowania",
+        error: "An error occurred during login",
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

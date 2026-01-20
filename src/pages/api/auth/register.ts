@@ -4,13 +4,13 @@ import { z } from "zod";
 export const prerender = false;
 
 const registerSchema = z.object({
-  email: z.string().email("Nieprawidłowy adres email"),
+  email: z.string().email("Invalid email address"),
   password: z
     .string()
-    .min(8, "Hasło musi zawierać co najmniej 8 znaków")
-    .regex(/[A-Z]/, "Hasło musi zawierać co najmniej jedną wielką literę")
-    .regex(/[a-z]/, "Hasło musi zawierać co najmniej jedną małą literę")
-    .regex(/[0-9]/, "Hasło musi zawierać co najmniej jedną cyfrę"),
+    .min(8, "Password must contain at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one digit"),
   companyName: z.string().optional(),
 });
 
@@ -48,7 +48,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (error.message.includes("already registered")) {
         return new Response(
           JSON.stringify({
-            error: "Ten adres email jest już zarejestrowany. Użyj funkcji logowania.",
+            error: "This email address is already registered. Please use the login function.",
           }),
           { status: 409, headers: { "Content-Type": "application/json" } }
         );
@@ -68,7 +68,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(
       JSON.stringify({
         user: data.user,
-        message: "Konto zostało utworzone! Sprawdź swoją skrzynkę email i kliknij link weryfikacyjny, aby aktywować konto. Link jest ważny przez 24 godziny.",
+        message: "Account created! Check your email inbox and click the verification link to activate your account. The link is valid for 24 hours.",
       }),
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
@@ -76,7 +76,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.error("Registration error:", error);
     return new Response(
       JSON.stringify({
-        error: "Wystąpił błąd podczas rejestracji",
+        error: "An error occurred during registration",
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

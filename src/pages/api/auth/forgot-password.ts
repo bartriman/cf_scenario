@@ -4,7 +4,7 @@ import { z } from "zod";
 export const prerender = false;
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email("Nieprawidłowy adres email"),
+  email: z.string().email("Invalid email address"),
 });
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -37,7 +37,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     return new Response(
       JSON.stringify({
-        message: "Jeśli podany adres email istnieje w systemie, wysłaliśmy link do resetowania hasła.",
+        message: "If the provided email address exists in the system, we have sent a password reset link.",
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
@@ -46,7 +46,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Still return success to prevent enumeration
     return new Response(
       JSON.stringify({
-        message: "Jeśli podany adres email istnieje w systemie, wysłaliśmy link do resetowania hasła.",
+        message: "If the provided email address exists in the system, we have sent a password reset link.",
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );

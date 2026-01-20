@@ -27,13 +27,13 @@ export function ColumnMappingStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Mapowanie kolumn</h2>
-        <p className="text-muted-foreground">Sprawdź podgląd danych i przypisz kolumny CSV do pól systemowych</p>
+        <h2 className="text-2xl font-bold">Column Mapping</h2>
+        <p className="text-muted-foreground">Review data preview and map CSV columns to system fields</p>
       </div>
 
       {/* CSV Preview */}
       <div>
-        <h3 className="text-lg font-semibold mb-3">Podgląd danych</h3>
+        <h3 className="text-lg font-semibold mb-3">Data Preview</h3>
         <CSVPreview headers={csvHeaders} rows={previewRows} maxRows={5} />
       </div>
 
@@ -46,7 +46,7 @@ export function ColumnMappingStep({
       {!canProceed && (
         <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md">
           <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
-            Wszystkie wymagane pola muszą być zmapowane, aby kontynuować
+            All required fields must be mapped to continue
           </p>
         </div>
       )}

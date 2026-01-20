@@ -41,14 +41,14 @@ export function useExportScenario(companyId: string): UseExportScenarioResult {
         }
 
         if (response.status === 403) {
-          throw new Error("Tylko zablokowane scenariusze mogą być eksportowane");
+          throw new Error("Only locked scenarios can be exported");
         }
 
         if (response.status === 404) {
-          throw new Error("Scenariusz nie został znaleziony");
+          throw new Error("Scenario not found");
         }
 
-        throw new Error("Nie udało się wyeksportować scenariusza");
+        throw new Error("Failed to export scenario");
       }
 
       // Get filename from Content-Disposition header
@@ -74,7 +74,7 @@ export function useExportScenario(companyId: string): UseExportScenarioResult {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Nie udało się wyeksportować scenariusza";
+      const errorMessage = err instanceof Error ? err.message : "Failed to export scenario";
       setError(errorMessage);
       throw err;
     } finally {

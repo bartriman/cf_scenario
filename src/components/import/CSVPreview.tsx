@@ -35,7 +35,7 @@ export function CSVPreview({ headers, rows, maxRows = 5 }: CSVPreviewProps) {
       </div>
       {rows.length > maxRows && (
         <div className="px-4 py-2 bg-muted/50 text-xs text-muted-foreground text-center">
-          Wyświetlono {maxRows} z {rows.length} wierszy
+          Displayed {maxRows} of {rows.length} rows
         </div>
       )}
     </div>

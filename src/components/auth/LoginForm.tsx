@@ -30,33 +30,33 @@ export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
     switch (mode) {
       case "login":
         return {
-          title: "Zaloguj się",
-          description: "Wprowadź swoje dane, aby uzyskać dostęp do konta",
-          submitText: "Zaloguj się",
+          title: "Log in",
+          description: "Enter your credentials to access your account",
+          submitText: "Log in",
           footerLinks: [
-            { text: "Nie masz konta?", linkText: "Zarejestruj się", href: "/auth/register" },
-            { text: "Zapomniałeś hasła?", linkText: "Zresetuj hasło", href: "/auth/forgot-password" },
+            { text: "Don't have an account?", linkText: "Register", href: "/auth/register" },
+            { text: "Forgot password?", linkText: "Reset password", href: "/auth/forgot-password" },
           ],
         };
       case "register":
         return {
-          title: "Utwórz konto",
-          description: "Wypełnij formularz, aby rozpocząć korzystanie z aplikacji",
-          submitText: "Zarejestruj się",
-          footerLinks: [{ text: "Masz już konto?", linkText: "Zaloguj się", href: "/auth/login" }],
+          title: "Create account",
+          description: "Fill in the form to start using the application",
+          submitText: "Register",
+          footerLinks: [{ text: "Already have an account?", linkText: "Log in", href: "/auth/login" }],
         };
       case "forgot-password":
         return {
-          title: "Zresetuj hasło",
-          description: "Podaj swój adres email, a wyślemy Ci link do resetowania hasła",
-          submitText: "Wyślij link",
-          footerLinks: [{ text: "Wróć do", linkText: "logowania", href: "/auth/login" }],
+          title: "Reset password",
+          description: "Enter your email address and we'll send you a password reset link",
+          submitText: "Send link",
+          footerLinks: [{ text: "Back to", linkText: "login", href: "/auth/login" }],
         };
       case "update-password":
         return {
-          title: "Ustaw nowe hasło",
-          description: "Wprowadź nowe hasło dla swojego konta",
-          submitText: "Zmień hasło",
+          title: "Set new password",
+          description: "Enter a new password for your account",
+          submitText: "Change password",
           footerLinks: [],
         };
       default:
@@ -74,36 +74,36 @@ export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
 
     // Email validation for all modes except update-password
     if (mode !== "update-password" && !email) {
-      setError("Adres email jest wymagany");
+      setError("Email address is required");
       return false;
     }
 
     if (mode !== "update-password" && email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Wprowadź poprawny adres email");
+      setError("Please enter a valid email address");
       return false;
     }
 
     // Password validation for login, register, and update-password
     if (mode !== "forgot-password" && !password) {
-      setError("Hasło jest wymagane");
+      setError("Password is required");
       return false;
     }
 
     // Password strength validation for register and update-password
     if ((mode === "register" || mode === "update-password") && password.length < 8) {
-      setError("Hasło musi zawierać co najmniej 8 znaków");
+      setError("Password must contain at least 8 characters");
       return false;
     }
 
     // Confirm password validation
     if ((mode === "register" || mode === "update-password") && password !== confirmPassword) {
-      setError("Hasła nie są identyczne");
+      setError("Passwords do not match");
       return false;
     }
 
     // Company name validation for register
     if (mode === "register" && !companyName.trim()) {
-      setError("Nazwa firmy jest wymagana");
+      setError("Company name is required");
       return false;
     }
 
@@ -155,22 +155,22 @@ export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Wystąpił błąd. Spróbuj ponownie.");
+        throw new Error(data.error || "An error occurred. Please try again.");
       }
 
       // Handle success based on mode
       if (mode === "forgot-password") {
-        setSuccessMessage("Link do resetowania hasła został wysłany na Twój adres email");
+        setSuccessMessage("Password reset link has been sent to your email address");
         setEmail("");
       } else if (mode === "update-password") {
-        setSuccessMessage("Hasło zostało zmienione pomyślnie");
+        setSuccessMessage("Password has been changed successfully");
         setTimeout(() => {
           window.location.href = "/auth/login";
         }, 2000);
       } else if (mode === "register") {
         // Show email verification message and clear form
         setSuccessMessage(
-          data.message || "Konto zostało utworzone! Sprawdź swoją skrzynkę email i kliknij link weryfikacyjny, aby aktywować konto."
+          data.message || "Account has been created! Check your email and click the verification link to activate your account."
         );
         setEmail("");
         setPassword("");
@@ -186,7 +186,7 @@ export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Wystąpił nieznany błąd");
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -206,11 +206,11 @@ export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
           {/* Email field - for login, register, and forgot-password */}
           {mode !== "update-password" && (
             <div className="space-y-2">
-              <Label htmlFor={emailId}>Adres email</Label>
+              <Label htmlFor={emailId}>Email address</Label>
               <Input
                 id={emailId}
                 type="email"
-                placeholder="twoj@email.pl"
+                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
@@ -223,11 +223,11 @@ export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
           {/* Company name - only for register */}
           {mode === "register" && (
             <div className="space-y-2">
-              <Label htmlFor={companyNameId}>Nazwa firmy</Label>
+              <Label htmlFor={companyNameId}>Company name</Label>
               <Input
                 id={companyNameId}
                 type="text"
-                placeholder="Moja Firma Sp. z o.o."
+                placeholder="My Company Inc."
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
                 disabled={isLoading}
@@ -240,11 +240,11 @@ export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
           {/* Password field - for login, register, and update-password */}
           {mode !== "forgot-password" && (
             <div className="space-y-2">
-              <Label htmlFor={passwordId}>{mode === "update-password" ? "Nowe hasło" : "Hasło"}</Label>
+              <Label htmlFor={passwordId}>{mode === "update-password" ? "New password" : "Password"}</Label>
               <Input
                 id={passwordId}
                 type="password"
-                placeholder={mode === "login" ? "••••••••" : "Co najmniej 8 znaków"}
+                placeholder={mode === "login" ? "••••••••" : "At least 8 characters"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
@@ -257,7 +257,7 @@ export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
           {/* Confirm password - for register and update-password */}
           {(mode === "register" || mode === "update-password") && (
             <div className="space-y-2">
-              <Label htmlFor={confirmPasswordId}>Potwierdź hasło</Label>
+              <Label htmlFor={confirmPasswordId}>Confirm password</Label>
               <Input
                 id={confirmPasswordId}
                 type="password"
@@ -288,7 +288,7 @@ export function LoginForm({ mode, redirectTo, onSuccess }: LoginFormProps) {
 
         <CardFooter className="flex flex-col space-y-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Przetwarzanie..." : config.submitText}
+            {isLoading ? "Processing..." : config.submitText}
           </Button>
 
           {/* Footer links */}
