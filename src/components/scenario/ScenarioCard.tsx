@@ -141,7 +141,7 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete,
         </div>
 
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Okres:</span>
+          <span className="text-muted-foreground">Period:</span>
           <span className="font-medium">
             {formatDate(scenario.start_date)} - {formatDate(scenario.end_date)}
           </span>
@@ -156,7 +156,7 @@ export function ScenarioCard({ scenario, onClick, onDuplicate, onLock, onDelete,
       </CardContent>
 
       <CardFooter className="text-xs text-muted-foreground pt-3">
-        Utworzono: {formatRelativeTime(scenario.created_at)}
+        Created: {formatRelativeTime(scenario.created_at)}
       </CardFooter>
     </Card>
   );
