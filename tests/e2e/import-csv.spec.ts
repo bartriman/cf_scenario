@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { DEFAULT_TEST_USER, TEST_USERS } from "./helpers/test-users";
 import { loginViaAPI } from "./helpers/auth";
 import {
   generateValidCSV,
@@ -30,8 +31,7 @@ import {
  */
 
 test.describe("Import Wizard - File Upload Step", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -144,8 +144,7 @@ test.describe("Import Wizard - File Upload Step", () => {
 });
 
 test.describe("Import Wizard - Column Mapping Step", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -226,8 +225,7 @@ test.describe("Import Wizard - Column Mapping Step", () => {
 });
 
 test.describe("Import Wizard - Validation Step", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -394,8 +392,7 @@ test.describe("Import Wizard - Validation Step", () => {
 });
 
 test.describe("Import Wizard - Processing Step", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -540,8 +537,7 @@ test.describe("Import Wizard - Processing Step", () => {
 });
 
 test.describe("Import Wizard - Navigation & State", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);

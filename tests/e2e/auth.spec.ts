@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { loginViaUI, loginViaAPI, logout, isAuthenticated } from "./helpers/auth";
 import { expectToBeOnLoginPage, expectToBeOnDashboard, expectErrorMessage } from "./helpers/assertions";
+import { DEFAULT_TEST_USER, TEST_USERS } from "./helpers/test-users";
 
 /**
  * E2E Tests: Authentication & Authorization
@@ -13,7 +14,8 @@ import { expectToBeOnLoginPage, expectToBeOnDashboard, expectErrorMessage } from
  */
 
 test.describe("Authentication Flow", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
+  // Use pre-created test users from global-setup
+  const testEmail = "test-user-1@example.com";
   const testPassword = "TestPassword123!";
 
   test.beforeEach(async ({ page }) => {
@@ -101,8 +103,7 @@ test.describe("Authentication Flow", () => {
 });
 
 test.describe("Authorization & Route Protection", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test("should protect /account route", async ({ page }) => {
     await page.goto("/account");
@@ -133,9 +134,9 @@ test.describe("Authorization & Route Protection", () => {
 });
 
 test.describe("RLS Policy Enforcement", () => {
-  const user1Email = `user1-${Date.now()}@example.com`;
-  const user2Email = `user2-${Date.now()}@example.com`;
-  const password = "TestPassword123!";
+  const user1Email = TEST_USERS.USER_1.email;
+  const user2Email = TEST_USERS.USER_2.email;
+  const password = TEST_USERS.USER_1.password;
 
   test("should only show user their own companies", async ({ page }) => {
     // Login as user 1
@@ -169,8 +170,7 @@ test.describe("RLS Policy Enforcement", () => {
 });
 
 test.describe("Session Edge Cases", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test("should handle expired session gracefully", async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);

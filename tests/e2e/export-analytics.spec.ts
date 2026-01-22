@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { DEFAULT_TEST_USER, TEST_USERS } from "./helpers/test-users";
 import { loginViaAPI } from "./helpers/auth";
 import { expectSuccessMessage, expectAPICall } from "./helpers/assertions";
 
@@ -13,8 +14,7 @@ import { expectSuccessMessage, expectAPICall } from "./helpers/assertions";
  */
 
 test.describe("Export Scenario to CSV", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -206,8 +206,7 @@ test.describe("Export Scenario to CSV", () => {
 });
 
 test.describe("Weekly Aggregates View", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -307,8 +306,7 @@ test.describe("Weekly Aggregates View", () => {
 });
 
 test.describe("Cash Flow Analytics", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -411,8 +409,7 @@ test.describe("Cash Flow Analytics", () => {
 });
 
 test.describe("Export Edge Cases", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -498,8 +495,7 @@ test.describe("Export Edge Cases", () => {
 });
 
 test.describe("Analytics Data Integrity", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);

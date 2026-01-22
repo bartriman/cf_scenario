@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+import path from 'path';
+
+// Load environment variables from .env file BEFORE exporting config
+config({ path: path.resolve(process.cwd(), '.env') });
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -25,7 +30,7 @@ export default defineConfig({
   // Shared settings for all tests
   use: {
     // Base URL for navigation
-    baseURL: 'http://localhost:4321',
+    baseURL: 'http://localhost:3000',
     
     // Capture trace on first retry
     trace: 'on-first-retry',
@@ -53,9 +58,24 @@ export default defineConfig({
   
   // Browser projects
   projects: [
+    // Setup project - runs before all tests
+    {
+      name: 'setup',
+      testMatch: /global\.setup\.spec\.ts/,
+      teardown: 'cleanup',
+    },
+    // Cleanup project - runs after all tests
+    {
+      name: 'cleanup',
+      testMatch: /global\.teardown\.spec\.ts/,
+    },
+    // Main test project
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { 
+        ...devices['Desktop Chrome']
+      },
+      dependencies: ['setup'],
     },
     
     // Uncomment to test on other browsers
@@ -80,12 +100,13 @@ export default defineConfig({
   ],
   
   // Development server configuration
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:4321',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-    stdout: 'ignore',
-    stderr: 'pipe',
-  },
+  // Note: Start dev server manually with `npm run dev` in a separate terminal
+  // webServer: {
+  //   command: 'npm run dev',
+  //   url: 'http://localhost:3000',
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120000,
+  //   stdout: 'ignore',
+  //   stderr: 'pipe',
+  // },
 });

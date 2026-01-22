@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { DEFAULT_TEST_USER, TEST_USERS } from "./helpers/test-users";
 import { loginViaAPI } from "./helpers/auth";
 import { expectToBeOnLoginPage } from "./helpers/assertions";
 
@@ -14,8 +15,7 @@ import { expectToBeOnLoginPage } from "./helpers/assertions";
  */
 
 test.describe("Main Navigation", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -73,8 +73,7 @@ test.describe("Main Navigation", () => {
 });
 
 test.describe("Breadcrumbs", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -123,8 +122,7 @@ test.describe("Route Protection", () => {
     await expectToBeOnLoginPage(page);
 
     // Login
-    const testEmail = `test-${Date.now()}@example.com`;
-    const testPassword = "TestPassword123!";
+    const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
     await page.fill('input[type="email"]', testEmail);
     await page.fill('input[type="password"]', testPassword);
@@ -136,8 +134,7 @@ test.describe("Route Protection", () => {
 });
 
 test.describe("Deep Linking", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -174,8 +171,7 @@ test.describe("Deep Linking", () => {
 });
 
 test.describe("View Transitions (Astro)", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -210,8 +206,7 @@ test.describe("View Transitions (Astro)", () => {
 });
 
 test.describe("Error Pages", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -236,8 +231,7 @@ test.describe("Error Pages", () => {
 });
 
 test.describe("Company Switcher", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -277,8 +271,7 @@ test.describe("Company Switcher", () => {
 });
 
 test.describe("Mobile Navigation", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);

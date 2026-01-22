@@ -1,5 +1,6 @@
 import { Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
+import { TEST_ENV } from "../playwright.env";
 
 /**
  * E2E Test Authentication Helper
@@ -7,8 +8,8 @@ import { createClient } from "@supabase/supabase-js";
  * Provides utilities for managing authentication in E2E tests
  */
 
-const supabaseUrl = process.env.PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = TEST_ENV.SUPABASE_URL;
+const supabaseAnonKey = TEST_ENV.SUPABASE_ANON_KEY;
 
 export interface TestUser {
   email: string;
@@ -57,40 +58,31 @@ export async function loginViaUI(page: Page, email: string, password: string) {
 
 /**
  * Login via API (faster for setup in tests that don't test auth flow)
- * Sets session cookies directly
+ * Uses the application's login endpoint to properly set session cookies
  */
 export async function loginViaAPI(page: Page, email: string, password: string) {
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  // Go to any page first to establish context
+  await page.goto("/");
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
+  // Call the application's login API endpoint
+  const response = await page.request.post("/api/auth/login", {
+    data: {
+      email,
+      password,
+    },
   });
 
-  if (error) throw error;
-  if (!data.session) throw new Error("Login failed - no session");
+  if (!response.ok()) {
+    const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+    throw new Error(`Login failed: ${errorData.error || response.statusText()}`);
+  }
 
-  // Set session cookies in the browser context
-  await page.context().addCookies([
-    {
-      name: "sb-access-token",
-      value: data.session.access_token,
-      domain: "localhost",
-      path: "/",
-      httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
-    },
-    {
-      name: "sb-refresh-token",
-      value: data.session.refresh_token,
-      domain: "localhost",
-      path: "/",
-      httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
-    },
-  ]);
+  // The cookies are automatically set by the server response
+  // Navigate to a protected page to ensure session is active
+  await page.goto("/scenarios");
+
+  // Wait for page to load and verify we're not redirected to login
+  await page.waitForURL((url) => !url.pathname.includes("/auth/login"), { timeout: 5000 });
 }
 
 /**

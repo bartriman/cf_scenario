@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
+import { createSupabaseServerInstance } from "../../../db/supabase.client";
 
 export const prerender = false;
 
@@ -8,7 +9,7 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const body = await request.json();
 
@@ -25,8 +26,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const { email, password } = validationResult.data;
 
-    // Authenticate user
-    const { data, error } = await locals.supabase.auth.signInWithPassword({
+    // Create Supabase client with cookie support for this request
+    const supabase = createSupabaseServerInstance({
+      headers: request.headers,
+      cookies,
+    });
+
+    // Authenticate user - this will automatically set session cookies via setAll()
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });

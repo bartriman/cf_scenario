@@ -120,6 +120,19 @@ expectAPICall(page, url, method)
 
 ## 🚀 Running Tests
 
+### Quick Start (Zalecane)
+
+```bash
+# 1. Upewnij się, że zmienne środowiskowe są ustawione w .env
+#    PUBLIC_SUPABASE_URL=...
+#    PUBLIC_SUPABASE_ANON_KEY=...
+
+# 2. Uruchom testy - użytkownicy testowi będą utworzeni automatycznie!
+npm run test:e2e
+```
+
+Global setup automatycznie utworzy użytkowników testowych przy pierwszym uruchomieniu.
+
 ### Run all E2E tests
 ```bash
 npm run test:e2e
@@ -152,30 +165,70 @@ npx playwright show-report
 
 ## 📊 Test Data Setup
 
+### Automatyczne tworzenie użytkowników (Zalecane!)
+
+Testy używają **Project Dependencies** (zalecane przez Playwright), który automatycznie tworzy użytkowników testowych:
+
+**Setup (`global.setup.spec.ts`):**
+- Uruchamia się automatycznie przed wszystkimi testami
+- Tworzy 3 użytkowników testowych (jeśli nie istnieją)
+- Każdy użytkownik ma automatycznie utworzoną firmę
+
+**Teardown (`global.teardown.spec.ts`):**
+- Uruchamia się automatycznie po wszystkich testach
+- Czyści dane testowe z bazy (gdy `E2E_CLEANUP=true`)
+- Usuwa scenariusze, transakcje, importy i firmy testowe
+
+```typescript
+// Użytkownicy testowi (utworzeni automatycznie):
+test-user-1@example.com / TestPassword123!
+test-user-2@example.com / TestPassword123!
+test-admin@example.com / TestPassword123!
+```
+
+**Nie musisz nic robić!** Po prostu uruchom testy.
+
+### Ręczne tworzenie (opcjonalne)
+
+Jeśli chcesz ręcznie utworzyć użytkowników, zobacz szczegółowy poradnik:
+📖 **[USER_SETUP.md](./USER_SETUP.md)** - Pełny przewodnik po tworzeniu użytkowników testowych
+
 ### Environment Variables Required
 ```env
 PUBLIC_SUPABASE_URL=your_supabase_url
 PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+
+# Opcjonalne - czyszczenie danych po testach:
+E2E_CLEANUP=true  # Włącz czyszczenie danych po testach (usuwa dane + użytkowników auth)
 ```
 
-### Test User Setup
-Tests require test users to be created. Options:
+### Czyszczenie danych testowych
 
-1. **Global Setup** (recommended)
-   - Create `tests/e2e/global-setup.ts`
-   - Register test users before test run
-   
-2. **Manual Setup**
-   - Create test users in Supabase dashboard
-   - Use consistent email/password in tests
+**Automatyczne czyszczenie** (wymaga `E2E_CLEANUP=true`):
+```bash
+E2E_CLEANUP=true npm run test:e2e
+```
 
-3. **Dynamic Creation**
-   - Use `createTestUser()` helper in `beforeAll` hooks
+Teardown usuwa:
+- ✅ Scenariusze cash flow
+- ✅ Transakcje i override'y
+- ✅ Importy CSV
+- ✅ Firmy testowe
+- ✅ Użytkownicy auth (przez SQL function `delete_test_users`)
 
-### Test Data Cleanup
-- Use `afterEach` or `afterAll` hooks for cleanup
-- Delete test scenarios with `deleteTestScenario()`
-- Delete test companies with `deleteTestCompany()`
+**Ręczne czyszczenie**:
+```bash
+# Uruchom tylko cleanup
+npx playwright test --project=cleanup
+
+# Lub z włączonym czyszczeniem
+E2E_CLEANUP=true npx playwright test --project=cleanup
+
+# Lub bezpośrednio przez SQL
+docker exec supabase_db_10xdev_cf_scenario psql -U postgres -c "DELETE FROM auth.users WHERE email LIKE '%@example.com';"
+```
+
+**Uwaga:** Cleanup usuwa WSZYSTKO (dane + użytkowników). Setup utworzy ich ponownie przy następnym uruchomieniu testów.
 
 ## 🔍 Key Business Rules Tested
 

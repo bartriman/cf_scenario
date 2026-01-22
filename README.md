@@ -48,8 +48,12 @@ npm run build
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Fix ESLint issues
-- `npm run test` - Run unit and integration tests
-- `npm run test:e2e` - Run end-to-end tests
+- `npm run format` - Format code with Prettier
+- `npm run test` - Run unit and integration tests (Vitest)
+- `npm run test:e2e` - Run end-to-end tests (Playwright)
+- `npm run test:e2e:ui` - Run E2E tests in interactive UI mode
+- `npm run test:e2e:headed` - Run E2E tests with visible browser
+- `npm run test:e2e:verify` - Verify E2E test setup and create test users
 
 ## Project Structure
 
@@ -60,9 +64,68 @@ npm run build
 │ ├── pages/ # Astro pages
 │ │ └── api/ # API endpoints
 │ ├── components/ # UI components (Astro & React)
+│ ├── lib/ # Services, utilities, validation
+│ ├── db/ # Supabase client and types
 │ └── assets/ # Static assets
+├── tests/
+│ ├── e2e/ # End-to-end tests (Playwright)
+│ │ ├── helpers/ # Test utilities
+│ │ ├── auth.spec.ts # Authentication tests
+│ │ ├── import-csv.spec.ts # CSV import tests
+│ │ ├── scenarios-crud.spec.ts # Scenario management tests
+│ │ └── ... # More E2E tests
+│ ├── services/ # Service layer tests
+│ └── utils/ # Utility tests
+├── supabase/ # Supabase configuration
+│ └── migrations/ # Database migrations
 ├── public/ # Public assets
+└── playwright.config.ts # E2E test configuration
 ```
+
+## Testing
+
+### Unit & Integration Tests (Vitest)
+
+```bash
+# Run all unit tests
+npm run test
+
+# Run tests in watch mode
+npm run test -- --watch
+
+# Run with coverage
+npm run test -- --coverage
+```
+
+### End-to-End Tests (Playwright)
+
+```bash
+# Quick start - creates test users automatically!
+npm run test:e2e
+
+# Interactive mode (recommended for development)
+npm run test:e2e:ui
+
+# Run with visible browser
+npm run test:e2e:headed
+
+# Verify setup before running tests
+npm run test:e2e:verify
+```
+
+**📚 E2E Test Documentation:**
+- 🚀 [Quick Start Guide](./tests/e2e/QUICKSTART.md) - Get started in 2 minutes
+- 📖 [Full Documentation](./tests/e2e/README.md) - Comprehensive test guide
+- 👥 [User Setup Guide](./tests/e2e/USER_SETUP.md) - Creating test users
+
+**Test Coverage:**
+- ✅ Authentication & Authorization
+- ✅ CSV Import Wizard (4 steps)
+- ✅ Scenario Management (CRUD)
+- ✅ Export & Analytics
+- ✅ Navigation & Route Protection
+
+**~350+ E2E test cases** covering all critical user flows!
 
 ## AI Development Support
 

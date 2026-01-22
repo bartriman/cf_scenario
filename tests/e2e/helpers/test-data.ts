@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../../src/db/database.types";
+import { TEST_ENV } from "../playwright.env";
 
 /**
  * E2E Test Data Helper
@@ -7,8 +8,8 @@ import type { Database } from "../../../src/db/database.types";
  * Utilities for creating and managing test data in E2E tests
  */
 
-const supabaseUrl = process.env.PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = TEST_ENV.SUPABASE_URL;
+const supabaseAnonKey = TEST_ENV.SUPABASE_ANON_KEY;
 
 export interface TestCompany {
   id: string;

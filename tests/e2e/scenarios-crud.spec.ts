@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { DEFAULT_TEST_USER, TEST_USERS } from "./helpers/test-users";
 import { loginViaAPI } from "./helpers/auth";
 import { createTestCompany, deleteTestScenario } from "./helpers/test-data";
 import {
@@ -25,8 +26,7 @@ import {
  */
 
 test.describe("Scenario List & Display", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
   let companyId: string;
 
   test.beforeEach(async ({ page }) => {
@@ -132,8 +132,7 @@ test.describe("Scenario List & Display", () => {
 });
 
 test.describe("Create Scenario - Manual", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -253,8 +252,7 @@ test.describe("Create Scenario - Manual", () => {
 });
 
 test.describe("Scenario Details & Analytics", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -359,8 +357,7 @@ test.describe("Scenario Details & Analytics", () => {
 });
 
 test.describe("Update Scenario & Overrides", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -477,8 +474,7 @@ test.describe("Update Scenario & Overrides", () => {
 });
 
 test.describe("Duplicate Scenario", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -555,8 +551,7 @@ test.describe("Duplicate Scenario", () => {
 });
 
 test.describe("Lock & Unlock Scenario", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
@@ -634,8 +629,7 @@ test.describe("Lock & Unlock Scenario", () => {
 });
 
 test.describe("Delete Scenario (Soft Delete)", () => {
-  const testEmail = `test-${Date.now()}@example.com`;
-  const testPassword = "TestPassword123!";
+  const { email: testEmail, password: testPassword } = DEFAULT_TEST_USER;
 
   test.beforeEach(async ({ page }) => {
     await loginViaAPI(page, testEmail, testPassword);
