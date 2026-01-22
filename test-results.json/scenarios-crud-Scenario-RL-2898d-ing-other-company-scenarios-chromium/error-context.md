@@ -1,0 +1,305 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e7]
+        - paragraph [ref=e9]:
+          - text: You are testing the demo version.
+          - link "Log in" [ref=e10] [cursor=pointer]:
+            - /url: /auth/login
+          - text: or
+          - link "register" [ref=e11] [cursor=pointer]:
+            - /url: /auth/register
+          - text: to work with your own data.
+      - button "Reset demo" [ref=e12]
+    - generic [ref=e14]:
+      - link "CashFlow Scenarios" [ref=e15] [cursor=pointer]:
+        - /url: /
+        - img [ref=e16]
+        - generic [ref=e18]: CashFlow Scenarios
+      - navigation [ref=e19]:
+        - generic [ref=e20]:
+          - link "Log in" [ref=e21] [cursor=pointer]:
+            - /url: /auth/login
+          - link "Register" [ref=e22] [cursor=pointer]:
+            - /url: /auth/register
+  - main [ref=e23]:
+    - main [ref=e24]:
+      - generic [ref=e26]:
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - heading "Demo Scenario - Q1 2026" [level=1] [ref=e30]
+            - paragraph [ref=e31]: Tryb demonstracyjny - wszystkie zmiany zapisywane lokalnie
+          - button "Refresh" [ref=e33]:
+            - img
+            - text: Refresh
+        - generic [ref=e34]:
+          - heading "Running Balance" [level=2] [ref=e36]
+          - generic [ref=e38]:
+            - heading "Weekly Cash Flow" [level=2] [ref=e40]
+            - generic [ref=e42]:
+              - generic [ref=e43]:
+                - generic [ref=e44]:
+                  - generic [ref=e45]: Week 1 (Jan 6-12)
+                  - paragraph [ref=e46]: Jan 6, 2026
+                - generic [ref=e47]:
+                  - generic [ref=e48]:
+                    - generic [ref=e49]:
+                      - generic [ref=e50]:
+                        - img [ref=e51]
+                        - generic [ref=e54]: Inflows
+                      - generic [ref=e55]: 48,500.00
+                    - generic [ref=e56]:
+                      - generic [ref=e58] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e59]:
+                          - img [ref=e60]
+                        - generic [ref=e67]:
+                          - paragraph [ref=e68]: Acme Corporation
+                          - paragraph [ref=e69]: "Invoice #2024-001 - Consulting Services"
+                          - paragraph [ref=e70]: +25,000.00
+                      - generic [ref=e72] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e73]:
+                          - img [ref=e74]
+                        - generic [ref=e81]:
+                          - paragraph [ref=e82]: TechStart Inc.
+                          - paragraph [ref=e83]: Monthly Retainer - January
+                          - paragraph [ref=e84]: +15,000.00
+                      - generic [ref=e86] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e87]:
+                          - img [ref=e88]
+                        - generic [ref=e95]:
+                          - paragraph [ref=e96]: Global Solutions Ltd
+                          - paragraph [ref=e97]: Project Milestone Payment
+                          - paragraph [ref=e98]: +8,500.00
+                  - generic [ref=e99]:
+                    - generic [ref=e100]:
+                      - generic [ref=e101]:
+                        - img [ref=e102]
+                        - generic [ref=e105]: Outflows
+                      - generic [ref=e106]: 27,500.00
+                    - generic [ref=e107]:
+                      - generic [ref=e109] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e110]:
+                          - img [ref=e111]
+                        - generic [ref=e118]:
+                          - paragraph [ref=e119]: Office Supplies Co.
+                          - paragraph [ref=e120]: Equipment Purchase
+                          - paragraph [ref=e121]: "-12,000.00"
+                      - generic [ref=e123] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e124]:
+                          - img [ref=e125]
+                        - generic [ref=e132]:
+                          - paragraph [ref=e133]: Rent Holdings LLC
+                          - paragraph [ref=e134]: Office Rent - January
+                          - paragraph [ref=e135]: "-8,000.00"
+                      - generic [ref=e137] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e138]:
+                          - img [ref=e139]
+                        - generic [ref=e146]:
+                          - paragraph [ref=e147]: Cloud Services Provider
+                          - paragraph [ref=e148]: Monthly Subscription
+                          - paragraph [ref=e149]: "-4,500.00"
+                      - generic [ref=e151] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e152]:
+                          - img [ref=e153]
+                        - generic [ref=e160]:
+                          - paragraph [ref=e161]: Marketing Agency
+                          - paragraph [ref=e162]: Social Media Management
+                          - paragraph [ref=e163]: "-3,000.00"
+              - generic [ref=e164]:
+                - generic [ref=e165]:
+                  - generic [ref=e166]: Week 2 (Jan 13-19)
+                  - paragraph [ref=e167]: Jan 13, 2026
+                - generic [ref=e168]:
+                  - generic [ref=e169]:
+                    - generic [ref=e170]:
+                      - generic [ref=e171]:
+                        - img [ref=e172]
+                        - generic [ref=e175]: Inflows
+                      - generic [ref=e176]: 32,000.00
+                    - generic [ref=e177]:
+                      - generic [ref=e179] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e180]:
+                          - img [ref=e181]
+                        - generic [ref=e188]:
+                          - paragraph [ref=e189]: Enterprise Client XYZ
+                          - paragraph [ref=e190]: Quarterly Payment - Q1
+                          - paragraph [ref=e191]: +18,000.00
+                      - generic [ref=e193] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e194]:
+                          - img [ref=e195]
+                        - generic [ref=e202]:
+                          - paragraph [ref=e203]: Startup Ventures
+                          - paragraph [ref=e204]: Development Services
+                          - paragraph [ref=e205]: +14,000.00
+                  - generic [ref=e206]:
+                    - generic [ref=e207]:
+                      - generic [ref=e208]:
+                        - img [ref=e209]
+                        - generic [ref=e212]: Outflows
+                      - generic [ref=e213]: 38,500.00
+                    - generic [ref=e214]:
+                      - generic [ref=e216] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e217]:
+                          - img [ref=e218]
+                        - generic [ref=e225]:
+                          - paragraph [ref=e226]: Payroll Services Inc.
+                          - paragraph [ref=e227]: Employee Salaries - January
+                          - paragraph [ref=e228]: "-20,000.00"
+                      - generic [ref=e230] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e231]:
+                          - img [ref=e232]
+                        - generic [ref=e239]:
+                          - paragraph [ref=e240]: Insurance Provider
+                          - paragraph [ref=e241]: Business Insurance Premium
+                          - paragraph [ref=e242]: "-9,500.00"
+                      - generic [ref=e244] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e245]:
+                          - img [ref=e246]
+                        - generic [ref=e253]:
+                          - paragraph [ref=e254]: Legal Advisory LLC
+                          - paragraph [ref=e255]: Contract Review Services
+                          - paragraph [ref=e256]: "-6,000.00"
+                      - generic [ref=e258] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e259]:
+                          - img [ref=e260]
+                        - generic [ref=e267]:
+                          - paragraph [ref=e268]: Utilities Company
+                          - paragraph [ref=e269]: Electricity & Internet
+                          - paragraph [ref=e270]: "-3,000.00"
+              - generic [ref=e271]:
+                - generic [ref=e272]:
+                  - generic [ref=e273]: Week 3 (Jan 20-26)
+                  - paragraph [ref=e274]: Jan 20, 2026
+                - generic [ref=e275]:
+                  - generic [ref=e276]:
+                    - generic [ref=e277]:
+                      - generic [ref=e278]:
+                        - img [ref=e279]
+                        - generic [ref=e282]: Inflows
+                      - generic [ref=e283]: 55,000.00
+                    - generic [ref=e284]:
+                      - generic [ref=e286] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e287]:
+                          - img [ref=e288]
+                        - generic [ref=e295]:
+                          - paragraph [ref=e296]: Major Client Corp
+                          - paragraph [ref=e297]: "Invoice #2024-045 - Full Stack Development"
+                          - paragraph [ref=e298]: +30,000.00
+                      - generic [ref=e300] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e301]:
+                          - img [ref=e302]
+                        - generic [ref=e309]:
+                          - paragraph [ref=e310]: TechStart Inc.
+                          - paragraph [ref=e311]: Monthly Retainer - February (Early Payment)
+                          - paragraph [ref=e312]: +15,000.00
+                      - generic [ref=e314] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e315]:
+                          - img [ref=e316]
+                        - generic [ref=e323]:
+                          - paragraph [ref=e324]: E-commerce Platform
+                          - paragraph [ref=e325]: API Integration Services
+                          - paragraph [ref=e326]: +10,000.00
+                  - generic [ref=e327]:
+                    - generic [ref=e328]:
+                      - generic [ref=e329]:
+                        - img [ref=e330]
+                        - generic [ref=e333]: Outflows
+                      - generic [ref=e334]: 21,000.00
+                    - generic [ref=e335]:
+                      - generic [ref=e337] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e338]:
+                          - img [ref=e339]
+                        - generic [ref=e346]:
+                          - paragraph [ref=e347]: Software Licenses Ltd
+                          - paragraph [ref=e348]: Annual Software Licenses
+                          - paragraph [ref=e349]: "-8,500.00"
+                      - generic [ref=e351] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e352]:
+                          - img [ref=e353]
+                        - generic [ref=e360]:
+                          - paragraph [ref=e361]: Professional Training
+                          - paragraph [ref=e362]: Employee Development Program
+                          - paragraph [ref=e363]: "-7,500.00"
+                      - generic [ref=e365] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e366]:
+                          - img [ref=e367]
+                        - generic [ref=e374]:
+                          - paragraph [ref=e375]: Travel Agency
+                          - paragraph [ref=e376]: Client Meeting Expenses
+                          - paragraph [ref=e377]: "-5,000.00"
+              - generic [ref=e378]:
+                - generic [ref=e379]:
+                  - generic [ref=e380]: Week 4 (Jan 27-Feb 2)
+                  - paragraph [ref=e381]: Jan 27, 2026
+                - generic [ref=e382]:
+                  - generic [ref=e383]:
+                    - generic [ref=e384]:
+                      - generic [ref=e385]:
+                        - img [ref=e386]
+                        - generic [ref=e389]: Inflows
+                      - generic [ref=e390]: 28,000.00
+                    - generic [ref=e391]:
+                      - generic [ref=e393] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e394]:
+                          - img [ref=e395]
+                        - generic [ref=e402]:
+                          - paragraph [ref=e403]: Retail Chain Inc.
+                          - paragraph [ref=e404]: POS Integration Project
+                          - paragraph [ref=e405]: +16,000.00
+                      - generic [ref=e407] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e408]:
+                          - img [ref=e409]
+                        - generic [ref=e416]:
+                          - paragraph [ref=e417]: Healthcare Provider
+                          - paragraph [ref=e418]: System Maintenance Fee
+                          - paragraph [ref=e419]: +12,000.00
+                  - generic [ref=e420]:
+                    - generic [ref=e421]:
+                      - generic [ref=e422]:
+                        - img [ref=e423]
+                        - generic [ref=e426]: Outflows
+                      - generic [ref=e427]: 32,000.00
+                    - generic [ref=e428]:
+                      - generic [ref=e430] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e431]:
+                          - img [ref=e432]
+                        - generic [ref=e439]:
+                          - paragraph [ref=e440]: Tax Advisor Services
+                          - paragraph [ref=e441]: Q4 2025 Tax Preparation
+                          - paragraph [ref=e442]: "-15,000.00"
+                      - generic [ref=e444] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e445]:
+                          - img [ref=e446]
+                        - generic [ref=e453]:
+                          - paragraph [ref=e454]: Equipment Rental Co.
+                          - paragraph [ref=e455]: Server Hosting & Infrastructure
+                          - paragraph [ref=e456]: "-9,000.00"
+                      - generic [ref=e458] [cursor=pointer]:
+                        - button "Drag to move transaction" [ref=e459]:
+                          - img [ref=e460]
+                        - generic [ref=e467]:
+                          - paragraph [ref=e468]: Rent Holdings LLC
+                          - paragraph [ref=e469]: Office Rent - February
+                          - paragraph [ref=e470]: "-8,000.00"
+  - generic:
+    - region "Notifications alt+T"
+  - generic [ref=e473]:
+    - button "Menu" [ref=e474]:
+      - img [ref=e476]
+      - generic: Menu
+    - button "Inspect" [ref=e480]:
+      - img [ref=e482]
+      - generic: Inspect
+    - button "Audit" [ref=e484]:
+      - generic [ref=e485]:
+        - img [ref=e486]
+        - img [ref=e489]
+      - generic: Audit
+    - button "Settings" [ref=e492]:
+      - img [ref=e494]
+      - generic: Settings
+```

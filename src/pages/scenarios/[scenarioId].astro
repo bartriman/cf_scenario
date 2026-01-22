@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import ScenarioView from "@/components/scenario/ScenarioView";
+import ScenarioViewWithProvider from "@/components/scenario/ScenarioViewWithProvider";
 
 export const prerender = false;
 
@@ -58,6 +58,11 @@ const baseCurrency = (scenario.companies as unknown as { base_currency: string }
 
 <Layout title={`${scenario.name} - Scenario View`}>
   <main class="min-h-screen w-full bg-background">
-    <ScenarioView client:load scenarioId={scenarioId} companyId={companyId} baseCurrency={baseCurrency} />
+    <ScenarioViewWithProvider
+      client:only="react"
+      scenarioId={scenarioId}
+      companyId={companyId}
+      baseCurrency={baseCurrency}
+    />
   </main>
 </Layout>

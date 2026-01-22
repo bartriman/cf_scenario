@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import { LoginForm } from "@/components/auth/LoginForm";
+import RegisterFormWithProvider from "@/components/auth/RegisterFormWithProvider";
 ---
 
 <Layout title="Register - CashFlow Scenarios">
@@ -11,7 +11,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
         <p class="text-gray-600 dark:text-gray-400">Start managing cash flows</p>
       </div>
 
-      <LoginForm client:load mode="register" />
+      <RegisterFormWithProvider client:only="react" />
     </div>
   </div>
 </Layout>

@@ -15,8 +15,17 @@ interface ScenarioViewProps {
 }
 
 export default function ScenarioView({ scenarioId, companyId, baseCurrency }: ScenarioViewProps) {
-  const { scenario, weeklyAggregates, runningBalance, isLoading, error, refetch, updateTransaction, moveTransaction, isDemoMode } =
-    useScenarioData(scenarioId, companyId);
+  const {
+    scenario,
+    weeklyAggregates,
+    runningBalance,
+    isLoading,
+    error,
+    refetch,
+    updateTransaction,
+    moveTransaction,
+    isDemoMode,
+  } = useScenarioData(scenarioId, companyId);
 
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionVM | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -118,7 +127,9 @@ export default function ScenarioView({ scenarioId, companyId, baseCurrency }: Sc
             )}
           </div>
           <div className="flex items-center gap-2">
-            {!isDemoMode && isLocked && <span className="rounded-md bg-muted px-3 py-1 text-sm font-medium">Locked</span>}
+            {!isDemoMode && isLocked && (
+              <span className="rounded-md bg-muted px-3 py-1 text-sm font-medium">Locked</span>
+            )}
             {!isDemoMode && isLocked && (
               <Button onClick={() => setIsExportDialogOpen(true)} variant="default" size="sm">
                 <Download className="mr-2 h-4 w-4" />

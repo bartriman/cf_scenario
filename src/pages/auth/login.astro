@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import { LoginForm } from "@/components/auth/LoginForm";
+import LoginFormWithProvider from "@/components/auth/LoginFormWithProvider";
 
 // Get redirect URL from query params
 const redirectTo = Astro.url.searchParams.get("redirectTo") || "/scenarios";
@@ -14,7 +14,7 @@ const redirectTo = Astro.url.searchParams.get("redirectTo") || "/scenarios";
         <p class="text-gray-600 dark:text-gray-400">Log in to continue</p>
       </div>
 
-      <LoginForm client:load mode="login" redirectTo={redirectTo} />
+      <LoginFormWithProvider client:only="react" redirectTo={redirectTo} />
     </div>
   </div>
 </Layout>

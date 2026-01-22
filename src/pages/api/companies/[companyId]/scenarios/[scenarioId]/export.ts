@@ -363,11 +363,11 @@ function calculateWeekNumber(dateString: string): string {
   const startOfYear = new Date(year, 0, 1);
   const dayOfYear = Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
   const isoWeek = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
-  
+
   // Format as YYWW
   const yy = year.toString().slice(-2);
   const ww = isoWeek.toString().padStart(2, "0");
-  
+
   return `${yy}${ww}`;
 }
 

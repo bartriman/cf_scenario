@@ -68,7 +68,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(
       JSON.stringify({
         user: data.user,
-        message: "Account created! Check your email inbox and click the verification link to activate your account. The link is valid for 24 hours.",
+        message:
+          "Account created! Check your email inbox and click the verification link to activate your account. The link is valid for 24 hours.",
       }),
       { status: 201, headers: { "Content-Type": "application/json" } }
     );

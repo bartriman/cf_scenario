@@ -14,7 +14,10 @@ export function ValidationStep({ validationResult, onContinueWithErrors, onBack 
   // Obsługa braku danych walidacji
   if (!validationResult) {
     return (
-      <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md" role="alert">
+      <div
+        className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md"
+        role="alert"
+      >
         <p className="text-red-800 dark:text-red-200 font-medium">Error: No validation data</p>
         <p className="text-sm text-red-700 dark:text-red-300 mt-2">
           Cannot display validation results. Please try again or contact the administrator.
@@ -60,8 +63,8 @@ export function ValidationStep({ validationResult, onContinueWithErrors, onBack 
           aria-atomic="true"
         >
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            <strong>Note:</strong> You can continue the import by skipping invalid rows. Only valid rows (
-            {valid_rows}) will be imported.
+            <strong>Note:</strong> You can continue the import by skipping invalid rows. Only valid rows ({valid_rows})
+            will be imported.
           </p>
         </div>
       )}
@@ -75,8 +78,7 @@ export function ValidationStep({ validationResult, onContinueWithErrors, onBack 
           aria-atomic="true"
         >
           <p className="text-sm text-red-800 dark:text-red-200">
-            <strong>Cannot continue:</strong> All rows contain errors. Fix the CSV file and try
-            again.
+            <strong>Cannot continue:</strong> All rows contain errors. Fix the CSV file and try again.
           </p>
         </div>
       )}

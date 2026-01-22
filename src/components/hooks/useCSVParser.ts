@@ -23,7 +23,7 @@ async function decodeCSVFile(file: File): Promise<string> {
 
       // Try UTF-8 first
       let decoded = new TextDecoder("utf-8").decode(arrayBuffer);
-      
+
       // Check for replacement characters (�) which indicate encoding issues
       if (decoded.includes("�") || decoded.includes("\ufffd")) {
         // Try Windows-1250 (ANSI for Central European languages including Polish)

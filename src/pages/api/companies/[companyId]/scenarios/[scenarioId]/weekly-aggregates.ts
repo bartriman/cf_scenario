@@ -65,21 +65,21 @@ export const GET: APIRoute = async ({ params, locals }) => {
     const result = await getWeeklyAggregates(supabase, validatedParams.companyId, validatedParams.scenarioId);
 
     // Debug logging for scenario and weeks
-    console.log('[weekly-aggregates] Scenario weeks:', {
+    console.log("[weekly-aggregates] Scenario weeks:", {
       scenarioId: validatedParams.scenarioId,
       totalWeeks: result.weeks.length,
-      weeks: result.weeks.map(w => ({
+      weeks: result.weeks.map((w) => ({
         index: w.week_index,
         label: w.week_label,
         start: w.week_start_date,
         inflowCount: w.inflow_top5.length,
         outflowCount: w.outflow_top5.length,
-      }))
+      })),
     });
 
     // Debug logging for last week
     const lastWeek = result.weeks[result.weeks.length - 1];
-    console.log('[weekly-aggregates] Last week data:', {
+    console.log("[weekly-aggregates] Last week data:", {
       scenarioId: validatedParams.scenarioId,
       lastWeekIndex: lastWeek?.week_index,
       lastWeekLabel: lastWeek?.week_label,

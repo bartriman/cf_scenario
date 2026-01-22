@@ -1,0 +1,60 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - link "CashFlow Scenarios" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img [ref=e6]
+        - generic [ref=e8]: CashFlow Scenarios
+      - navigation [ref=e9]:
+        - button "T test-user-1@example.com" [ref=e11]:
+          - generic [ref=e13]: T
+          - generic [ref=e14]: test-user-1@example.com
+          - img [ref=e15]
+  - main [ref=e17]:
+    - main [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e21]:
+          - generic [ref=e22]:
+            - generic [ref=e23]:
+              - heading "My Scenarios" [level=1] [ref=e24]
+              - paragraph [ref=e25]: Manage your cash flow scenarios
+            - generic [ref=e26]:
+              - link "Import data" [ref=e27] [cursor=pointer]:
+                - /url: /import
+                - img
+                - text: Import data
+              - button "New scenario" [ref=e28]:
+                - img
+                - text: New scenario
+          - generic [ref=e29]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - textbox "Search scenarios..." [ref=e34]
+            - combobox [ref=e35]:
+              - generic: All
+              - img
+        - generic [ref=e103]:
+          - img [ref=e105]
+          - button "Open Tanstack query devtools" [ref=e153] [cursor=pointer]:
+            - img [ref=e154]
+  - generic:
+    - region "Notifications alt+T"
+  - generic [ref=e204]:
+    - button "Menu" [ref=e205]:
+      - img [ref=e207]
+      - generic: Menu
+    - button "Inspect" [ref=e211]:
+      - img [ref=e213]
+      - generic: Inspect
+    - button "Audit" [ref=e215]:
+      - generic [ref=e216]:
+        - img [ref=e217]
+        - img [ref=e220]
+      - generic: Audit
+    - button "Settings" [ref=e223]:
+      - img [ref=e225]
+      - generic: Settings
+```

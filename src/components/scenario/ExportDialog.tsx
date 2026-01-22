@@ -48,17 +48,15 @@ export function ExportDialog({ companyId, scenario, open, onOpenChange }: Export
             Export scenario: {scenario.name}
           </DialogTitle>
           <DialogDescription>
-            {isLocked
-              ? "Download scenario data in Excel format (.xlsx)"
-              : "Only locked scenarios can be exported"}
+            {isLocked ? "Download scenario data in Excel format (.xlsx)" : "Only locked scenarios can be exported"}
           </DialogDescription>
         </DialogHeader>
 
         {!isLocked ? (
           <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4">
             <p className="text-sm text-yellow-800">
-              This scenario has <strong>Draft</strong> status. To export the scenario, first lock it
-              using the <strong>Lock</strong> option in the actions menu.
+              This scenario has <strong>Draft</strong> status. To export the scenario, first lock it using the{" "}
+              <strong>Lock</strong> option in the actions menu.
             </p>
           </div>
         ) : (

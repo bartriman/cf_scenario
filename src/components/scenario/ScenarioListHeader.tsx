@@ -26,7 +26,7 @@ export function ScenarioListHeader({ onCreateClick, onFilterChange, onSearchChan
               Import data
             </a>
           </Button>
-          
+
           <Button onClick={onCreateClick}>
             <Plus className="mr-2 h-4 w-4" />
             New scenario

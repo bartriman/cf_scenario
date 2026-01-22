@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useScenarios } from "@/components/hooks/useScenarios";
+import { useDialogState } from "@/components/hooks/useDialogState";
 import { ScenarioListHeader } from "./ScenarioListHeader";
 import { ScenarioGrid } from "./ScenarioGrid";
 import { CreateScenarioDialog } from "./CreateScenarioDialog";
@@ -22,12 +23,10 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
   const [statusFilter, setStatusFilter] = useState<ScenarioFilterStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Stany dialogów
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
-  const [exportDialogOpen, setExportDialogOpen] = useState(false);
-  const [scenarioToDuplicate, setScenarioToDuplicate] = useState<ScenarioListItemDTO | null>(null);
-  const [scenarioToExport, setScenarioToExport] = useState<ScenarioListItemDTO | null>(null);
+  // Dialogi zarządzane przez useDialogState
+  const createDialog = useDialogState();
+  const duplicateDialog = useDialogState<ScenarioListItemDTO>();
+  const exportDialog = useDialogState<ScenarioListItemDTO>();
 
   // Initial fetch
   useEffect(() => {
@@ -63,16 +62,20 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
   }, []);
 
   // Handler dla duplikacji
-  const handleDuplicateClick = useCallback((scenario: ScenarioListItemDTO) => {
-    setScenarioToDuplicate(scenario);
-    setDuplicateDialogOpen(true);
-  }, []);
+  const handleDuplicateClick = useCallback(
+    (scenario: ScenarioListItemDTO) => {
+      duplicateDialog.open(scenario);
+    },
+    [duplicateDialog]
+  );
 
   // Handler dla eksportu
-  const handleExportClick = useCallback((scenario: ScenarioListItemDTO) => {
-    setScenarioToExport(scenario);
-    setExportDialogOpen(true);
-  }, []);
+  const handleExportClick = useCallback(
+    (scenario: ScenarioListItemDTO) => {
+      exportDialog.open(scenario);
+    },
+    [exportDialog]
+  );
 
   // Handler po pomyślnym utworzeniu scenariusza
   const handleCreateSuccess = useCallback(() => {
@@ -187,7 +190,7 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
   return (
     <div className="container mx-auto py-8">
       <ScenarioListHeader
-        onCreateClick={() => setCreateDialogOpen(true)}
+        onCreateClick={createDialog.open}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
       />
@@ -200,35 +203,29 @@ export function ScenarioListContainer({ companyId, initialScenarios = [] }: Scen
         onLockClick={handleLockClick}
         onDeleteClick={handleDeleteClick}
         onExportClick={handleExportClick}
-        onCreateClick={() => setCreateDialogOpen(true)}
+        onCreateClick={createDialog.open}
       />
 
       <CreateScenarioDialog
         companyId={companyId}
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
+        open={createDialog.isOpen}
+        onOpenChange={createDialog.close}
         onSuccess={handleCreateSuccess}
       />
 
       <DuplicateScenarioDialog
         companyId={companyId}
-        sourceScenario={scenarioToDuplicate}
-        open={duplicateDialogOpen}
-        onOpenChange={(open) => {
-          setDuplicateDialogOpen(open);
-          if (!open) setScenarioToDuplicate(null);
-        }}
+        sourceScenario={duplicateDialog.data}
+        open={duplicateDialog.isOpen}
+        onOpenChange={duplicateDialog.close}
         onSuccess={handleDuplicateSuccess}
       />
 
       <ExportDialog
         companyId={companyId}
-        scenario={scenarioToExport}
-        open={exportDialogOpen}
-        onOpenChange={(open) => {
-          setExportDialogOpen(open);
-          if (!open) setScenarioToExport(null);
-        }}
+        scenario={exportDialog.data}
+        open={exportDialog.isOpen}
+        onOpenChange={exportDialog.close}
       />
     </div>
   );

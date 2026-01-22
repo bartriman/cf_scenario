@@ -12,10 +12,10 @@ export function DownloadErrorReportButton({ errors, fileName = "import-errors.cs
       // Generowanie CSV z błędami
       const headers = ["Row Number", "Column", "Value", "Error Message", "Error Code"];
       const rows = errors.map((error) => [
-        error.row_number || 'N/A',
-        error.field_name || 'Unknown',
-        `"${(error.invalid_value || '').replace(/"/g, '""')}"`, // Escape quotes
-        `"${(error.error_message || 'Unknown error').replace(/"/g, '""')}"`,
+        error.row_number || "N/A",
+        error.field_name || "Unknown",
+        `"${(error.invalid_value || "").replace(/"/g, '""')}"`, // Escape quotes
+        `"${(error.error_message || "Unknown error").replace(/"/g, '""')}"`,
         error.error_code || "",
       ]);
 
@@ -36,8 +36,8 @@ export function DownloadErrorReportButton({ errors, fileName = "import-errors.cs
 
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error generating CSV report:', error);
-      alert('Failed to generate error report. Please try again.');
+      console.error("Error generating CSV report:", error);
+      alert("Failed to generate error report. Please try again.");
     }
   };
 

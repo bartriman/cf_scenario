@@ -1,0 +1,75 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e7]
+        - paragraph [ref=e9]:
+          - text: You are testing the demo version.
+          - link "Log in" [ref=e10] [cursor=pointer]:
+            - /url: /auth/login
+          - text: or
+          - link "register" [ref=e11] [cursor=pointer]:
+            - /url: /auth/register
+          - text: to work with your own data.
+      - button "Reset demo" [ref=e12]
+    - generic [ref=e14]:
+      - link "CashFlow Scenarios" [ref=e15] [cursor=pointer]:
+        - /url: /
+        - img [ref=e16]
+        - generic [ref=e18]: CashFlow Scenarios
+      - navigation [ref=e19]:
+        - generic [ref=e20]:
+          - link "Log in" [ref=e21] [cursor=pointer]:
+            - /url: /auth/login
+          - link "Register" [ref=e22] [cursor=pointer]:
+            - /url: /auth/register
+  - main [ref=e23]:
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - heading "Welcome back" [level=1] [ref=e27]
+        - paragraph [ref=e28]: Log in to continue
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - generic [ref=e33]: Log in
+          - generic [ref=e34]: Enter your credentials to access your account
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37]: Email address
+            - textbox "Email address" [ref=e38]:
+              - /placeholder: your@email.com
+          - generic [ref=e39]:
+            - generic [ref=e40]: Password
+            - textbox "Password" [ref=e41]:
+              - /placeholder: ••••••••
+        - generic [ref=e42]:
+          - button "Log in" [ref=e43]
+          - generic [ref=e44]:
+            - generic [ref=e45]:
+              - generic [ref=e46]: Don't have an account?
+              - link "Register" [ref=e47] [cursor=pointer]:
+                - /url: /auth/register
+            - generic [ref=e48]:
+              - generic [ref=e49]: Forgot password?
+              - link "Reset password" [ref=e50] [cursor=pointer]:
+                - /url: /auth/forgot-password
+  - generic:
+    - region "Notifications alt+T"
+  - generic [ref=e53]:
+    - button "Menu" [ref=e54]:
+      - img [ref=e56]
+      - generic: Menu
+    - button "Inspect" [ref=e60]:
+      - img [ref=e62]
+      - generic: Inspect
+    - button "Audit" [ref=e64]:
+      - generic [ref=e65]:
+        - img [ref=e66]
+        - img [ref=e69]
+      - generic: Audit
+    - button "Settings" [ref=e72]:
+      - img [ref=e74]
+      - generic: Settings
+```

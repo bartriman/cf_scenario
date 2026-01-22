@@ -1,0 +1,121 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - banner:
+    - generic:
+      - generic:
+        - link:
+          - /url: /
+          - img
+          - generic: CashFlow Scenarios
+        - navigation:
+          - generic:
+            - button:
+              - generic:
+                - generic: T
+              - generic: test-user-1@example.com
+              - img
+  - main:
+    - main:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - heading [level=1]: My Scenarios
+                - paragraph: Manage your cash flow scenarios
+              - generic:
+                - link:
+                  - /url: /import
+                  - img
+                  - text: Import data
+                - button:
+                  - img
+                  - text: New scenario
+            - generic:
+              - generic:
+                - img
+                - textbox:
+                  - /placeholder: Search scenarios...
+              - combobox:
+                - generic: All
+                - img
+          - generic:
+            - generic:
+              - img
+            - heading [level=3]: No scenarios
+            - paragraph: Start by importing data or creating a new scenario to manage your cash flows.
+            - generic:
+              - link:
+                - /url: /import
+                - img
+                - text: Import data
+              - button:
+                - img
+                - text: Create scenario
+        - generic:
+          - generic:
+            - img
+          - button:
+            - img
+  - generic:
+    - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - button [ref=e4]:
+      - img [ref=e6]
+      - generic: Menu
+    - button [ref=e10]:
+      - img [ref=e12]
+      - generic: Inspect
+    - button [ref=e14]:
+      - generic [ref=e15]:
+        - img [ref=e16]
+        - img [ref=e19]
+      - generic: Audit
+    - button [ref=e22]:
+      - img [ref=e24]
+      - generic: Settings
+  - dialog "Create New Scenario" [ref=e28]:
+    - generic [ref=e29]:
+      - heading "Create New Scenario" [level=2] [ref=e30]
+      - paragraph [ref=e31]: Create an empty scenario or based on an existing import
+    - generic [ref=e32]:
+      - tablist [ref=e33]:
+        - tab "Blank scenario" [selected] [ref=e34]
+        - tab "Z importu" [ref=e35]
+      - tabpanel "Blank scenario" [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - text: Scenario name
+              - generic [ref=e40]: "*"
+            - textbox "Scenario name *" [ref=e41]:
+              - /placeholder: e.g. Q1 2026 Plan
+              - text: Invalid Date Range
+          - generic [ref=e42]:
+            - generic [ref=e43]:
+              - text: Dataset code
+              - generic [ref=e44]: "*"
+            - textbox "Dataset code *" [active] [ref=e45]:
+              - /placeholder: e.g. DS-2026-Q1
+            - paragraph [ref=e46]: Dataset code is required
+            - paragraph [ref=e47]: Only letters, numbers, hyphens and underscores
+          - generic [ref=e48]:
+            - generic [ref=e49]:
+              - generic [ref=e50]:
+                - text: Start date
+                - generic [ref=e51]: "*"
+              - textbox "Start date *" [ref=e52]: 2024-12-31
+            - generic [ref=e53]:
+              - generic [ref=e54]:
+                - text: End date
+                - generic [ref=e55]: "*"
+              - textbox "End date *" [ref=e56]: 2024-01-01
+          - generic [ref=e57]:
+            - button "Cancel" [ref=e58]
+            - button "Create scenario" [ref=e59]
+    - button "Close" [ref=e60]:
+      - img
+      - generic [ref=e61]: Close
+```

@@ -56,11 +56,16 @@ export function RunningBalanceChart({ data, baseCurrency }: RunningBalanceChartP
             });
           }}
         />
-        <YAxis 
-          className="text-xs" 
-          tick={{ fill: mutedForegroundColor }} 
+        <YAxis
+          className="text-xs"
+          tick={{ fill: mutedForegroundColor }}
           tickFormatter={formatYAxis}
-          label={{ value: "(w wal. ks.)", angle: -90, position: "insideLeft", style: { textAnchor: "middle", fill: mutedForegroundColor } }}
+          label={{
+            value: "(w wal. ks.)",
+            angle: -90,
+            position: "insideLeft",
+            style: { textAnchor: "middle", fill: mutedForegroundColor },
+          }}
         />
         <Tooltip content={<CustomTooltip />} />
         <Line

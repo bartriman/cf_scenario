@@ -38,12 +38,7 @@ export function DuplicateScenarioForm({
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="duplicate-name">New scenario name</Label>
-        <Input
-          id="duplicate-name"
-          {...register("name")}
-          disabled={isSubmitting}
-          placeholder="Enter scenario name"
-        />
+        <Input id="duplicate-name" {...register("name")} disabled={isSubmitting} placeholder="Enter scenario name" />
         {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
       </div>
 

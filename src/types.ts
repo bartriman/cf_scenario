@@ -989,15 +989,15 @@ export interface ImportWizardState {
 
 // Mapowanie kolumn CSV na pola systemowe
 export interface ColumnMapping {
-  date_due: string | null;       // WYMAGANE
-  amount: string | null;          // WYMAGANE
-  direction: string | null;       // WYMAGANE
-  currency: string | null;        // WYMAGANE
-  flow_id?: string | null;        // opcjonalne
-  counterparty?: string | null;   // opcjonalne
-  description?: string | null;    // opcjonalne
-  project?: string | null;        // opcjonalne
-  document?: string | null;       // opcjonalne
+  date_due: string | null; // WYMAGANE
+  amount: string | null; // WYMAGANE
+  direction: string | null; // WYMAGANE
+  currency: string | null; // WYMAGANE
+  flow_id?: string | null; // opcjonalne
+  counterparty?: string | null; // opcjonalne
+  description?: string | null; // opcjonalne
+  project?: string | null; // opcjonalne
+  document?: string | null; // opcjonalne
   payment_source?: string | null; // opcjonalne
 }
 
@@ -1016,7 +1016,7 @@ export interface ValidationResult {
   valid_rows: number;
   invalid_rows: number;
   errors: ValidationError[];
-  status: 'success' | 'warning' | 'error';
+  status: "success" | "warning" | "error";
 }
 
 // Pojedynczy błąd walidacji
@@ -1030,13 +1030,13 @@ export interface ValidationError {
 
 // Kody błędów walidacji
 export enum ValidationErrorCode {
-  REQUIRED_FIELD_MISSING = 'REQUIRED_FIELD_MISSING',
-  INVALID_DATE_FORMAT = 'INVALID_DATE_FORMAT',
-  INVALID_AMOUNT_FORMAT = 'INVALID_AMOUNT_FORMAT',
-  INVALID_DIRECTION = 'INVALID_DIRECTION',
-  INVALID_CURRENCY_CODE = 'INVALID_CURRENCY_CODE',
-  NEGATIVE_AMOUNT = 'NEGATIVE_AMOUNT',
-  DUPLICATE_FLOW_ID = 'DUPLICATE_FLOW_ID',
+  REQUIRED_FIELD_MISSING = "REQUIRED_FIELD_MISSING",
+  INVALID_DATE_FORMAT = "INVALID_DATE_FORMAT",
+  INVALID_AMOUNT_FORMAT = "INVALID_AMOUNT_FORMAT",
+  INVALID_DIRECTION = "INVALID_DIRECTION",
+  INVALID_CURRENCY_CODE = "INVALID_CURRENCY_CODE",
+  NEGATIVE_AMOUNT = "NEGATIVE_AMOUNT",
+  DUPLICATE_FLOW_ID = "DUPLICATE_FLOW_ID",
 }
 
 // Stan uploadu pliku
@@ -1059,7 +1059,7 @@ export interface MappingState {
 export interface ValidationState {
   isValidating: boolean;
   result: ValidationResult | null;
-  selectedAction: 'continue' | 'back' | null;
+  selectedAction: "continue" | "back" | null;
 }
 
 // Stan przetwarzania
@@ -1118,11 +1118,11 @@ export interface ScenarioCardViewModel extends ScenarioListItemDTO {
   canEdit: boolean; // true jeśli status === "Draft"
   canDelete: boolean; // true - sprawdzane przez API
   formattedCreatedAt: string; // np. "2 dni temu"
-  statusBadgeVariant: 'default' | 'secondary'; // dla Badge component
+  statusBadgeVariant: "default" | "secondary"; // dla Badge component
 }
 
 // Typ dla filtrów listy scenariuszy
-export type ScenarioFilterStatus = ScenarioStatusType | 'all';
+export type ScenarioFilterStatus = ScenarioStatusType | "all";
 
 export interface ScenarioListFilters {
   status: ScenarioFilterStatus;

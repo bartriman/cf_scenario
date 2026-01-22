@@ -1,0 +1,48 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e7]
+        - paragraph [ref=e9]:
+          - text: You are testing the demo version.
+          - link "Log in" [ref=e10] [cursor=pointer]:
+            - /url: /auth/login
+          - text: or
+          - link "register" [ref=e11] [cursor=pointer]:
+            - /url: /auth/register
+          - text: to work with your own data.
+      - button "Reset demo" [ref=e12]
+    - generic [ref=e14]:
+      - link "CashFlow Scenarios" [ref=e15] [cursor=pointer]:
+        - /url: /
+        - img [ref=e16]
+        - generic [ref=e18]: CashFlow Scenarios
+      - navigation [ref=e19]:
+        - generic [ref=e20]:
+          - link "Log in" [ref=e21] [cursor=pointer]:
+            - /url: /auth/login
+          - link "Register" [ref=e22] [cursor=pointer]:
+            - /url: /auth/register
+  - main [ref=e23]:
+    - generic [ref=e26]:
+      - heading "Welcome back" [level=1] [ref=e27]
+      - paragraph [ref=e28]: Log in to continue
+  - generic:
+    - region "Notifications alt+T"
+  - generic [ref=e31]:
+    - button "Menu" [ref=e32]:
+      - img [ref=e34]
+      - generic: Menu
+    - button "Inspect" [ref=e38]:
+      - img [ref=e40]
+      - generic: Inspect
+    - button "Audit" [ref=e42]:
+      - img [ref=e44]
+      - generic: Audit
+    - button "Settings" [ref=e47]:
+      - img [ref=e49]
+      - generic: Settings
+```

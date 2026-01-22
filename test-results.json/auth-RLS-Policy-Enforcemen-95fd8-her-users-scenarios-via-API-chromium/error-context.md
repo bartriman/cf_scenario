@@ -1,0 +1,68 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - link "CashFlow Scenarios" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img [ref=e6]
+        - generic [ref=e8]: CashFlow Scenarios
+      - navigation [ref=e9]:
+        - button "T test-user-1@example.com" [ref=e11]:
+          - generic [ref=e13]: T
+          - generic [ref=e14]: test-user-1@example.com
+          - img [ref=e15]
+  - main [ref=e17]:
+    - main [ref=e18]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]:
+            - generic [ref=e23]:
+              - heading "My Scenarios" [level=1] [ref=e24]
+              - paragraph [ref=e25]: Manage your cash flow scenarios
+            - generic [ref=e26]:
+              - link "Import data" [ref=e27] [cursor=pointer]:
+                - /url: /import
+                - img
+                - text: Import data
+              - button "New scenario" [ref=e28]:
+                - img
+                - text: New scenario
+          - generic [ref=e29]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - textbox "Search scenarios..." [ref=e34]
+            - combobox [ref=e35]:
+              - img
+            - combobox [ref=e36]
+        - generic [ref=e37]:
+          - img [ref=e39]
+          - heading "No scenarios" [level=3] [ref=e44]
+          - paragraph [ref=e45]: Start by importing data or creating a new scenario to manage your cash flows.
+          - generic [ref=e46]:
+            - link "Import data" [ref=e47] [cursor=pointer]:
+              - /url: /import
+              - img
+              - text: Import data
+            - button "Create scenario" [ref=e48]:
+              - img
+              - text: Create scenario
+  - generic:
+    - region "Notifications alt+T"
+  - generic [ref=e51]:
+    - button "Menu" [ref=e52]:
+      - img [ref=e54]
+      - generic: Menu
+    - button "Inspect" [ref=e58]:
+      - img [ref=e60]
+      - generic: Inspect
+    - button "Audit" [ref=e62]:
+      - generic [ref=e63]:
+        - img [ref=e64]
+        - img [ref=e67]
+      - generic: Audit
+    - button "Settings" [ref=e70]:
+      - img [ref=e72]
+      - generic: Settings
+```

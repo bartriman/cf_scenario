@@ -12,7 +12,7 @@ interface WeekCardProps {
 
 export function WeekCard({ week, onTransactionClick, isLocked }: WeekCardProps) {
   const isInitialBalance = week.week_index === 0;
-  
+
   const { setNodeRef, isOver } = useDroppable({
     id: `week-${week.week_index}`,
     disabled: isLocked || isInitialBalance, // Disable drop for IB week
@@ -30,12 +30,12 @@ export function WeekCard({ week, onTransactionClick, isLocked }: WeekCardProps) 
       total_transactions: week.transactions.length,
       inflows: inflowTransactions.length,
       outflows: outflowTransactions.length,
-      transactions: week.transactions.map(t => ({
+      transactions: week.transactions.map((t) => ({
         id: t.id,
         direction: t.direction,
         counterparty: t.counterparty,
-        amount: t.amount_book_cents / 100
-      }))
+        amount: t.amount_book_cents / 100,
+      })),
     });
   }
 
@@ -52,9 +52,7 @@ export function WeekCard({ week, onTransactionClick, isLocked }: WeekCardProps) 
       ref={setNodeRef}
       data-week-index={week.week_index}
       className={`w-80 flex-shrink-0 snap-center transition-colors ${
-        isInitialBalance 
-          ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/20" 
-          : ""
+        isInitialBalance ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/20" : ""
       } ${isOver ? "ring-2 ring-primary" : ""}`}
     >
       <CardHeader className="pb-3">

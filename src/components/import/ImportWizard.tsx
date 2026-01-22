@@ -148,9 +148,7 @@ export default function ImportWizard({ companyId, onCancel }: ImportWizardProps)
           return (
             <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md">
               <p className="text-red-800 dark:text-red-200 font-medium">Error: No validation data</p>
-              <p className="text-sm text-red-700 dark:text-red-300 mt-2">
-                Go back to the previous step and try again.
-              </p>
+              <p className="text-sm text-red-700 dark:text-red-300 mt-2">Go back to the previous step and try again.</p>
             </div>
           );
         }

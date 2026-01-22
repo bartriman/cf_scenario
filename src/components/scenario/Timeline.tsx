@@ -59,26 +59,28 @@ export function Timeline({ weeklyAggregates, onTransactionDrop, onTransactionCli
     const weekIndex = parseInt(weekDroppableId.replace("week-", ""), 10);
     const targetWeek = weeklyAggregates.find((w) => w.week_index === weekIndex);
 
-    console.log('[Timeline] handleDragEnd:', {
+    console.log("[Timeline] handleDragEnd:", {
       transactionId,
       weekDroppableId,
       weekIndex,
-      targetWeek: targetWeek ? {
-        index: targetWeek.week_index,
-        label: targetWeek.week_label,
-        start_date: targetWeek.week_start_date
-      } : null
+      targetWeek: targetWeek
+        ? {
+            index: targetWeek.week_index,
+            label: targetWeek.week_label,
+            start_date: targetWeek.week_start_date,
+          }
+        : null,
     });
 
     if (!targetWeek || !targetWeek.week_start_date) {
-      console.error('[Timeline] Target week not found or missing start_date:', {
+      console.error("[Timeline] Target week not found or missing start_date:", {
         targetWeek,
         weekIndex,
-        availableWeeks: weeklyAggregates.map(w => ({
+        availableWeeks: weeklyAggregates.map((w) => ({
           index: w.week_index,
           label: w.week_label,
-          start_date: w.week_start_date
-        }))
+          start_date: w.week_start_date,
+        })),
       });
       return;
     }
@@ -97,20 +99,19 @@ export function Timeline({ weeklyAggregates, onTransactionDrop, onTransactionCli
     if (sourceWeekStartDate !== targetWeek.week_start_date) {
       // Use the date from the first transaction in the target week instead of week_start_date
       // This ensures the transaction goes to the correct week based on how weekly_aggregates_v calculates week_index
-      const targetDate = targetWeek.transactions.length > 0 
-        ? targetWeek.transactions[0].date_due 
-        : targetWeek.week_start_date;
-      
-      console.log('[Timeline] Moving transaction:', {
+      const targetDate =
+        targetWeek.transactions.length > 0 ? targetWeek.transactions[0].date_due : targetWeek.week_start_date;
+
+      console.log("[Timeline] Moving transaction:", {
         transactionId,
         from: sourceWeekStartDate,
         to: targetDate,
         targetWeekStartDate: targetWeek.week_start_date,
-        usingTransactionDate: targetWeek.transactions.length > 0
+        usingTransactionDate: targetWeek.transactions.length > 0,
       });
       onTransactionDrop(transactionId, targetDate);
     } else {
-      console.log('[Timeline] Same week - no move needed');
+      console.log("[Timeline] Same week - no move needed");
     }
   };
 

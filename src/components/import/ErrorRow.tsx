@@ -5,10 +5,10 @@ interface ErrorRowProps {
 }
 
 export function ErrorRow({ error }: ErrorRowProps) {
-  const rowNumber = error.row_number || 'N/A';
-  const fieldName = error.field_name || 'Unknown';
-  const invalidValue = error.invalid_value || '';
-  const errorMessage = error.error_message || 'Unknown error';
+  const rowNumber = error.row_number || "N/A";
+  const fieldName = error.field_name || "Unknown";
+  const invalidValue = error.invalid_value || "";
+  const errorMessage = error.error_message || "Unknown error";
 
   return (
     <tr className="border-b last:border-b-0 hover:bg-muted/50 transition-colors" role="row">
@@ -18,7 +18,7 @@ export function ErrorRow({ error }: ErrorRowProps) {
       <td className="px-4 py-3 text-sm font-medium" role="cell">
         {fieldName}
       </td>
-      <td className="px-4 py-3 text-sm max-w-xs truncate" title={invalidValue || 'No value'} role="cell">
+      <td className="px-4 py-3 text-sm max-w-xs truncate" title={invalidValue || "No value"} role="cell">
         {invalidValue ? (
           <span className="text-foreground">{invalidValue}</span>
         ) : (

@@ -1,0 +1,82 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e7]
+        - paragraph [ref=e9]:
+          - text: You are testing the demo version.
+          - link "Log in" [ref=e10] [cursor=pointer]:
+            - /url: /auth/login
+          - text: or
+          - link "register" [ref=e11] [cursor=pointer]:
+            - /url: /auth/register
+          - text: to work with your own data.
+      - button "Reset demo" [ref=e12]
+    - generic [ref=e14]:
+      - link "CashFlow Scenarios" [ref=e15] [cursor=pointer]:
+        - /url: /
+        - img [ref=e16]
+        - generic [ref=e18]: CashFlow Scenarios
+      - navigation [ref=e19]:
+        - generic [ref=e20]:
+          - link "Log in" [ref=e21] [cursor=pointer]:
+            - /url: /auth/login
+          - link "Register" [ref=e22] [cursor=pointer]:
+            - /url: /auth/register
+  - main [ref=e23]:
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - heading "Welcome back" [level=1] [ref=e27]
+        - paragraph [ref=e28]: Log in to continue
+      - generic [ref=e29]:
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - generic [ref=e33]: Log in
+            - generic [ref=e34]: Enter your credentials to access your account
+          - generic [ref=e35]:
+            - generic [ref=e36]:
+              - generic [ref=e37]: Email address
+              - textbox "Email address" [ref=e38]:
+                - /placeholder: your@email.com
+                - text: wrong@example.com
+            - generic [ref=e39]:
+              - generic [ref=e40]: Password
+              - textbox "Password" [ref=e41]:
+                - /placeholder: ••••••••
+                - text: wrongpassword
+          - generic [ref=e42]:
+            - button "Log in" [ref=e43]
+            - generic [ref=e44]:
+              - generic [ref=e45]:
+                - text: Don't have an account?
+                - link "Register" [ref=e46] [cursor=pointer]:
+                  - /url: /auth/register
+              - generic [ref=e47]:
+                - text: Forgot password?
+                - link "Reset password" [ref=e48] [cursor=pointer]:
+                  - /url: /auth/forgot-password
+        - generic [ref=e49]:
+          - img [ref=e51]
+          - button "Open Tanstack query devtools" [ref=e99] [cursor=pointer]:
+            - img [ref=e100]
+  - generic:
+    - region "Notifications alt+T"
+  - generic [ref=e150]:
+    - button "Menu" [ref=e151]:
+      - img [ref=e153]
+      - generic: Menu
+    - button "Inspect" [ref=e157]:
+      - img [ref=e159]
+      - generic: Inspect
+    - button "Audit" [ref=e161]:
+      - generic [ref=e162]:
+        - img [ref=e163]
+        - img [ref=e166]
+      - generic: Audit
+    - button "Settings" [ref=e169]:
+      - img [ref=e171]
+      - generic: Settings
+```

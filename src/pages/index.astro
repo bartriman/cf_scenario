@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import ScenarioView from "../components/scenario/ScenarioView";
+import ScenarioViewWithProvider from "../components/scenario/ScenarioViewWithProvider";
 
 export const prerender = false;
 
@@ -18,6 +18,6 @@ const DEMO_BASE_CURRENCY = "USD";
 
 <Layout title="Demo - CashFlow Scenarios">
   <main class="h-screen w-full overflow-hidden bg-background">
-    <ScenarioView client:load baseCurrency={DEMO_BASE_CURRENCY} />
+    <ScenarioViewWithProvider client:only="react" baseCurrency={DEMO_BASE_CURRENCY} />
   </main>
 </Layout>

@@ -588,7 +588,7 @@ export async function deleteScenario(
 ): Promise<void> {
   try {
     console.log(`[deleteScenario] Starting deletion for scenario ${scenarioId} in company ${companyId}`);
-    
+
     // Step 1: Verify user has access to this company
     const {
       data: { user },
@@ -664,11 +664,10 @@ export async function deleteScenario(
     console.log("[deleteScenario] No dependent scenarios found");
 
     // Step 4: Soft delete the scenario using RPC function to bypass RLS issues
-    const { data: deleted, error: deleteError } = await supabase
-      .rpc("soft_delete_scenario", {
-        p_scenario_id: scenarioId,
-        p_user_id: user.id,
-      });
+    const { data: deleted, error: deleteError } = await supabase.rpc("soft_delete_scenario", {
+      p_scenario_id: scenarioId,
+      p_user_id: user.id,
+    });
 
     if (deleteError) {
       console.error("[deleteScenario] Delete error:", deleteError);
@@ -999,11 +998,7 @@ export async function createScenarioFromImport(
       created_at: newScenario.created_at,
     };
   } catch (error) {
-    if (
-      error instanceof ForbiddenError ||
-      error instanceof DatabaseError ||
-      error instanceof ValidationError
-    ) {
+    if (error instanceof ForbiddenError || error instanceof DatabaseError || error instanceof ValidationError) {
       throw error;
     }
     console.error("[createScenarioFromImport] Unexpected error:", error);
@@ -1176,8 +1171,10 @@ export async function upsertOverride(
     }
 
     // Step 5a: Prevent overrides for Initial Balance transactions
-    if (transaction.time_slot === 'IB' || transaction.date_due?.toString() === 'IB') {
-      throw new ValidationError('Cannot create override for Initial Balance (IB) transaction. IB transactions are read-only.');
+    if (transaction.time_slot === "IB" || transaction.date_due?.toString() === "IB") {
+      throw new ValidationError(
+        "Cannot create override for Initial Balance (IB) transaction. IB transactions are read-only."
+      );
     }
 
     // Step 6: Check if override already exists
@@ -1327,11 +1324,9 @@ export async function batchUpdateOverrides(
     }
 
     // Step 4a: Prevent overrides for Initial Balance transactions
-    const ibTransactions = transactions.filter(
-      (t) => t.time_slot === 'IB' || t.date_due?.toString() === 'IB'
-    );
+    const ibTransactions = transactions.filter((t) => t.time_slot === "IB" || t.date_due?.toString() === "IB");
     if (ibTransactions.length > 0) {
-      const ibFlowIds = ibTransactions.map((t) => t.flow_id).join(', ');
+      const ibFlowIds = ibTransactions.map((t) => t.flow_id).join(", ");
       throw new ValidationError(
         `Cannot create overrides for Initial Balance (IB) transactions. IB transactions are read-only. Affected flow_ids: ${ibFlowIds}`
       );
@@ -1390,10 +1385,10 @@ export async function batchUpdateOverrides(
     console.log("[batchUpdateOverrides] Successfully saved overrides:", {
       scenarioId,
       count: upsertedOverrides?.length || 0,
-      overrides: upsertedOverrides?.map(o => ({
+      overrides: upsertedOverrides?.map((o) => ({
         flow_id: o.flow_id,
         new_date_due: o.new_date_due,
-      }))
+      })),
     });
 
     // Step 8: Return response
@@ -1420,4 +1415,3 @@ export async function batchUpdateOverrides(
     throw new DatabaseError("An unexpected error occurred while batch updating overrides");
   }
 }
-

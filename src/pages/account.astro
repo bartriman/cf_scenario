@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import AccountView from "@/components/account/AccountView";
+import AccountViewWithProvider from "@/components/account/AccountViewWithProvider";
 
 export const prerender = false;
 
@@ -12,5 +12,5 @@ if (!user) {
 ---
 
 <Layout title="Moje konto - CashFlow Scenarios">
-  <AccountView client:load />
+  <AccountViewWithProvider client:only="react" />
 </Layout>

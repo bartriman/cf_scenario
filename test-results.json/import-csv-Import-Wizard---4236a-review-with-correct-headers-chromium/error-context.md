@@ -1,0 +1,78 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - link "CashFlow Scenarios" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img [ref=e6]
+        - generic [ref=e8]: CashFlow Scenarios
+      - navigation [ref=e9]:
+        - button "T test-user-1@example.com" [ref=e11]:
+          - generic [ref=e13]: T
+          - generic [ref=e14]: test-user-1@example.com
+          - img [ref=e15]
+  - main [ref=e17]:
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - heading "Import data" [level=1] [ref=e23]
+        - paragraph [ref=e24]: Import financial data from CSV file and create a new base scenario
+      - navigation "Import wizard progress" [ref=e25]:
+        - list [ref=e26]:
+          - listitem [ref=e27]:
+            - generic [ref=e28]:
+              - generic [ref=e30]: "1"
+              - generic [ref=e31]: Upload pliku
+          - listitem [ref=e33]:
+            - generic [ref=e34]:
+              - generic [ref=e36]: "2"
+              - generic [ref=e37]: Mapowanie kolumn
+          - listitem [ref=e39]:
+            - generic [ref=e40]:
+              - generic [ref=e42]: "3"
+              - generic [ref=e43]: Walidacja
+          - listitem [ref=e45]:
+            - generic [ref=e46]:
+              - generic [ref=e48]: "4"
+              - generic [ref=e49]: Przetwarzanie
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - heading "Wybierz plik CSV" [level=2] [ref=e53]
+          - paragraph [ref=e54]: Upload CSV file with financial data to start the import process
+        - generic [ref=e55]:
+          - generic [ref=e56]: Plik CSV *
+          - button "test.csv 597 Bytes Click or drag another file to change" [ref=e58] [cursor=pointer]:
+            - generic [ref=e59]:
+              - img [ref=e60]
+              - generic [ref=e62]:
+                - paragraph [ref=e63]: test.csv
+                - paragraph [ref=e64]: 597 Bytes
+              - paragraph [ref=e65]: Click or drag another file to change
+        - generic [ref=e66]:
+          - generic [ref=e67]: Kod zestawu danych *
+          - paragraph [ref=e68]: Unikalny identyfikator dla tego zestawu danych (np. "Q1-2026", "budget-2026")
+          - textbox "Kod zestawu danych *" [ref=e69]:
+            - /placeholder: np. Q1-2026
+          - paragraph [ref=e70]: 0/50 characters
+        - generic [ref=e71]:
+          - button "Cancel" [ref=e72]
+          - button "Dalej" [disabled]
+  - generic:
+    - region "Notifications alt+T"
+  - generic [ref=e75]:
+    - button "Menu" [ref=e76]:
+      - img [ref=e78]
+      - generic: Menu
+    - button "Inspect" [ref=e82]:
+      - img [ref=e84]
+      - generic: Inspect
+    - button "Audit" [ref=e86]:
+      - generic [ref=e87]:
+        - img [ref=e88]
+        - img [ref=e91]
+      - generic: Audit
+    - button "Settings" [ref=e94]:
+      - img [ref=e96]
+      - generic: Settings
+```

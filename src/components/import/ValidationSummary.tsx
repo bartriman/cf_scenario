@@ -64,7 +64,11 @@ export function ValidationSummary({ totalRows, validRows, invalidRows }: Validat
   const config = statusConfig[status];
 
   return (
-    <div className={`border rounded-lg p-6 ${config.bgColor} ${config.borderColor}`} role="region" aria-label="Podsumowanie walidacji">
+    <div
+      className={`border rounded-lg p-6 ${config.bgColor} ${config.borderColor}`}
+      role="region"
+      aria-label="Podsumowanie walidacji"
+    >
       <div className="flex flex-col items-center text-center">
         <div aria-hidden="true">{config.icon}</div>
         <h3 className={`text-lg font-semibold mt-4 ${config.color}`}>{config.title}</h3>
@@ -72,15 +76,21 @@ export function ValidationSummary({ totalRows, validRows, invalidRows }: Validat
         {/* Statistics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-6 w-full max-w-md">
           <div>
-            <div className="text-2xl font-bold" aria-label={`Total rows: ${totalRows}`}>{totalRows}</div>
+            <div className="text-2xl font-bold" aria-label={`Total rows: ${totalRows}`}>
+              {totalRows}
+            </div>
             <div className="text-sm text-muted-foreground">Total</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-green-600" aria-label={`Valid rows: ${validRows}`}>{validRows}</div>
+            <div className="text-2xl font-bold text-green-600" aria-label={`Valid rows: ${validRows}`}>
+              {validRows}
+            </div>
             <div className="text-sm text-muted-foreground">Valid</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-red-600" aria-label={`Invalid rows: ${invalidRows}`}>{invalidRows}</div>
+            <div className="text-2xl font-bold text-red-600" aria-label={`Invalid rows: ${invalidRows}`}>
+              {invalidRows}
+            </div>
             <div className="text-sm text-muted-foreground">Invalid</div>
           </div>
         </div>
@@ -89,9 +99,18 @@ export function ValidationSummary({ totalRows, validRows, invalidRows }: Validat
         <div className="mt-6 w-full max-w-md">
           <div className="flex justify-between text-sm mb-2">
             <span>Data correctness</span>
-            <span className="font-medium" aria-label={`Correctness percentage: ${validPercentage}%`}>{validPercentage}%</span>
+            <span className="font-medium" aria-label={`Correctness percentage: ${validPercentage}%`}>
+              {validPercentage}%
+            </span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" role="progressbar" aria-valuenow={validPercentage} aria-valuemin={0} aria-valuemax={100} aria-label="Data correctness bar">
+          <div
+            className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2"
+            role="progressbar"
+            aria-valuenow={validPercentage}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Data correctness bar"
+          >
             <div
               className={`h-2 rounded-full transition-all duration-500 ${
                 validPercentage === 100 ? "bg-green-600" : validPercentage > 50 ? "bg-amber-600" : "bg-red-600"

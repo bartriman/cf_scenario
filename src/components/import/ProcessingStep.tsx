@@ -56,9 +56,7 @@ export function ProcessingStep({ importId, companyId, scenarioId, onComplete, on
           setMessage("Import completed with errors");
           polling = false;
           onError(
-            data.error_report_json
-              ? `Import failed: ${data.invalid_rows} invalid rows`
-              : "Import processing failed"
+            data.error_report_json ? `Import failed: ${data.invalid_rows} invalid rows` : "Import processing failed"
           );
         }
       } catch (error) {

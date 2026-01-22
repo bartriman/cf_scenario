@@ -238,12 +238,12 @@ export function mapCSVRows(csvData: string[][], headers: string[], mapping: Colu
         const columnIndex = headers.indexOf(csvColumn);
         if (columnIndex !== -1) {
           let value = row[columnIndex]?.trim() || null;
-          
+
           // Normalize direction field to uppercase
           if (systemField === "direction" && value) {
             value = value.toUpperCase();
           }
-          
+
           mappedRow[systemField] = value;
         }
       }
@@ -436,16 +436,16 @@ export async function createTransactionsFromImport(
 
     // Parse amount (handle Polish format with spaces, commas, and parentheses for negatives)
     let amountStr = String(data.amount || "0").trim();
-    
+
     // Handle negative amounts in parentheses: (123.45) -> -123.45
     const isNegativeParentheses = amountStr.startsWith("(") && amountStr.endsWith(")");
     if (isNegativeParentheses) {
       amountStr = "-" + amountStr.slice(1, -1).trim();
     }
-    
+
     // Remove spaces (thousand separators)
     amountStr = amountStr.replace(/\s/g, "");
-    
+
     // Replace comma with dot for decimal separator (Polish format)
     // Only if there's one comma and it's followed by 1-2 digits
     if ((amountStr.match(/,/g) || []).length === 1 && /,\d{1,2}$/.test(amountStr)) {
@@ -454,7 +454,7 @@ export async function createTransactionsFromImport(
       // Remove commas as thousand separators
       amountStr = amountStr.replace(/,/g, "");
     }
-    
+
     const amountFloat = parseFloat(amountStr);
     // Amounts are always positive in the system - direction field determines inflow/outflow
     const amountTxCents = Math.round(Math.abs(amountFloat) * 100);
@@ -470,12 +470,12 @@ export async function createTransactionsFromImport(
     // Handle Initial Balance (IB) transactions
     let actualDirection = data.direction;
     let timeSlot: string;
-    
-    if (data.direction === 'IB') {
+
+    if (data.direction === "IB") {
       // For IB, determine direction from amount sign
       // Positive amount = INFLOW, Negative amount = OUTFLOW
-      actualDirection = amountFloat >= 0 ? 'INFLOW' : 'OUTFLOW';
-      timeSlot = 'IB';
+      actualDirection = amountFloat >= 0 ? "INFLOW" : "OUTFLOW";
+      timeSlot = "IB";
     } else {
       // Regular transaction - calculate time_slot from date
       timeSlot = calculateTimeSlot(new Date(data.date_due));
