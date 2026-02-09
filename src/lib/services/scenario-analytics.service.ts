@@ -283,16 +283,33 @@ export async function getRunningBalance(
   }
 
   // Step 4: Query running balance view
-  const { data: balanceData, error: balanceError } = await supabase
-    .from("running_balance_v")
-    .select("*")
-    .eq("company_id", companyId)
-    .eq("scenario_id", scenarioId)
-    .order("as_of_date", { ascending: true });
+  // NOTE: Supabase has a default limit of 1000 rows. We need to paginate for large datasets.
+  let balanceData: any[] = [];
+  const PAGE_SIZE = 1000;
+  let page = 0;
+  let hasMore = true;
 
-  if (balanceError) {
-    console.error("Error fetching running balance:", balanceError);
-    throw new DatabaseError("Failed to fetch running balance");
+  while (hasMore) {
+    const { data: pageData, error: balanceError } = await supabase
+      .from("running_balance_v")
+      .select("*")
+      .eq("company_id", companyId)
+      .eq("scenario_id", scenarioId)
+      .order("as_of_date", { ascending: true })
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+    if (balanceError) {
+      console.error("Error fetching running balance:", balanceError);
+      throw new DatabaseError("Failed to fetch running balance");
+    }
+
+    if (!pageData || pageData.length === 0) {
+      hasMore = false;
+    } else {
+      balanceData = balanceData.concat(pageData);
+      hasMore = pageData.length === PAGE_SIZE;
+      page++;
+    }
   }
 
   // Step 5: Transform data to DTO format

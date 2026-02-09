@@ -1,1 +1,1 @@
-select * from import_rows ;
+select count(*) from import_rows where import_id = 6;

@@ -398,17 +398,47 @@ export async function createTransactionsFromImport(
   }
 
   // Step 2: Get all valid import rows
-  const { data: validRows, error: rowsError } = await supabase
-    .from("import_rows")
-    .select("*")
-    .eq("import_id", importId)
-    .eq("is_valid", true)
-    .order("row_number", { ascending: true });
+  // NOTE: Supabase has a default limit of 1000 rows. We need to paginate for large imports.
+  let validRows: any[] = [];
+  const PAGE_SIZE = 1000;
+  let page = 0;
+  let hasMore = true;
 
-  if (rowsError) {
-    console.error("Database error fetching valid rows:", rowsError);
-    throw new DatabaseError("Failed to fetch valid import rows", rowsError);
+  console.log("[IMPORT DEBUG] Starting pagination for import:", importId);
+
+  while (hasMore) {
+    const rangeStart = page * PAGE_SIZE;
+    const rangeEnd = (page + 1) * PAGE_SIZE - 1;
+
+    console.log(`[IMPORT DEBUG] Fetching page ${page}, range: ${rangeStart}-${rangeEnd}`);
+
+    const { data: pageData, error: rowsError } = await supabase
+      .from("import_rows")
+      .select("*")
+      .eq("import_id", importId)
+      .eq("is_valid", true)
+      .order("row_number", { ascending: true })
+      .range(rangeStart, rangeEnd);
+
+    if (rowsError) {
+      console.error("[IMPORT DEBUG] Error fetching page:", rowsError);
+      console.error("Database error fetching valid rows:", rowsError);
+      throw new DatabaseError("Failed to fetch valid import rows", rowsError);
+    }
+
+    const recordsInPage = pageData?.length || 0;
+    console.log(`[IMPORT DEBUG] Page ${page} returned ${recordsInPage} records`);
+
+    if (!pageData || pageData.length === 0) {
+      hasMore = false;
+    } else {
+      validRows = validRows.concat(pageData);
+      hasMore = pageData.length === PAGE_SIZE;
+      page++;
+    }
   }
+
+  console.log(`[IMPORT DEBUG] Pagination complete. Total valid rows: ${validRows.length}, Pages fetched: ${page}`);
 
   if (!validRows || validRows.length === 0) {
     return 0;

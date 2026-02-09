@@ -809,21 +809,37 @@ export async function duplicateScenario(
     }
 
     // Step 5: Copy all overrides from source scenario
-    const { data: sourceOverrides, error: overridesError } = await supabase
-      .from("scenario_overrides")
-      .select(
-        `
-        transaction_id,
-        new_amount_book_cents,
-        new_currency,
-        new_date_due
-      `
-      )
-      .eq("scenario_id", scenarioId);
+    // NOTE: Supabase has a default limit of 1000 rows. We need to paginate for large datasets.
+    let sourceOverrides: any[] = [];
+    const PAGE_SIZE = 1000;
+    let page = 0;
+    let hasMore = true;
 
-    if (overridesError) {
-      console.error("[duplicateScenario] Fetch overrides error:", overridesError);
-      // Don't fail the duplication, just log the error
+    while (hasMore) {
+      const { data: pageData, error: overridesError } = await supabase
+        .from("scenario_overrides")
+        .select(
+          `
+          transaction_id,
+          new_amount_book_cents,
+          new_currency,
+          new_date_due
+        `
+        )
+        .eq("scenario_id", scenarioId)
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+      if (overridesError) {
+        console.error("[duplicateScenario] Fetch overrides error:", overridesError);
+        // Don't fail the duplication, just log the error
+        hasMore = false;
+      } else if (!pageData || pageData.length === 0) {
+        hasMore = false;
+      } else {
+        sourceOverrides = sourceOverrides.concat(pageData);
+        hasMore = pageData.length === PAGE_SIZE;
+        page++;
+      }
     }
 
     let overridesCount = 0;
@@ -937,19 +953,29 @@ export async function createScenarioFromImport(
     let finalEndDate = endDate;
 
     if (!finalStartDate || !finalEndDate) {
+      // NOTE: Use min/max aggregation instead of fetching all transactions
+      // to avoid the 1000 row Supabase limit
       const { data: dateRange, error: rangeError } = await supabase
         .from("transactions")
         .select("date_due")
         .eq("import_id", importId)
-        .order("date_due", { ascending: true });
+        .order("date_due", { ascending: true })
+        .limit(1);
 
-      if (rangeError) {
-        console.error("[createScenarioFromImport] Date range calculation error:", rangeError);
+      const { data: maxDateRange, error: maxRangeError } = await supabase
+        .from("transactions")
+        .select("date_due")
+        .eq("import_id", importId)
+        .order("date_due", { ascending: false })
+        .limit(1);
+
+      if (rangeError || maxRangeError) {
+        console.error("[createScenarioFromImport] Date range calculation error:", rangeError || maxRangeError);
       }
 
-      if (dateRange && dateRange.length > 0) {
+      if (dateRange && dateRange.length > 0 && maxDateRange && maxDateRange.length > 0) {
         finalStartDate = finalStartDate || dateRange[0].date_due;
-        finalEndDate = finalEndDate || dateRange[dateRange.length - 1].date_due;
+        finalEndDate = finalEndDate || maxDateRange[0].date_due;
       } else {
         // Default to current month if no transactions
         const now = new Date();

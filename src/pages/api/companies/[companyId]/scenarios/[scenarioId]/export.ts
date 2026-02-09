@@ -134,17 +134,47 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
     }
 
     // Step 6: Fetch export data from scenario_export_v
-    const { data: exportData, error: exportError } = await supabase
-      .from("scenario_export_v")
-      .select("*")
-      .eq("company_id", validatedParams.companyId)
-      .eq("scenario_id", validatedParams.scenarioId)
-      .order("date_due_effective", { ascending: true })
-      .order("transaction_id", { ascending: true });
+    // NOTE: Supabase has a default limit of 1000 rows. We need to paginate for large datasets.
+    let exportData: ExportTransactionDTO[] = [];
+    const PAGE_SIZE = 1000;
+    let page = 0;
+    let hasMore = true;
 
-    if (exportError) {
-      throw new DatabaseError("Failed to fetch export data");
+    console.log("[EXPORT DEBUG] Starting pagination for scenario:", validatedParams.scenarioId);
+
+    while (hasMore) {
+      const rangeStart = page * PAGE_SIZE;
+      const rangeEnd = (page + 1) * PAGE_SIZE - 1;
+      
+      console.log(`[EXPORT DEBUG] Fetching page ${page}, range: ${rangeStart}-${rangeEnd}`);
+      
+      const { data: pageData, error: exportError } = await supabase
+        .from("scenario_export_v")
+        .select("*")
+        .eq("company_id", validatedParams.companyId)
+        .eq("scenario_id", validatedParams.scenarioId)
+        .order("date_due_effective", { ascending: true })
+        .order("transaction_id", { ascending: true })
+        .range(rangeStart, rangeEnd);
+
+      if (exportError) {
+        console.error("[EXPORT DEBUG] Error fetching page:", exportError);
+        throw new DatabaseError("Failed to fetch export data");
+      }
+
+      const recordsInPage = pageData?.length || 0;
+      console.log(`[EXPORT DEBUG] Page ${page} returned ${recordsInPage} records`);
+
+      if (!pageData || pageData.length === 0) {
+        hasMore = false;
+      } else {
+        exportData = exportData.concat(pageData);
+        hasMore = pageData.length === PAGE_SIZE;
+        page++;
+      }
     }
+
+    console.log(`[EXPORT DEBUG] Pagination complete. Total records: ${exportData.length}, Pages fetched: ${page}`);
 
     if (!exportData || exportData.length === 0) {
       return new Response(
@@ -174,19 +204,36 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
     }
 
     // Step 8: Fetch running balance data if charts are included
-    let runningBalanceData = null;
+    let runningBalanceData: ExportRunningBalanceDTO[] | null = null;
     if (validatedQuery.includeCharts === "true") {
-      const { data: balanceData, error: balanceError } = await supabase
-        .from("running_balance_v")
-        .select("*")
-        .eq("company_id", validatedParams.companyId)
-        .eq("scenario_id", validatedParams.scenarioId)
-        .order("as_of_date", { ascending: true });
+      // NOTE: Paginate running balance data as well
+      let balanceData: ExportRunningBalanceDTO[] = [];
+      let balancePage = 0;
+      let hasMoreBalance = true;
 
-      if (balanceError) {
-        // Don't fail the export, just skip the chart
-        runningBalanceData = null;
-      } else {
+      while (hasMoreBalance) {
+        const { data: pageData, error: balanceError } = await supabase
+          .from("running_balance_v")
+          .select("*")
+          .eq("company_id", validatedParams.companyId)
+          .eq("scenario_id", validatedParams.scenarioId)
+          .order("as_of_date", { ascending: true })
+          .range(balancePage * PAGE_SIZE, (balancePage + 1) * PAGE_SIZE - 1);
+
+        if (balanceError) {
+          // Don't fail the export, just skip the chart
+          runningBalanceData = null;
+          hasMoreBalance = false;
+        } else if (!pageData || pageData.length === 0) {
+          hasMoreBalance = false;
+        } else {
+          balanceData = balanceData.concat(pageData);
+          hasMoreBalance = pageData.length === PAGE_SIZE;
+          balancePage++;
+        }
+      }
+
+      if (balanceData.length > 0) {
         runningBalanceData = balanceData;
       }
     }
